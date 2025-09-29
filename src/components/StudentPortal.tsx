@@ -35,14 +35,18 @@ export default function StudentPortal(): ReactElement {
         }
 
         const data = await response.json();
-        const formattedData: ClassData[] = data.map((item: any) => ({
+        const formattedData: ClassData[] = data.map((item: ClassData) => ({
           class_id: item.class_id,
           class_name: item.class_name,
         }));
         setClasses(formattedData);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error fetching classes:", err);
-        setError(err.message);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred.");
+        }
       }
     };
 
@@ -74,8 +78,12 @@ export default function StudentPortal(): ReactElement {
       }
 
       setClasses((prev) => prev.filter((c) => c.class_id !== classId));
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     }
   };
 

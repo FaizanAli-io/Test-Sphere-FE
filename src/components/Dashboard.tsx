@@ -32,7 +32,9 @@ interface DashboardData {
 }
 
 export default function Dashboard() {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -72,9 +74,16 @@ export default function Dashboard() {
 
         const data = await response.json();
         setDashboardData(data);
-      } catch (err: any) {
+      } catch (err: unknown) {
+        // err is now typed as unknown instead of any
         console.error("Error fetching dashboard data:", err);
-        if (err.message.includes("401")) {
+        if (
+          typeof err === "object" &&
+          err !== null &&
+          "message" in err &&
+          typeof (err as { message?: string }).message === "string" &&
+          (err as { message: string }).message.includes("401")
+        ) {
           localStorage.removeItem("token");
           router.push("/login");
         }
@@ -151,7 +160,8 @@ export default function Dashboard() {
                 >
                   <h3 className="font-bold text-lg">{test.test_title}</h3>
                   <p>
-                    <span className="font-medium">Class:</span> {test.class_name}
+                    <span className="font-medium">Class:</span>{" "}
+                    {test.class_name}
                   </p>
                   <p>
                     <span className="font-medium">Start Time:</span>{" "}

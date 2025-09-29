@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -50,8 +50,9 @@ export default function Header(): ReactElement {
       // Best-effort: clear IndexedDB database if present (client-side only)
       if (typeof window !== "undefined") {
         try {
-          // @ts-ignore
-          const { deleteDB } = await import("idb").catch(() => ({ deleteDB: null }));
+          const { deleteDB } = await import("idb").catch(() => ({
+            deleteDB: null,
+          }));
           if (deleteDB) {
             await deleteDB("TestProctoringDB");
           }
@@ -73,11 +74,7 @@ export default function Header(): ReactElement {
         {/* Logo */}
         <Link
           href={
-            tokenIsValid
-              ? role === "teacher"
-                ? "/admin"
-                : "/student"
-              : "/"
+            tokenIsValid ? (role === "teacher" ? "/admin" : "/student") : "/"
           }
           onClick={() => setIsMenuOpen(false)}
           className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition"

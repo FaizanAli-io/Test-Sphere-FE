@@ -43,18 +43,19 @@ const EnrollClass: React.FC<EnrollClassProps> = ({ onEnroll }) => {
       setClassCode("");
       onEnroll(data.class);
       setShowForm(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
       setSuccess("");
     }
   };
 
   if (!showForm) {
     return (
-      <button
-        className="floating-add-button"
-        onClick={() => setShowForm(true)}
-      >
+      <button className="floating-add-button" onClick={() => setShowForm(true)}>
         <span>+</span>
       </button>
     );
