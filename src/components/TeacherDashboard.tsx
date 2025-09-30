@@ -307,7 +307,7 @@ export default function TeacherDashboard() {
             </div>
           ) : (
             <p className="text-gray-500">
-              You haven't created any classes yet.
+              You haven&apos;t created any classes yet.
             </p>
           )}
         </section>
