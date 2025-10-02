@@ -12,6 +12,11 @@ interface ClassItem {
   class_code: string;
 }
 
+interface EnrollResponse {
+  class: ClassItem;
+  error?: string;
+}
+
 const EnrollClass: React.FC<EnrollClassProps> = ({ onEnroll }) => {
   const [classCode, setClassCode] = useState("");
   const [error, setError] = useState("");
@@ -32,7 +37,7 @@ const EnrollClass: React.FC<EnrollClassProps> = ({ onEnroll }) => {
         }
       );
 
-      const data = await response.json();
+      const data: EnrollResponse = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to enroll in class.");
