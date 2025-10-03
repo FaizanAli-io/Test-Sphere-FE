@@ -40,30 +40,25 @@ export default function CreateTestPage(): ReactElement {
     setMessage({ text: "", type: "" });
 
     try {
-      const endpoint = editingId ? `/edit-test/${editingId}` : "/create-test";
-
       const method = editingId ? "PUT" : "POST";
-
+      const endpoint = editingId ? `/tests/${editingId}` : "/tests";
       const payload = {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          duration: parseInt(formData.duration),
-          date: formData.date
-            ? new Date(formData.date).toISOString()
-            : new Date().toISOString(),
-          classId: parseInt(formData.classId),
-        }),
+        title: formData.title,
+        description: formData.description,
+        duration: parseInt(formData.duration),
+        date: formData.date
+          ? new Date(formData.date).toISOString()
+          : new Date().toISOString(),
+        classId: parseInt(formData.classId),
       };
 
-      console.log("Submitting to:", endpoint, "with payload:", payload.body);
+      console.log("Submitting to:", endpoint, "with payload:", payload);
 
       const response = await api(endpoint, {
         method,
         auth: true,
-        body: payload.body,
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
       });
 
       console.log("Response status:", response.status);

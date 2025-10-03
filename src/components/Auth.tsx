@@ -22,7 +22,6 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        // LOGIN
         const res = await api("/auth/login", {
           method: "POST",
           body: JSON.stringify({ email, password }),
@@ -39,8 +38,6 @@ export default function Auth() {
         alert(`Logged in as ${data.user.role}`);
         router.push(data.user.role === "teacher" ? "/admin" : "/student");
       } else {
-        // SIGNUP
-        // Generate a unique identifier (6-20 alphanumeric characters, hyphens allowed)
         const emailPrefix = email.split("@")[0].slice(0, 10); // limit to 10 chars
         const randomNum = Math.floor(Math.random() * 10000); // 4 digits max
         const uniqueIdentifier = `${emailPrefix}-${randomNum}`.slice(0, 20);
@@ -206,17 +203,6 @@ export default function Auth() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 OTP
               </label>
-              {/* <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 6-digit OTP"
-                className="w-full px-4 py-3 border rounded-xl text-gray-800 placeholder-gray-400 
-                           focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 transition"
-                required
-                disabled={loading}
-                maxLength={6}
-              /> */}
               <button
                 type="button"
                 onClick={handleVerifyOtp}
