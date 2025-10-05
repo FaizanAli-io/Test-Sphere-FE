@@ -33,6 +33,18 @@ export default function StudentPortal() {
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [showTestsModal, setShowTestsModal] = useState(false);
+  const [testsLoading, setTestsLoading] = useState(false);
+  const [testsForClass, setTestsForClass] = useState<number | null>(null);
+  const [tests, setTests] = useState<Array<{
+    id: number;
+    title: string;
+    description?: string;
+    duration?: number;
+    startAt?: string;
+    endAt?: string;
+    status?: string;
+  }>>([]);
 
   const fetchClasses = async () => {
     setLoading(true);
@@ -212,14 +224,50 @@ export default function StudentPortal() {
     }
   };
 
-  // ✅ FINAL: Navigate to /take-test?classId=<id>
-  const handleTakeTest = () => {
+  // Fetch and show tests for a class, then allow navigation to GiveTest via testId
+  const fetchTestsForClass = async (id: number) => {
+    setTestsLoading(true);
+    setError(null);
+    try {
+      const response = await api(`/tests/class/${id}`, { method: "GET", auth: true });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to fetch tests for class");
+      }
+      const data = await response.json();
+      const normalized = Array.isArray(data)
+        ? data.map((t: any) => ({
+            id: Number(t.id),
+            title: t.title,
+            description: t.description,
+            duration: typeof t.duration === "number" ? t.duration : undefined,
+            startAt: t.startAt,
+            endAt: t.endAt,
+            status: t.status,
+          }))
+        : [];
+      setTests(normalized.filter((t) => Number.isFinite(t.id)));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setTests([]);
+    } finally {
+      setTestsLoading(false);
+    }
+  };
+
+  const openTestsModal = async (cls: ClassData) => {
+    setTestsForClass(cls.id);
+    setShowTestsModal(true);
+    await fetchTestsForClass(cls.id);
+  };
+
+  const handleTakeTest = async () => {
     const targetClass = selectedClass || classes[0];
     if (!targetClass) {
       alert("Please join or select a class first.");
       return;
     }
-    router.push(`/take-test/${targetClass.id}`);
+    await openTestsModal(targetClass);
   };
 
   useEffect(() => {
@@ -371,6 +419,12 @@ export default function StudentPortal() {
                   >
                     Leave
                   </button>
+                  <button
+                    onClick={() => openTestsModal(cls)}
+                    className="text-orange-600 font-semibold hover:underline"
+                  >
+                    View Tests
+                  </button>
                 </div>
               </div>
             ))}
@@ -481,6 +535,68 @@ export default function StudentPortal() {
                 Go to Class
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Class Tests Modal */}
+      {showTestsModal && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl transform transition-all duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {testsForClass ? `Class #${testsForClass} Tests` : "Class Tests"}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowTestsModal(false);
+                  setTestsForClass(null);
+                  setTests([]);
+                }}
+                className="text-gray-600 hover:text-gray-800 font-medium"
+              >
+                Close
+              </button>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+
+            {testsLoading ? (
+              <div className="text-center text-gray-600 py-10">Loading tests…</div>
+            ) : tests.length === 0 ? (
+              <div className="text-center text-gray-500 py-10">No tests available for this class.</div>
+            ) : (
+              <div className="space-y-4 max-h-[60vh] overflow-auto pr-1">
+                {tests.map((t) => (
+                  <div key={t.id} className="border rounded-xl p-4 bg-white shadow-sm flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">{t.title}</h3>
+                      {t.description && (
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">{t.description}</p>
+                      )}
+                      <div className="text-xs text-gray-500 mt-2 flex gap-4 flex-wrap">
+                        {typeof t.duration === "number" && <span>Duration: {t.duration} min</span>}
+                        {t.startAt && <span>Starts: {new Date(t.startAt).toLocaleString()}</span>}
+                        {t.endAt && <span>Ends: {new Date(t.endAt).toLocaleString()}</span>}
+                        {t.status && <span>Status: {t.status}</span>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => router.push(`/take-test/${t.id}`)}
+                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                      >
+                        Take Test
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

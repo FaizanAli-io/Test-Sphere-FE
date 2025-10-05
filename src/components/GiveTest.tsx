@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, useParams } from "next/navigation";
 import api from "../app/hooks/useApi";
 
 interface Question {
@@ -32,7 +32,13 @@ interface Answer {
 export default function GiveTest() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const testIdParam = searchParams?.get("testId") || searchParams?.get("id");
+  const params = useParams() as Record<string, string | string[]> | null;
+
+  // Support both query params (?testId=123 or ?id=123) and dynamic routes (/take-test/123 or /take-test/[testId])
+  const routeIdRaw = params?.["testId"] ?? params?.["id"];
+  const routeId = Array.isArray(routeIdRaw) ? routeIdRaw[0] : routeIdRaw;
+  const qpId = searchParams?.get("testId") || searchParams?.get("id");
+  const testIdParam = qpId || routeId || null;
   const testId = testIdParam ? Number(testIdParam) : null;
 
   const [test, setTest] = useState<Test | null>(null);
@@ -47,7 +53,9 @@ export default function GiveTest() {
   // Start the test
   const handleStartTest = async () => {
     if (!testId) {
-      setError("Missing test id. Open this page as /take-test?testId=123");
+      setError(
+        "Missing test id. Open this page as /take-test/[id] or /take-test?testId=123"
+      );
       return;
     }
 
@@ -86,7 +94,9 @@ export default function GiveTest() {
   // Fetch test details
   const fetchTestDetails = async () => {
     if (!testId) {
-      setError("Missing test id. Open this page as /take-test?testId=123");
+      setError(
+        "Missing test id. Open this page as /take-test/[id] or /take-test?testId=123"
+      );
       setLoading(false);
       return;
     }
