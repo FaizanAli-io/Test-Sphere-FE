@@ -1,279 +1,99 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import type { ReactElement } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { LogOut, GraduationCap, Menu, X } from "lucide-react";
 
-export default function Header(): ReactElement {
+export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
-  const [role, setRole] = useState<string | null>(null);
+  const [isAuth, setIsAuth] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
 
-  const [tokenIsValid, setTokenIsValid] = useState(false);
+  const publicRoutes = ["/", "/login", "/signup"];
 
-  const isTokenValid = useCallback((): boolean => {
-    if (typeof window === "undefined") return false;
-    const token = localStorage.getItem("token");
-    const tokenExpiry = localStorage.getItem("tokenExpiry");
-    if (!token || !tokenExpiry) return false;
-    const currentTime = new Date().getTime();
-    return currentTime < Number.parseInt(tokenExpiry, 10);
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem("token");
+      setIsAuth(!!token);
+    };
+
+    checkAuth();
+    window.addEventListener("storage", checkAuth);
+    window.addEventListener("authChange", checkAuth);
+
+    return () => {
+      window.removeEventListener("storage", checkAuth);
+      window.removeEventListener("authChange", checkAuth);
+    };
   }, []);
 
-  // Check token validity on client side only
-  useEffect(() => {
-    setTokenIsValid(isTokenValid());
-  }, [isTokenValid, pathname]);
-
-  useEffect(() => {
-    if (tokenIsValid) {
-      const storedRole = localStorage.getItem("role");
-      if (storedRole) setRole(storedRole);
-    } else {
-      setRole(null);
-    }
-  }, [tokenIsValid]);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const handleSignOut = useCallback(async () => {
-    if (typeof window === "undefined") return;
+  const handleSignOut = () => {
     localStorage.clear();
-    try {
-      // Best-effort: clear IndexedDB database if present (client-side only)
-      if (typeof window !== "undefined") {
-        try {
-          const { deleteDB } = await import("idb").catch(() => ({
-            deleteDB: null,
-          }));
-          if (deleteDB) {
-            await deleteDB("TestProctoringDB");
-          }
-        } catch (idbError) {
-          console.warn("IndexedDB cleanup failed:", idbError);
-        }
-      }
-    } catch {}
+    window.dispatchEvent(new Event("authChange"));
     router.replace("/");
-  }, [router]);
+  };
+
+  // Don’t show header on login/signup/public routes
+  if (publicRoutes.includes(pathname)) {
+    return null;
+  }
+
+  if (!isAuth) return null;
 
   return (
-    <header
-      className={`fixed top-0 w-full z-50 transition-colors duration-300 ${
-        isScrolled ? "bg-white shadow-md" : "bg-transparent"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-3">
+    <header className="fixed top-0 w-full z-50 bg-white shadow-sm">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-6 lg:px-8 py-4">
         {/* Logo */}
-        <Link
-          href={
-            tokenIsValid ? (role === "teacher" ? "/admin" : "/student") : "/"
-          }
-          onClick={() => setIsMenuOpen(false)}
-          className="text-2xl font-bold text-blue-600 hover:text-blue-800 transition"
-        >
-          TestSphere
+        <Link href="/" className="flex items-center space-x-2 group">
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-2 rounded-lg group-hover:shadow-lg transition-all">
+            <GraduationCap className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            TestSphere
+          </span>
         </Link>
 
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-6">
-          {!tokenIsValid && (
-            <>
-              <Link
-                href="/how-it-works"
-                className="text-gray-700 hover:text-blue-600 transition"
-              >
-                How it Works
-              </Link>
-              <Link
-                href="/faqs"
-                className="text-gray-700 hover:text-blue-600 transition"
-              >
-                FAQs
-              </Link>
-              <Link
-                href="/auth"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Login / Sign Up
-              </Link>
-            </>
-          )}
-
-          {tokenIsValid && role === "teacher" && (
-            <>
-              <Link
-                href="/admin"
-                className="text-gray-700 hover:text-blue-600 transition"
-              >
-                Home
-              </Link>
-              <Link
-                href="/teacherdashboard"
-                className="text-gray-700 hover:text-blue-600 transition"
-              >
-                Dashboard
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-              >
-                Sign Out
-              </button>
-            </>
-          )}
-
-          {tokenIsValid && role === "student" && (
-            <>
-              <Link
-                href="/dashboard"
-                className="text-gray-700 hover:text-blue-600 transition"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/student"
-                className="text-gray-700 hover:text-blue-600 transition"
-              >
-                Student Portal
-              </Link>
-              <Link
-                href="/studentai"
-                className="text-gray-700 hover:text-blue-600 transition"
-              >
-                Ask a Question
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
-              >
-                Sign Out
-              </button>
-            </>
-          )}
+        {/* Desktop logout */}
+        <nav className="hidden md:flex items-center space-x-4">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </button>
         </nav>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu */}
         <button
-          className="md:hidden flex flex-col space-y-1"
+          className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-all"
           onClick={() => setIsMenuOpen((prev) => !prev)}
         >
-          <span
-            className={`h-1 w-6 bg-gray-800 rounded transition ${
-              isMenuOpen ? "rotate-45 translate-y-2" : ""
-            }`}
-          />
-          <span
-            className={`h-1 w-6 bg-gray-800 rounded transition ${
-              isMenuOpen ? "opacity-0" : ""
-            }`}
-          />
-          <span
-            className={`h-1 w-6 bg-gray-800 rounded transition ${
-              isMenuOpen ? "-rotate-45 -translate-y-2" : ""
-            }`}
-          />
+          {isMenuOpen ? (
+            <X className="w-6 h-6 text-gray-800" />
+          ) : (
+            <Menu className="w-6 h-6 text-gray-800" />
+          )}
         </button>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Menu Options */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg px-6 py-4 space-y-4">
-          {!tokenIsValid && (
-            <>
-              <Link
-                href="/how-it-works"
-                className="block text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                How it Works
-              </Link>
-              <Link
-                href="/faqs"
-                className="block text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                FAQs
-              </Link>
-              <Link
-                href="/auth"
-                className="block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-center"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Login / Sign Up
-              </Link>
-            </>
-          )}
-
-          {tokenIsValid && role === "teacher" && (
-            <>
-              <Link
-                href="/admin"
-                className="block text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                href="/teacherdashboard"
-                className="block text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  handleSignOut();
-                }}
-                className="block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition text-center"
-              >
-                Sign Out
-              </button>
-            </>
-          )}
-
-          {tokenIsValid && role === "student" && (
-            <>
-              <Link
-                href="/dashboard"
-                className="block text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/student"
-                className="block text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Student Portal
-              </Link>
-              <Link
-                href="/studentai"
-                className="block text-gray-700 hover:text-blue-600 transition"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Ask a Question
-              </Link>
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  handleSignOut();
-                }}
-                className="block bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition text-center"
-              >
-                Sign Out
-              </button>
-            </>
-          )}
+        <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
+          <div className="px-6 py-4 space-y-2">
+            <button
+              onClick={() => {
+                setIsMenuOpen(false);
+                handleSignOut();
+              }}
+              className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Logout</span>
+            </button>
+          </div>
         </div>
       )}
     </header>

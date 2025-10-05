@@ -2,7 +2,8 @@ export const api = async (
   path: string,
   options?: RequestInit & { auth?: boolean; date?: boolean }
 ) => {
-  const baseUrl = "https://s61qbtst-3000.inc1.devtunnels.ms";
+  // const bAseUrl = 1 ? "http://localhost:5000" : "https://test-sphere-be.onrender.com";
+  const baseUrl = "https://test-sphere-be.onrender.com";
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -72,6 +73,19 @@ export const api = async (
 
   // Safe log for debugging (without consuming response)
   console.log("📩 API Response Status:", res.status, res.statusText);
+
+  // Log error response body for easier debugging (does not consume original)
+  try {
+    if (!res.ok) {
+      const cloned = res.clone();
+      const text = await cloned.text();
+      if (text) {
+        console.error("🔎 API Error Body:", text);
+      }
+    }
+  } catch {
+    // ignore log failures
+  }
 
   return res;
 };
