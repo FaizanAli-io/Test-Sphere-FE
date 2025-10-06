@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
-import api from "../app/hooks/useApi";
+import api from "../hooks/useApi";
 
 interface Question {
   id: number;
@@ -51,11 +52,9 @@ export default function GiveTest() {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 
   // Start the test
-  const handleStartTest = async () => {
+  const handleStartTest = useCallback(async () => {
     if (!testId) {
-      setError(
-        "Missing test id. Open this page as /take-test/[id] or /take-test?testId=123"
-      );
+      setError("Missing test id. Open this page as /take-test/[id] or /take-test?testId=123");
       return;
     }
 
@@ -65,7 +64,7 @@ export default function GiveTest() {
       const res = await api("/submissions/start", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ testId }),
+        body: JSON.stringify({ testId })
       });
 
       if (!res.ok) {
@@ -89,14 +88,12 @@ export default function GiveTest() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [testId, test]);
 
   // Fetch test details
-  const fetchTestDetails = async () => {
+  const fetchTestDetails = useCallback(async () => {
     if (!testId) {
-      setError(
-        "Missing test id. Open this page as /take-test/[id] or /take-test?testId=123"
-      );
+      setError("Missing test id. Open this page as /take-test/[id] or /take-test?testId=123");
       setLoading(false);
       return;
     }
@@ -116,7 +113,7 @@ export default function GiveTest() {
       // Fetch questions
       const questionsRes = await api(`/tests/${testId}/questions`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
 
       if (!questionsRes.ok) {
@@ -132,7 +129,7 @@ export default function GiveTest() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [testId]);
 
   // Handle answer change
   const handleAnswerChange = (questionId: number, answer: string) => {
@@ -140,21 +137,19 @@ export default function GiveTest() {
   };
 
   // Submit test
-  const handleSubmitTest = async () => {
+  const handleSubmitTest = useCallback(async () => {
     setSubmitting(true);
 
     try {
-      const answersArray: Answer[] = Object.entries(answers).map(
-        ([questionId, answer]) => ({
-          questionId: Number(questionId),
-          answer: answer,
-        })
-      );
+      const answersArray: Answer[] = Object.entries(answers).map(([questionId, answer]) => ({
+        questionId: Number(questionId),
+        answer: answer
+      }));
 
       const res = await api("/submissions/submit", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ answers: answersArray }),
+        body: JSON.stringify({ answers: answersArray })
       });
 
       if (!res.ok) {
@@ -172,14 +167,11 @@ export default function GiveTest() {
       setSubmitting(false);
       setShowSubmitConfirm(false);
     }
-  };
+  }, [answers, router]);
 
   // Timer effect
   useEffect(() => {
-    if (!testStarted || timeRemaining <= 0) {
-      return;
-    }
-
+    if (!testStarted || timeRemaining <= 0) return;
     const timer = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -190,22 +182,21 @@ export default function GiveTest() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [testStarted, timeRemaining]);
+  }, [testStarted, timeRemaining, handleSubmitTest]);
 
   useEffect(() => {
     fetchTestDetails();
-  }, [testId]);
+  }, [fetchTestDetails]);
 
   // Format time display
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs
       .toString()
-      .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+      .padStart(2, "0")}`;
   };
 
   // Calculate progress
@@ -224,9 +215,7 @@ export default function GiveTest() {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0"></div>
           </div>
-          <p className="mt-6 text-gray-600 font-semibold text-lg">
-            Loading test...
-          </p>
+          <p className="mt-6 text-gray-600 font-semibold text-lg">Loading test...</p>
         </div>
       </div>
     );
@@ -239,12 +228,8 @@ export default function GiveTest() {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">⚠️</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Error Loading Test
-          </h2>
-          <p className="text-gray-600 mb-8 text-lg">
-            {error || "Test not found"}
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Error Loading Test</h2>
+          <p className="text-gray-600 mb-8 text-lg">{error || "Test not found"}</p>
           <button
             onClick={() => router.push("/student")}
             className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
@@ -262,47 +247,31 @@ export default function GiveTest() {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-3xl shadow-2xl border-2 border-gray-100 overflow-hidden">
             <div className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-blue-600">
-              <h1 className="text-3xl font-bold text-white">
-                Test Instructions
-              </h1>
+              <h1 className="text-3xl font-bold text-white">Test Instructions</h1>
             </div>
 
             <div className="p-8">
               <div className="mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  {test.title}
-                </h2>
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  {test.description}
-                </p>
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">{test.title}</h2>
+                <p className="text-gray-600 text-lg leading-relaxed">{test.description}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
                   <div className="text-4xl mb-3">📝</div>
-                  <p className="text-sm font-bold text-gray-600 mb-1">
-                    Total Questions
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {test.questions.length}
-                  </p>
+                  <p className="text-sm font-bold text-gray-600 mb-1">Total Questions</p>
+                  <p className="text-3xl font-bold text-gray-900">{test.questions.length}</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
                   <div className="text-4xl mb-3">⏱️</div>
-                  <p className="text-sm font-bold text-gray-600 mb-1">
-                    Duration
-                  </p>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {test.duration} min
-                  </p>
+                  <p className="text-sm font-bold text-gray-600 mb-1">Duration</p>
+                  <p className="text-3xl font-bold text-gray-900">{test.duration} min</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
                   <div className="text-4xl mb-3">🎯</div>
-                  <p className="text-sm font-bold text-gray-600 mb-1">
-                    Total Marks
-                  </p>
+                  <p className="text-sm font-bold text-gray-600 mb-1">Total Marks</p>
                   <p className="text-3xl font-bold text-gray-900">
                     {test.questions.reduce((sum, q) => sum + q.maxMarks, 0)}
                   </p>
@@ -321,22 +290,15 @@ export default function GiveTest() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-indigo-600 font-bold mt-1">•</span>
-                    <span>
-                      You can navigate between questions using the question
-                      palette
-                    </span>
+                    <span>You can navigate between questions using the question palette</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-indigo-600 font-bold mt-1">•</span>
-                    <span>
-                      Your answers are automatically saved as you progress
-                    </span>
+                    <span>Your answers are automatically saved as you progress</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-indigo-600 font-bold mt-1">•</span>
-                    <span>
-                      The test will auto-submit when the timer reaches zero
-                    </span>
+                    <span>The test will auto-submit when the timer reaches zero</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-indigo-600 font-bold mt-1">•</span>
@@ -389,9 +351,7 @@ export default function GiveTest() {
 
             <div className="flex items-center gap-4">
               <div className="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl px-6 py-3">
-                <p className="text-xs font-bold text-gray-600 mb-1">
-                  Time Remaining
-                </p>
+                <p className="text-xs font-bold text-gray-600 mb-1">Time Remaining</p>
                 <p
                   className={`text-2xl font-bold ${
                     timeRemaining < 300 ? "text-red-600" : "text-gray-900"
@@ -442,8 +402,7 @@ export default function GiveTest() {
                       {question.type.replace(/_/g, " ")}
                     </span>
                     <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-lg">
-                      {question.maxMarks}{" "}
-                      {question.maxMarks === 1 ? "mark" : "marks"}
+                      {question.maxMarks} {question.maxMarks === 1 ? "mark" : "marks"}
                     </span>
                   </div>
                   <p className="text-gray-900 font-semibold text-xl leading-relaxed">
@@ -454,11 +413,15 @@ export default function GiveTest() {
 
               {question.image && (
                 <div className="mb-6">
-                  <img
+                  <Image
                     src={question.image}
                     alt="Question"
-                    className="max-w-full rounded-xl border-2 border-gray-300 shadow-md"
-                    onError={(e) => (e.currentTarget.style.display = "none")}
+                    width={800}
+                    height={600}
+                    className="max-w-full h-auto rounded-xl border-2 border-gray-300 shadow-md"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = "none";
+                    }}
                   />
                 </div>
               )}
@@ -480,18 +443,14 @@ export default function GiveTest() {
                         name={`question-${question.id}`}
                         value={optIndex}
                         checked={answers[question.id] === optIndex.toString()}
-                        onChange={(e) =>
-                          handleAnswerChange(question.id, e.target.value)
-                        }
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                         className="w-5 h-5 text-indigo-600"
                       />
                       <div className="flex items-center gap-3 flex-1">
                         <span className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-blue-500 text-white font-bold rounded-lg flex items-center justify-center text-sm">
                           {String.fromCharCode(65 + optIndex)}
                         </span>
-                        <span className="text-gray-900 font-medium">
-                          {option}
-                        </span>
+                        <span className="text-gray-900 font-medium">{option}</span>
                       </div>
                     </label>
                   ))}
@@ -513,14 +472,10 @@ export default function GiveTest() {
                       name={`question-${question.id}`}
                       value="0"
                       checked={answers[question.id] === "0"}
-                      onChange={(e) =>
-                        handleAnswerChange(question.id, e.target.value)
-                      }
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                       className="w-5 h-5 text-green-600"
                     />
-                    <span className="text-xl font-bold text-gray-900">
-                      True
-                    </span>
+                    <span className="text-xl font-bold text-gray-900">True</span>
                   </label>
                   <label
                     className={`flex-1 flex items-center justify-center gap-3 p-6 rounded-xl border-2 cursor-pointer transition-all ${
@@ -534,14 +489,10 @@ export default function GiveTest() {
                       name={`question-${question.id}`}
                       value="1"
                       checked={answers[question.id] === "1"}
-                      onChange={(e) =>
-                        handleAnswerChange(question.id, e.target.value)
-                      }
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                       className="w-5 h-5 text-red-600"
                     />
-                    <span className="text-xl font-bold text-gray-900">
-                      False
-                    </span>
+                    <span className="text-xl font-bold text-gray-900">False</span>
                   </label>
                 </div>
               )}
@@ -552,9 +503,7 @@ export default function GiveTest() {
                   <input
                     type="text"
                     value={answers[question.id] || ""}
-                    onChange={(e) =>
-                      handleAnswerChange(question.id, e.target.value)
-                    }
+                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                     placeholder="Type your answer here..."
                     className="w-full px-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 font-medium"
                   />
@@ -566,9 +515,7 @@ export default function GiveTest() {
                 <div>
                   <textarea
                     value={answers[question.id] || ""}
-                    onChange={(e) =>
-                      handleAnswerChange(question.id, e.target.value)
-                    }
+                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                     placeholder="Type your detailed answer here..."
                     rows={8}
                     className="w-full px-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 font-medium resize-none"
@@ -622,25 +569,21 @@ export default function GiveTest() {
                 </p>
                 <p className="text-gray-600 mb-4">
                   You have answered{" "}
-                  <span className="font-bold text-indigo-600">
-                    {answeredCount}
-                  </span>{" "}
-                  out of <span className="font-bold">{totalQuestions}</span>{" "}
-                  questions.
+                  <span className="font-bold text-indigo-600">{answeredCount}</span> out of{" "}
+                  <span className="font-bold">{totalQuestions}</span> questions.
                 </p>
                 {answeredCount < totalQuestions && (
                   <p className="text-red-600 font-medium text-sm">
                     {totalQuestions - answeredCount} question
-                    {totalQuestions - answeredCount !== 1 ? "s" : ""}{" "}
-                    unanswered!
+                    {totalQuestions - answeredCount !== 1 ? "s" : ""} unanswered!
                   </p>
                 )}
               </div>
 
               <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 mb-6">
                 <p className="text-sm text-gray-700">
-                  <span className="font-bold">Note:</span> Once submitted, you
-                  cannot change your answers.
+                  <span className="font-bold">Note:</span> Once submitted, you cannot change your
+                  answers.
                 </p>
               </div>
 

@@ -1,14 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, ReactElement } from "react";
+import React, { useState, useEffect, ReactElement, useCallback } from "react";
+import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
-import api from "../app/hooks/useApi";
+import api from "../hooks/useApi";
 
-interface Student {
-  id: string;
-  name: string;
-  email: string;
-}
+// Removed unused Student interface
 
 interface Question {
   id: number;
@@ -76,10 +73,10 @@ export default function ClassDetail(): ReactElement {
     options: ["Option A", "Option B", "Option C", "Option D"],
     correctAnswer: 0,
     maxMarks: 1,
-    image: "",
+    image: ""
   });
 
-  const fetchClassDetails = async () => {
+  const fetchClassDetails = useCallback(async () => {
     if (!classId) return;
     setLoading(true);
     setError(null);
@@ -97,12 +94,18 @@ export default function ClassDetail(): ReactElement {
         description: data.description ?? "",
         code: data.code,
         students: Array.isArray(data.students)
-          ? data.students.map((s: any) =>
-              s?.student
-                ? { id: Number(s.student.id), name: s.student.name, email: s.student.email }
-                : { id: Number(s.id), name: s.name, email: s.email }
+          ? data.students.map(
+              (s: {
+                id?: number;
+                name?: string;
+                email?: string;
+                student?: { id: number; name: string; email: string };
+              }) =>
+                s?.student
+                  ? { id: Number(s.student.id), name: s.student.name, email: s.student.email }
+                  : { id: Number(s.id), name: s.name ?? "", email: s.email ?? "" }
             )
-          : [],
+          : []
       };
       setClassData(normalized);
     } catch (err) {
@@ -111,9 +114,9 @@ export default function ClassDetail(): ReactElement {
     } finally {
       setLoading(false);
     }
-  };
+  }, [classId]);
 
-  const fetchTests = async () => {
+  const fetchTests = useCallback(async () => {
     if (!classId) return;
     try {
       const testsRes = await api(`/tests/class/${classId}`, { method: "GET", auth: true });
@@ -126,7 +129,7 @@ export default function ClassDetail(): ReactElement {
     } catch (err) {
       console.error("Failed to fetch tests:", err);
     }
-  };
+  }, [classId]);
 
   const fetchQuestions = async (testId: number) => {
     setLoadingQuestions(true);
@@ -171,15 +174,24 @@ export default function ClassDetail(): ReactElement {
 
     setLoadingQuestions(true);
     try {
-      const payload: any = {
+      interface QuestionCreatePayload {
+        testId: number;
+        text: string;
+        type: Question["type"];
+        maxMarks: number;
+        options?: string[];
+        correctAnswer?: number;
+        image?: string;
+      }
+      const payload: QuestionCreatePayload = {
         testId: selectedTestId,
         text: newQuestion.text.trim(),
         type: newQuestion.type,
-        maxMarks: Number(newQuestion.maxMarks),
+        maxMarks: Number(newQuestion.maxMarks)
       };
 
       if (newQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = newQuestion.options?.filter(opt => opt.trim() !== "") || [];
+        payload.options = newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(newQuestion.correctAnswer);
       }
 
@@ -195,7 +207,7 @@ export default function ClassDetail(): ReactElement {
       const res = await api(`/tests/${selectedTestId}/questions`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ questions: [payload] }),
+        body: JSON.stringify({ questions: [payload] })
       });
 
       if (!res.ok) {
@@ -213,7 +225,7 @@ export default function ClassDetail(): ReactElement {
         options: ["Option A", "Option B", "Option C", "Option D"],
         correctAnswer: 0,
         maxMarks: 1,
-        image: "",
+        image: ""
       });
       await fetchQuestions(selectedTestId);
     } catch (err) {
@@ -228,14 +240,22 @@ export default function ClassDetail(): ReactElement {
 
     setLoadingQuestions(true);
     try {
-      const payload: any = {
+      interface QuestionUpdatePayload {
+        text: string;
+        type: Question["type"];
+        maxMarks: number;
+        options?: string[];
+        correctAnswer?: number;
+        image?: string;
+      }
+      const payload: QuestionUpdatePayload = {
         text: editingQuestion.text.trim(),
         type: editingQuestion.type,
-        maxMarks: Number(editingQuestion.maxMarks),
+        maxMarks: Number(editingQuestion.maxMarks)
       };
 
       if (editingQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = editingQuestion.options?.filter(opt => opt.trim() !== "") || [];
+        payload.options = editingQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(editingQuestion.correctAnswer);
       }
 
@@ -251,7 +271,7 @@ export default function ClassDetail(): ReactElement {
       const res = await api(`/tests/questions/${editingQuestion.id}`, {
         method: "PATCH",
         auth: true,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -276,7 +296,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const res = await api(`/tests/questions/${questionId}`, {
         method: "DELETE",
-        auth: true,
+        auth: true
       });
 
       if (!res.ok) {
@@ -317,13 +337,13 @@ export default function ClassDetail(): ReactElement {
         duration: Number(editingTest.duration),
         startAt: editingTest.startAt,
         endAt: editingTest.endAt,
-        status: editingTest.status,
+        status: editingTest.status
       };
 
       const res = await api(`/tests/${editingTest.id}`, {
         method: "PATCH",
         auth: true,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -343,12 +363,13 @@ export default function ClassDetail(): ReactElement {
   };
 
   const handleDeleteTest = async (testId: number) => {
-    if (!confirm("Are you sure you want to delete this test? This action cannot be undone.")) return;
+    if (!confirm("Are you sure you want to delete this test? This action cannot be undone."))
+      return;
 
     try {
       const res = await api(`/tests/${testId}`, {
         method: "DELETE",
-        auth: true,
+        auth: true
       });
 
       if (!res.ok) {
@@ -366,7 +387,7 @@ export default function ClassDetail(): ReactElement {
   useEffect(() => {
     fetchClassDetails();
     fetchTests();
-  }, [classId]);
+  }, [fetchClassDetails, fetchTests]);
 
   if (loading) {
     return (
@@ -420,10 +441,12 @@ export default function ClassDetail(): ReactElement {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-3">{classData.name}</h1>
-                <p className="text-gray-600 text-lg mb-4">{classData.description || "No description provided"}</p>
+                <p className="text-gray-600 text-lg mb-4">
+                  {classData.description || "No description provided"}
+                </p>
                 <div className="flex items-center gap-4 flex-wrap">
                   <div className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl shadow-md">
-                  Code: {classData.code}
+                    Code: {classData.code}
                   </div>
                   <div className="px-4 py-2 bg-green-100 text-green-800 font-bold rounded-xl border-2 border-green-300">
                     {classData.students?.length || 0} Students
@@ -494,7 +517,10 @@ export default function ClassDetail(): ReactElement {
                       👥
                     </div>
                     <p className="text-gray-600 font-bold text-lg">No students enrolled yet</p>
-                    <p className="text-gray-500 mt-2">Share class code: <span className="font-bold text-indigo-600">{classData.code}</span></p>
+                    <p className="text-gray-500 mt-2">
+                      Share class code:{" "}
+                      <span className="font-bold text-indigo-600">{classData.code}</span>
+                    </p>
                   </div>
                 )}
               </div>
@@ -525,12 +551,17 @@ export default function ClassDetail(): ReactElement {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <h4 className="text-2xl font-bold text-gray-900">{test.title}</h4>
-                              <span className={`px-3 py-1 text-xs font-bold rounded-lg ${
-                                test.status === "ACTIVE" ? "bg-green-100 text-green-800" :
-                                test.status === "DRAFT" ? "bg-gray-100 text-gray-800" :
-                                test.status === "COMPLETED" ? "bg-blue-100 text-blue-800" :
-                                "bg-purple-100 text-purple-800"
-                              }`}>
+                              <span
+                                className={`px-3 py-1 text-xs font-bold rounded-lg ${
+                                  test.status === "ACTIVE"
+                                    ? "bg-green-100 text-green-800"
+                                    : test.status === "DRAFT"
+                                    ? "bg-gray-100 text-gray-800"
+                                    : test.status === "COMPLETED"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-purple-100 text-purple-800"
+                                }`}
+                              >
                                 {test.status}
                               </span>
                             </div>
@@ -628,12 +659,16 @@ export default function ClassDetail(): ReactElement {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Duration (minutes)</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Duration (minutes)
+                  </label>
                   <input
                     type="number"
                     min="1"
                     value={editingTest.duration}
-                    onChange={(e) => setEditingTest({ ...editingTest, duration: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setEditingTest({ ...editingTest, duration: Number(e.target.value) })
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
                   />
                 </div>
@@ -641,19 +676,22 @@ export default function ClassDetail(): ReactElement {
                   <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
                   <select
                     value={editingTest.status}
-                    onChange={(e) => setEditingTest({ ...editingTest, status: e.target.value as Test["status"] })}
+                    onChange={(e) =>
+                      setEditingTest({ ...editingTest, status: e.target.value as Test["status"] })
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900 bg-white"
                   >
                     <option value="DRAFT">Draft</option>
                     <option value="ACTIVE">Active</option>
-                    <option value="COMPLETED">Completed</option>
-                    <option value="ARCHIVED">Archived</option>
+                    <option value="CLOSED">Closed</option>
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Start Date & Time</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Start Date & Time
+                  </label>
                   <input
                     type="datetime-local"
                     value={editingTest.startAt?.slice(0, 16)}
@@ -662,7 +700,9 @@ export default function ClassDetail(): ReactElement {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">End Date & Time</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    End Date & Time
+                  </label>
                   <input
                     type="datetime-local"
                     value={editingTest.endAt?.slice(0, 16)}
@@ -700,7 +740,9 @@ export default function ClassDetail(): ReactElement {
             </div>
             <div className="p-8 space-y-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Question Text *</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Question Text *
+                </label>
                 <textarea
                   value={newQuestion.text}
                   onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })}
@@ -712,17 +754,34 @@ export default function ClassDetail(): ReactElement {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Question Type *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Question Type *
+                  </label>
                   <select
                     value={newQuestion.type}
                     onChange={(e) => {
                       const type = e.target.value as Question["type"];
                       if (type === "TRUE_FALSE") {
-                        setNewQuestion({ ...newQuestion, type, options: ["True", "False"], correctAnswer: 0 });
+                        setNewQuestion({
+                          ...newQuestion,
+                          type,
+                          options: ["True", "False"],
+                          correctAnswer: 0
+                        });
                       } else if (type === "MULTIPLE_CHOICE") {
-                        setNewQuestion({ ...newQuestion, type, options: ["Option A", "Option B", "Option C", "Option D"], correctAnswer: 0 });
+                        setNewQuestion({
+                          ...newQuestion,
+                          type,
+                          options: ["Option A", "Option B", "Option C", "Option D"],
+                          correctAnswer: 0
+                        });
                       } else {
-                        setNewQuestion({ ...newQuestion, type, options: undefined, correctAnswer: undefined });
+                        setNewQuestion({
+                          ...newQuestion,
+                          type,
+                          options: undefined,
+                          correctAnswer: undefined
+                        });
                       }
                     }}
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white"
@@ -734,19 +793,25 @@ export default function ClassDetail(): ReactElement {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Maximum Marks *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Maximum Marks *
+                  </label>
                   <input
                     type="number"
                     min="1"
                     value={newQuestion.maxMarks}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, maxMarks: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setNewQuestion({ ...newQuestion, maxMarks: Number(e.target.value) })
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Image URL (Optional)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Image URL (Optional)
+                </label>
                 <input
                   type="text"
                   value={newQuestion.image || ""}
@@ -758,7 +823,9 @@ export default function ClassDetail(): ReactElement {
 
               {newQuestion.type === "MULTIPLE_CHOICE" && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">
+                    Answer Options *
+                  </label>
                   <div className="space-y-3">
                     {newQuestion.options?.map((opt, i) => (
                       <div key={i} className="flex items-center gap-3">
@@ -790,7 +857,16 @@ export default function ClassDetail(): ReactElement {
                           <button
                             onClick={() => {
                               const opts = newQuestion.options?.filter((_, idx) => idx !== i);
-                              setNewQuestion({ ...newQuestion, options: opts, correctAnswer: newQuestion.correctAnswer === i ? 0 : (newQuestion.correctAnswer! > i ? newQuestion.correctAnswer! - 1 : newQuestion.correctAnswer) });
+                              setNewQuestion({
+                                ...newQuestion,
+                                options: opts,
+                                correctAnswer:
+                                  newQuestion.correctAnswer === i
+                                    ? 0
+                                    : newQuestion.correctAnswer! > i
+                                    ? newQuestion.correctAnswer! - 1
+                                    : newQuestion.correctAnswer
+                              });
                             }}
                             className="px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl font-bold border-2 border-red-200"
                           >
@@ -802,7 +878,10 @@ export default function ClassDetail(): ReactElement {
                   </div>
                   <button
                     onClick={() => {
-                      const opts = [...(newQuestion.options || []), `Option ${String.fromCharCode(65 + (newQuestion.options?.length || 0))}`];
+                      const opts = [
+                        ...(newQuestion.options || []),
+                        `Option ${String.fromCharCode(65 + (newQuestion.options?.length || 0))}`
+                      ];
                       setNewQuestion({ ...newQuestion, options: opts });
                     }}
                     className="mt-3 px-5 py-2.5 text-green-600 hover:bg-green-100 rounded-xl font-bold border-2 border-green-200"
@@ -814,7 +893,9 @@ export default function ClassDetail(): ReactElement {
 
               {newQuestion.type === "TRUE_FALSE" && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">
+                    Correct Answer *
+                  </label>
                   <div className="flex gap-4">
                     <label className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-green-50 border-2 border-green-300 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
                       <input
@@ -843,7 +924,8 @@ export default function ClassDetail(): ReactElement {
               {(newQuestion.type === "SHORT_ANSWER" || newQuestion.type === "LONG_ANSWER") && (
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
                   <p className="text-sm text-blue-800 font-medium">
-                    ℹ️ {newQuestion.type === "SHORT_ANSWER" 
+                    ℹ️{" "}
+                    {newQuestion.type === "SHORT_ANSWER"
                       ? "Students will provide a brief text answer. Manual grading required."
                       : "Students will provide a detailed text answer. Manual grading required."}
                   </p>
@@ -862,7 +944,7 @@ export default function ClassDetail(): ReactElement {
                       options: ["Option A", "Option B", "Option C", "Option D"],
                       correctAnswer: 0,
                       maxMarks: 1,
-                      image: "",
+                      image: ""
                     });
                   }}
                   className="flex-1 px-6 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all text-lg"
@@ -899,7 +981,7 @@ export default function ClassDetail(): ReactElement {
                 ✕
               </button>
             </div>
-            
+
             <div className="p-8 overflow-y-auto flex-1">
               {loadingQuestions ? (
                 <div className="flex flex-col items-center justify-center py-20">
@@ -915,7 +997,9 @@ export default function ClassDetail(): ReactElement {
                     ❓
                   </div>
                   <p className="text-gray-600 font-bold text-lg">No questions added yet</p>
-                  <p className="text-gray-500 mt-2 mb-6">Add questions to make this test complete</p>
+                  <p className="text-gray-500 mt-2 mb-6">
+                    Add questions to make this test complete
+                  </p>
                   <button
                     onClick={() => {
                       setShowQuestionsModal(false);
@@ -951,14 +1035,18 @@ export default function ClassDetail(): ReactElement {
                           </div>
                         </div>
                       </div>
-                      
+
                       {q.image && (
                         <div className="mb-4">
-                          <img
+                          <Image
                             src={q.image}
                             alt="Question"
-                            className="max-w-sm rounded-xl border-2 border-gray-300"
-                            onError={(e) => e.currentTarget.style.display = "none"}
+                            width={400}
+                            height={300}
+                            className="max-w-sm h-auto rounded-xl border-2 border-gray-300"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = "none";
+                            }}
                           />
                         </div>
                       )}
@@ -1019,7 +1107,9 @@ export default function ClassDetail(): ReactElement {
             </div>
             <div className="p-8 space-y-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Question Text *</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Question Text *
+                </label>
                 <textarea
                   value={editingQuestion.text}
                   onChange={(e) => setEditingQuestion({ ...editingQuestion, text: e.target.value })}
@@ -1030,7 +1120,9 @@ export default function ClassDetail(): ReactElement {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Question Type</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Question Type
+                  </label>
                   <select
                     value={editingQuestion.type}
                     disabled
@@ -1043,23 +1135,31 @@ export default function ClassDetail(): ReactElement {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Maximum Marks *</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Maximum Marks *
+                  </label>
                   <input
                     type="number"
                     min="1"
                     value={editingQuestion.maxMarks}
-                    onChange={(e) => setEditingQuestion({ ...editingQuestion, maxMarks: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setEditingQuestion({ ...editingQuestion, maxMarks: Number(e.target.value) })
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Image URL (Optional)</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Image URL (Optional)
+                </label>
                 <input
                   type="text"
                   value={editingQuestion.image || ""}
-                  onChange={(e) => setEditingQuestion({ ...editingQuestion, image: e.target.value })}
+                  onChange={(e) =>
+                    setEditingQuestion({ ...editingQuestion, image: e.target.value })
+                  }
                   placeholder="https://example.com/image.jpg"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
                 />
@@ -1067,7 +1167,9 @@ export default function ClassDetail(): ReactElement {
 
               {editingQuestion.type === "MULTIPLE_CHOICE" && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">
+                    Answer Options
+                  </label>
                   <div className="space-y-3">
                     {editingQuestion.options?.map((opt, i) => (
                       <div key={i} className="flex items-center gap-3">
@@ -1089,7 +1191,9 @@ export default function ClassDetail(): ReactElement {
                             type="radio"
                             name="editCorrectAnswer"
                             checked={editingQuestion.correctAnswer === i}
-                            onChange={() => setEditingQuestion({ ...editingQuestion, correctAnswer: i })}
+                            onChange={() =>
+                              setEditingQuestion({ ...editingQuestion, correctAnswer: i })
+                            }
                             className="w-4 h-4 text-green-600"
                           />
                           <span className="text-sm font-bold text-gray-700">Correct</span>
@@ -1102,14 +1206,18 @@ export default function ClassDetail(): ReactElement {
 
               {editingQuestion.type === "TRUE_FALSE" && (
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-3">
+                    Correct Answer
+                  </label>
                   <div className="flex gap-4">
                     <label className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-green-50 border-2 border-green-300 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
                       <input
                         type="radio"
                         name="editTfAnswer"
                         checked={editingQuestion.correctAnswer === 0}
-                        onChange={() => setEditingQuestion({ ...editingQuestion, correctAnswer: 0 })}
+                        onChange={() =>
+                          setEditingQuestion({ ...editingQuestion, correctAnswer: 0 })
+                        }
                         className="w-5 h-5 text-green-600"
                       />
                       <span className="text-lg font-bold text-gray-900">True</span>
@@ -1119,7 +1227,9 @@ export default function ClassDetail(): ReactElement {
                         type="radio"
                         name="editTfAnswer"
                         checked={editingQuestion.correctAnswer === 1}
-                        onChange={() => setEditingQuestion({ ...editingQuestion, correctAnswer: 1 })}
+                        onChange={() =>
+                          setEditingQuestion({ ...editingQuestion, correctAnswer: 1 })
+                        }
                         className="w-5 h-5 text-red-600"
                       />
                       <span className="text-lg font-bold text-gray-900">False</span>

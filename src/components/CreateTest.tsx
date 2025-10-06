@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import api from "../app/hooks/useApi";
+import Image from "next/image";
+import { useSearchParams } from "next/navigation";
+import api from "../hooks/useApi";
 
 interface Question {
   testId?: number;
@@ -21,12 +22,12 @@ interface TestData {
   duration: number;
   startAt: string;
   endAt: string;
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  status: "DRAFT" | "ACTIVE" | "CLOSED";
 }
 
 export default function CreateTestPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  // Removed unused router (was not referenced elsewhere)
   const classIdFromUrl = searchParams.get("classId");
 
   const [formData, setFormData] = useState<TestData>({
@@ -36,14 +37,14 @@ export default function CreateTestPage() {
     duration: 60,
     startAt: "",
     endAt: "",
-    status: "DRAFT",
+    status: "DRAFT"
   });
 
   const [loading, setLoading] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
   const [createdTestId, setCreatedTestId] = useState<number | null>(null);
 
-  const handleChange = (key: keyof TestData, value: any) => {
+  const handleChange = <K extends keyof TestData>(key: K, value: TestData[K]) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -74,13 +75,13 @@ export default function CreateTestPage() {
         duration: Number(formData.duration),
         startAt: formData.startAt,
         endAt: formData.endAt,
-        status: formData.status,
+        status: formData.status
       };
 
       const res = await api("/tests", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -90,7 +91,9 @@ export default function CreateTestPage() {
 
       const data = await res.json();
       setCreatedTestId(data.id);
-      alert(`✅ Test created successfully!\n\nTest ID: ${data.id}\n\nYou can now add questions to your test.`);
+      alert(
+        `✅ Test created successfully!\n\nTest ID: ${data.id}\n\nYou can now add questions to your test.`
+      );
       setShowQuestions(true);
     } catch (err) {
       console.error("Failed to create test:", err);
@@ -128,7 +131,10 @@ export default function CreateTestPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900">Test Created Successfully!</h3>
-                  <p className="text-sm text-gray-600">Test ID: <span className="font-mono font-bold text-green-700">#{createdTestId}</span></p>
+                  <p className="text-sm text-gray-600">
+                    Test ID:{" "}
+                    <span className="font-mono font-bold text-green-700">#{createdTestId}</span>
+                  </p>
                 </div>
               </div>
               <button
@@ -261,8 +267,8 @@ export default function CreateTestPage() {
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium"
               >
                 <option value="DRAFT">Draft - Not visible to students</option>
-                <option value="PUBLISHED">Published - Visible to students</option>
-                <option value="ARCHIVED">Archived - Read-only</option>
+                <option value="ACTIVE">Active - Visible to students</option>
+                <option value="CLOSED">Closed - Read-only</option>
               </select>
             </div>
 
@@ -307,11 +313,11 @@ function TestQuestionsManager({ testId }: { testId: number }) {
     options: ["Option A", "Option B", "Option C", "Option D"],
     correctAnswer: 0,
     maxMarks: 1,
-    image: "",
+    image: ""
   });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (key: keyof Question, value: any) => {
+  const handleChange = <K extends keyof Question>(key: K, value: Question[K]) => {
     setNewQuestion((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -335,15 +341,20 @@ function TestQuestionsManager({ testId }: { testId: number }) {
 
     setLoading(true);
     try {
-      const payload: any = {
+      const payload: Required<Pick<Question, "text" | "type" | "maxMarks">> & {
+        testId: number;
+        options?: string[];
+        correctAnswer?: number;
+        image?: string;
+      } = {
         testId,
         text: newQuestion.text.trim(),
         type: newQuestion.type,
-        maxMarks: Number(newQuestion.maxMarks),
+        maxMarks: Number(newQuestion.maxMarks)
       };
 
       if (newQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = newQuestion.options?.filter(opt => opt.trim() !== "") || [];
+        payload.options = newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(newQuestion.correctAnswer);
       }
 
@@ -359,7 +370,7 @@ function TestQuestionsManager({ testId }: { testId: number }) {
       const res = await api(`/tests/${testId}/questions`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ questions: [payload] }),
+        body: JSON.stringify({ questions: [payload] })
       });
 
       if (!res.ok) {
@@ -368,10 +379,10 @@ function TestQuestionsManager({ testId }: { testId: number }) {
       }
 
       alert("✅ Question added successfully!");
-      
+
       // Add to local state
-      setQuestions(prev => [...prev, { ...payload, testId }]);
-      
+      setQuestions((prev) => [...prev, { ...payload, testId }]);
+
       // Reset form
       setNewQuestion({
         text: "",
@@ -379,7 +390,7 @@ function TestQuestionsManager({ testId }: { testId: number }) {
         options: ["Option A", "Option B", "Option C", "Option D"],
         correctAnswer: 0,
         maxMarks: 1,
-        image: "",
+        image: ""
       });
     } catch (err) {
       console.error("Failed to add question:", err);
@@ -428,7 +439,7 @@ function TestQuestionsManager({ testId }: { testId: number }) {
                 onChange={(e) => {
                   const type = e.target.value as Question["type"];
                   handleChange("type", type);
-                  
+
                   // Reset options based on type
                   if (type === "TRUE_FALSE") {
                     handleChange("options", ["True", "False"]);
@@ -464,7 +475,9 @@ function TestQuestionsManager({ testId }: { testId: number }) {
 
           {/* Image URL (Optional) */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Image URL (Optional)</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Image URL (Optional)
+            </label>
             <input
               type="text"
               placeholder="https://example.com/image.jpg"
@@ -528,7 +541,10 @@ function TestQuestionsManager({ testId }: { testId: number }) {
               <button
                 type="button"
                 onClick={() => {
-                  const newOpts = [...(newQuestion.options || []), `Option ${String.fromCharCode(65 + (newQuestion.options?.length || 0))}`];
+                  const newOpts = [
+                    ...(newQuestion.options || []),
+                    `Option ${String.fromCharCode(65 + (newQuestion.options?.length || 0))}`
+                  ];
                   handleChange("options", newOpts);
                 }}
                 className="mt-3 px-5 py-2.5 text-orange-600 hover:bg-orange-100 rounded-xl font-bold transition-colors border-2 border-orange-200"
@@ -572,7 +588,7 @@ function TestQuestionsManager({ testId }: { testId: number }) {
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
               <p className="text-sm text-blue-800 font-medium flex items-center gap-2">
                 <span className="text-xl">ℹ️</span>
-                {newQuestion.type === "SHORT_ANSWER" 
+                {newQuestion.type === "SHORT_ANSWER"
                   ? "Students will provide a brief text answer. Manual grading required."
                   : "Students will provide a detailed text answer. Manual grading required."}
               </p>
@@ -657,12 +673,14 @@ function TestQuestionsManager({ testId }: { testId: number }) {
                 )}
                 {q.image && (
                   <div className="mt-3">
-                    <img
+                    <Image
                       src={q.image}
                       alt="Question illustration"
-                      className="max-w-sm rounded-lg border-2 border-gray-300"
+                      width={400}
+                      height={300}
+                      className="max-w-sm h-auto rounded-lg border-2 border-gray-300"
                       onError={(e) => {
-                        e.currentTarget.style.display = "none";
+                        (e.target as HTMLImageElement).style.display = "none";
                       }}
                     />
                   </div>

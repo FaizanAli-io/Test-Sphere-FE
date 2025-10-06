@@ -1,9 +1,9 @@
 "use client";
 
+import api from "../hooks/useApi";
 import { useEffect, useState } from "react";
-import { Copy, LogOut, BookOpen, FileText, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
-import api from "../app/hooks/useApi";
+import { Copy, BookOpen, FileText, Users } from "lucide-react";
 
 interface ClassData {
   id: number;
@@ -36,15 +36,17 @@ export default function StudentPortal() {
   const [showTestsModal, setShowTestsModal] = useState(false);
   const [testsLoading, setTestsLoading] = useState(false);
   const [testsForClass, setTestsForClass] = useState<number | null>(null);
-  const [tests, setTests] = useState<Array<{
-    id: number;
-    title: string;
-    description?: string;
-    duration?: number;
-    startAt?: string;
-    endAt?: string;
-    status?: string;
-  }>>([]);
+  const [tests, setTests] = useState<
+    Array<{
+      id: number;
+      title: string;
+      description?: string;
+      duration?: number;
+      startAt?: string;
+      endAt?: string;
+      status?: string;
+    }>
+  >([]);
 
   const fetchClasses = async () => {
     setLoading(true);
@@ -52,7 +54,7 @@ export default function StudentPortal() {
     try {
       const response = await api("/classes", {
         method: "GET",
-        auth: true,
+        auth: true
       });
 
       if (!response.ok) {
@@ -62,43 +64,45 @@ export default function StudentPortal() {
 
       const data = await response.json();
       const normalized: ClassData[] = Array.isArray(data)
-        ? data.map((item: any) => {
-            if (item && typeof item === "object" && !("class" in item)) {
+        ? (data
+            .map((raw: unknown) => {
+              if (!raw || typeof raw !== "object") return null;
+              const value = raw as Record<string, unknown>;
+              // Case 1: shape already a class
+              if (!("class" in value)) {
+                return {
+                  id: Number(value.id),
+                  name: value.name as string,
+                  description: value.description as string | undefined,
+                  code: value.code as string,
+                  teacherId: Number(value.teacherId),
+                  teacher: value.teacher as ClassData["teacher"],
+                  studentCount: Array.isArray(value.students) ? value.students.length : undefined,
+                  createdAt: value.createdAt as string | undefined
+                } as ClassData;
+              }
+              // Case 2: nested under 'class'
+              const cls = value.class as Record<string, unknown> | undefined;
+              if (!cls) return null;
               return {
-                id: Number(item.id),
-                name: item.name,
-                description: item.description,
-                code: item.code,
-                teacherId: Number(item.teacherId),
-                teacher: item.teacher ?? undefined,
-                studentCount: Array.isArray(item.students)
-                  ? item.students.length
+                id: Number(cls.id),
+                name: cls.name as string,
+                description: cls.description as string | undefined,
+                code: cls.code as string,
+                teacherId: Number(cls.teacherId),
+                teacher: cls.teacher as ClassData["teacher"],
+                studentCount: Array.isArray(cls.students as unknown[])
+                  ? (cls.students as unknown[]).length
                   : undefined,
-                createdAt: item.createdAt,
+                createdAt: cls.createdAt as string | undefined
               } as ClassData;
-            }
-
-            const cls = item?.class ?? {};
-            return {
-              id: Number(cls.id),
-              name: cls.name,
-              description: cls.description,
-              code: cls.code,
-              teacherId: Number(cls.teacherId),
-              teacher: cls.teacher ?? undefined,
-              studentCount: Array.isArray(cls.students)
-                ? cls.students.length
-                : undefined,
-              createdAt: cls.createdAt,
-            } as ClassData;
-          })
+            })
+            .filter(Boolean) as ClassData[])
         : [];
 
       setClasses(normalized.filter((c) => Number.isFinite(c.id)));
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -110,7 +114,7 @@ export default function StudentPortal() {
     try {
       const response = await api(`/classes/${id}`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
 
       if (!response.ok) {
@@ -126,17 +130,13 @@ export default function StudentPortal() {
         code: data.code,
         teacherId: Number(data.teacherId),
         teacher: data.teacher ?? undefined,
-        studentCount: Array.isArray(data.students)
-          ? data.students.length
-          : undefined,
-        createdAt: data.createdAt,
+        studentCount: Array.isArray(data.students) ? data.students.length : undefined,
+        createdAt: data.createdAt
       };
       setSelectedClass(normalized);
       setShowDetailsModal(true);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setLoadingDetails(false);
     }
@@ -156,15 +156,14 @@ export default function StudentPortal() {
       const response = await api("/classes/join", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ code: classCode.trim().toUpperCase() }),
+        body: JSON.stringify({ code: classCode.trim().toUpperCase() })
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to join class");
+        const joinErr = await response.json();
+        throw new Error(joinErr.message || "Failed to join class");
       }
-
-      const data = await response.json();
+      await response.json(); // response body ignored intentionally
       setSuccess("Successfully joined the class!");
       setClassCode("");
       setShowJoinModal(false);
@@ -174,9 +173,7 @@ export default function StudentPortal() {
         fetchClasses();
       }, 2000);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setJoining(false);
     }
@@ -189,7 +186,7 @@ export default function StudentPortal() {
     try {
       const response = await api(`/classes/${id}/leave`, {
         method: "POST",
-        auth: true,
+        auth: true
       });
 
       if (!response.ok) {
@@ -202,9 +199,7 @@ export default function StudentPortal() {
 
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     }
   };
 
@@ -235,18 +230,55 @@ export default function StudentPortal() {
         throw new Error(data.message || "Failed to fetch tests for class");
       }
       const data = await response.json();
+      interface RawTest {
+        id?: number;
+        title?: string;
+        description?: string;
+        duration?: number;
+        startAt?: string;
+        endAt?: string;
+        status?: string;
+      }
       const normalized = Array.isArray(data)
-        ? data.map((t: any) => ({
-            id: Number(t.id),
-            title: t.title,
-            description: t.description,
-            duration: typeof t.duration === "number" ? t.duration : undefined,
-            startAt: t.startAt,
-            endAt: t.endAt,
-            status: t.status,
-          }))
+        ? (data as unknown[])
+            .map((t) => {
+              if (!t || typeof t !== "object") return null;
+              const obj = t as RawTest;
+              const id = Number(obj.id);
+              if (!Number.isFinite(id)) return null;
+              return {
+                id,
+                title: obj.title ?? "",
+                description: obj.description,
+                duration: typeof obj.duration === "number" ? obj.duration : undefined,
+                startAt: obj.startAt,
+                endAt: obj.endAt,
+                status: obj.status
+              } as {
+                id: number;
+                title: string;
+                description?: string;
+                duration?: number;
+                startAt?: string;
+                endAt?: string;
+                status?: string;
+              };
+            })
+            .filter(
+              (
+                v
+              ): v is {
+                id: number;
+                title: string;
+                description?: string;
+                duration?: number;
+                startAt?: string;
+                endAt?: string;
+                status?: string;
+              } => v !== null
+            )
         : [];
-      setTests(normalized.filter((t) => Number.isFinite(t.id)));
+      setTests(normalized);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
       setTests([]);
@@ -281,12 +313,8 @@ export default function StudentPortal() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
             <BookOpen className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
-            Student Portal
-          </h1>
-          <p className="text-lg text-gray-600">
-            Manage your classes and assignments
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">Student Portal</h1>
+          <p className="text-lg text-gray-600">Manage your classes and assignments</p>
         </div>
 
         {success && (
@@ -317,9 +345,7 @@ export default function StudentPortal() {
             </p>
             <div className="text-indigo-600 font-semibold flex items-center gap-2">
               Join Now
-              <span className="group-hover:translate-x-2 transition-transform duration-300">
-                →
-              </span>
+              <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
           </button>
 
@@ -339,9 +365,7 @@ export default function StudentPortal() {
             </p>
             <div className="text-orange-600 font-semibold flex items-center gap-2">
               Start Now
-              <span className="group-hover:translate-x-2 transition-transform duration-300">
-                →
-              </span>
+              <span className="group-hover:translate-x-2 transition-transform duration-300">→</span>
             </div>
           </button>
         </div>
@@ -379,11 +403,7 @@ export default function StudentPortal() {
                   >
                     <Copy
                       size={18}
-                      className={
-                        copiedCode === cls.id
-                          ? "text-green-500"
-                          : "text-gray-600"
-                      }
+                      className={copiedCode === cls.id ? "text-green-500" : "text-gray-600"}
                     />
                   </button>
                 </div>
@@ -395,13 +415,10 @@ export default function StudentPortal() {
                 <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                   <span>
                     Teacher:{" "}
-                    <span className="font-medium text-gray-700">
-                      {cls.teacher?.name || "N/A"}
-                    </span>
+                    <span className="font-medium text-gray-700">{cls.teacher?.name || "N/A"}</span>
                   </span>
                   <span>
-                    {cls.studentCount || 0}{" "}
-                    {cls.studentCount === 1 ? "student" : "students"}
+                    {cls.studentCount || 0} {cls.studentCount === 1 ? "student" : "students"}
                   </span>
                 </div>
 
@@ -436,9 +453,7 @@ export default function StudentPortal() {
       {showJoinModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all duration-300">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-              Join a Class
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Join a Class</h2>
 
             {error && (
               <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded">
@@ -478,14 +493,10 @@ export default function StudentPortal() {
       {showDetailsModal && selectedClass && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg transform transition-all duration-300">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              {selectedClass.name}
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">{selectedClass.name}</h2>
 
             {loadingDetails ? (
-              <div className="text-gray-600 text-center py-4">
-                Loading details...
-              </div>
+              <div className="text-gray-600 text-center py-4">Loading details...</div>
             ) : (
               <>
                 <p className="text-gray-600 mb-3">
@@ -494,21 +505,15 @@ export default function StudentPortal() {
 
                 <div className="border-t pt-3 text-sm text-gray-600 space-y-1">
                   <p>
-                    <span className="font-semibold text-gray-800">
-                      Class Code:
-                    </span>{" "}
+                    <span className="font-semibold text-gray-800">Class Code:</span>{" "}
                     {selectedClass.code}
                   </p>
                   <p>
-                    <span className="font-semibold text-gray-800">
-                      Teacher:
-                    </span>{" "}
+                    <span className="font-semibold text-gray-800">Teacher:</span>{" "}
                     {selectedClass.teacher?.name || "N/A"}
                   </p>
                   <p>
-                    <span className="font-semibold text-gray-800">
-                      Students:
-                    </span>{" "}
+                    <span className="font-semibold text-gray-800">Students:</span>{" "}
                     {selectedClass.studentCount || 0}
                   </p>
                 </div>
@@ -525,9 +530,7 @@ export default function StudentPortal() {
               <button
                 onClick={() =>
                   router.push(
-                    `/class/${selectedClass.id}?name=${encodeURIComponent(
-                      selectedClass.name
-                    )}`
+                    `/class/${selectedClass.id}?name=${encodeURIComponent(selectedClass.name)}`
                   )
                 }
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
@@ -568,11 +571,16 @@ export default function StudentPortal() {
             {testsLoading ? (
               <div className="text-center text-gray-600 py-10">Loading tests…</div>
             ) : tests.length === 0 ? (
-              <div className="text-center text-gray-500 py-10">No tests available for this class.</div>
+              <div className="text-center text-gray-500 py-10">
+                No tests available for this class.
+              </div>
             ) : (
               <div className="space-y-4 max-h-[60vh] overflow-auto pr-1">
                 {tests.map((t) => (
-                  <div key={t.id} className="border rounded-xl p-4 bg-white shadow-sm flex items-center justify-between">
+                  <div
+                    key={t.id}
+                    className="border rounded-xl p-4 bg-white shadow-sm flex items-center justify-between"
+                  >
                     <div>
                       <h3 className="text-lg font-bold text-gray-900">{t.title}</h3>
                       {t.description && (

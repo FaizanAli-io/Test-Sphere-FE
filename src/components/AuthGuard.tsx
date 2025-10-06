@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -8,8 +8,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
 
-  // Public routes that don’t need authentication
-  const publicRoutes = ["/", "/login", "/signup"];
+  // Public routes that don’t need authentication (memoized to keep stable reference)
+  const publicRoutes = useMemo(() => ["/", "/login", "/signup"], []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -20,7 +20,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, [pathname, router]);
+  }, [pathname, router, publicRoutes]);
 
   if (loading) {
     return (

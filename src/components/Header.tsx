@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import React, { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut, GraduationCap, Menu, X } from "lucide-react";
 
@@ -55,8 +55,14 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Desktop logout */}
+        {/* Desktop actions */}
         <nav className="hidden md:flex items-center space-x-4">
+          <button
+            onClick={() => router.push("/prepguru")}
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all font-semibold shadow-sm hover:shadow-md"
+          >
+            <span className="text-sm">PrepGuru</span>
+          </button>
           <button
             onClick={handleSignOut}
             className="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
@@ -82,7 +88,16 @@ export default function Header() {
       {/* Mobile Menu Options */}
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
-          <div className="px-6 py-4 space-y-2">
+          <div className="px-6 py-4 space-y-3">
+            <button
+              onClick={() => {
+                setIsMenuOpen(false);
+                router.push("/prepguru");
+              }}
+              className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all font-semibold"
+            >
+              PrepGuru
+            </button>
             <button
               onClick={() => {
                 setIsMenuOpen(false);
