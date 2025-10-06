@@ -1,5 +1,5 @@
-export const BASE_API_URL = "http://localhost:5000";
-// export const BASE_API_URL = "https://test-sphere-be.onrender.com";
+// export const BASE_API_URL = "http://localhost:5000";
+export const BASE_API_URL = "https://test-sphere-be.onrender.com";
 
 export interface ExtendedRequestInit extends RequestInit {
   auth?: boolean;
