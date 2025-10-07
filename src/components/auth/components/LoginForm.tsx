@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import api from "../../../hooks/useApi";
+import GoogleSignIn from "./GoogleSignIn";
 import { extractErrorMessage } from "../../../utils/error";
 
 interface RouterLike {
@@ -30,7 +31,7 @@ export default function LoginForm({
   setSuccess,
   setLoading,
   onForgotPassword,
-  router
+  router,
 }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -42,7 +43,7 @@ export default function LoginForm({
     try {
       const res = await api("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
 
       const data: {
@@ -72,8 +73,25 @@ export default function LoginForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <GoogleSignIn
+        mode="login"
+        setError={setError}
+        setSuccess={setSuccess}
+        setLoading={setLoading}
+        router={router}
+      />
+
+      <div className="relative flex items-center justify-center">
+        <div className="absolute w-full border-t border-gray-300"></div>
+        <div className="relative bg-white px-4">
+          <span className="text-sm text-gray-500">Or continue with email</span>
+        </div>
+      </div>
+
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Email Address
+        </label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -89,7 +107,9 @@ export default function LoginForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Password
+        </label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -107,7 +127,11 @@ export default function LoginForm({
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>
