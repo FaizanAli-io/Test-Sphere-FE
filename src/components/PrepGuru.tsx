@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useAgentStream } from "@/hooks/useAgentStream";
+import { ClipboardCopy, Check } from "lucide-react";
+import rehypeHighlight from "rehype-highlight";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeHighlight from "rehype-highlight";
+
+import { useAgentStream } from "@/hooks/useAgentStream";
 
 interface ChatMessage {
   id: string;
@@ -19,8 +21,22 @@ export default function PrepGuru() {
   const { message, setMessage, send, abort, isStreaming, response, error } = useAgentStream();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Copy message content to clipboard
+  const copyToClipboard = (text: string, messageId: string) => {
+    navigator.clipboard.writeText(text).then(
+      () => {
+        setCopiedId(messageId);
+        setTimeout(() => setCopiedId(null), 2000);
+      },
+      (err) => {
+        console.error("Could not copy text: ", err);
+      }
+    );
+  };
 
   // when streaming starts
   useEffect(() => {
@@ -123,10 +139,24 @@ export default function PrepGuru() {
               </div>
 
               <div
-                className={`rounded-xl border p-4 text-gray-800 leading-relaxed ${
+                className={`rounded-xl border p-4 text-gray-800 leading-relaxed relative group ${
                   m.role === "user" ? "bg-indigo-50 border-indigo-100" : "bg-white border-gray-200"
                 }`}
               >
+                {m.role === "assistant" && !m.streaming && (
+                  <button
+                    onClick={() => copyToClipboard(m.content, m.id)}
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-600"
+                    title="Copy to clipboard"
+                    aria-label="Copy to clipboard"
+                  >
+                    {copiedId === m.id ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <ClipboardCopy className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
                   {m.content}
                 </ReactMarkdown>

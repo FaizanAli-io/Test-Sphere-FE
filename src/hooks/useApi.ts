@@ -1,5 +1,5 @@
-// export const BASE_API_URL = "http://localhost:5000";
-export const BASE_API_URL = "https://test-sphere-be.onrender.com";
+export const BASE_API_URL = "http://localhost:3000";
+// export const BASE_API_URL = "https://test-sphere-be.onrender.com";
 
 export interface ExtendedRequestInit extends RequestInit {
   auth?: boolean;
@@ -88,14 +88,29 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   console.log("📩 API Response Status:", res.status, res.statusText);
 
   try {
-    if (!res.ok) {
-      const cloned = res.clone();
-      const text = await cloned.text();
-      if (text) {
-        console.error("🔎 API Error Body:", text);
-      }
+    const cloned = res.clone();
+    const contentType = cloned.headers.get("content-type");
+
+    let responseData: any;
+
+    if (contentType?.includes("application/json")) {
+      responseData = await cloned.json().catch(() => "⚠️ Failed to parse JSON");
+    } else {
+      responseData = await cloned.text().catch(() => "⚠️ Failed to read text");
     }
-  } catch {}
+
+    console.log("📦 API Response Data:", responseData);
+
+    if (!res.ok) {
+      console.error("❌ API Request Failed:", {
+        status: res.status,
+        statusText: res.statusText,
+        response: responseData
+      });
+    }
+  } catch (logError) {
+    console.warn("⚠️ Failed to log response data:", logError);
+  }
 
   return res;
 };
