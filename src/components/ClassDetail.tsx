@@ -82,6 +82,11 @@ export default function ClassDetail(): ReactElement {
   const [aiDesiredCount, setAiDesiredCount] = useState(5);
   const [aiMessages, setAiMessages] = useState<string[]>([]);
   const [showAiSection, setShowAiSection] = useState(false);
+  
+  // AI question approval state
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<Question[]>([]);
+  const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(new Set());
 
   const fetchClassDetails = useCallback(async () => {
     if (!classId) return;
@@ -358,6 +363,52 @@ export default function ClassDetail(): ReactElement {
     }
   };
 
+  const showApprovalModalForQuestions = (questions: Question[]) => {
+    // Add temporary IDs for approval tracking
+    const questionsWithTempIds = questions.map((q, index) => ({
+      ...q,
+      id: index + 1, // Temporary ID for approval tracking
+    }));
+    setPendingApprovalQuestions(questionsWithTempIds);
+    setApprovedQuestionIds(new Set());
+    setShowApprovalModal(true);
+  };
+
+  const toggleQuestionApproval = (questionId: number) => {
+    const newApprovedIds = new Set(approvedQuestionIds);
+    if (newApprovedIds.has(questionId)) {
+      newApprovedIds.delete(questionId);
+    } else {
+      newApprovedIds.add(questionId);
+    }
+    setApprovedQuestionIds(newApprovedIds);
+  };
+
+  const handleApproveAndAddQuestions = async () => {
+    const approvedQuestions = pendingApprovalQuestions.filter(q => 
+      approvedQuestionIds.has(q.id)
+    );
+    
+    if (approvedQuestions.length === 0) {
+      alert("Please approve at least one question to add.");
+      return;
+    }
+
+    // Reset the IDs back to 0 for proper persistence
+    const questionsToAdd = approvedQuestions.map(q => ({
+      ...q,
+      id: 0,
+      testId: selectedTestId || 0
+    }));
+
+    await bulkPersistQuestions(questionsToAdd);
+    
+    // Close modals and reset state
+    setShowApprovalModal(false);
+    setPendingApprovalQuestions([]);
+    setApprovedQuestionIds(new Set());
+  };
+
   const handleGenerateFromPrompt = async () => {
     if (!selectedTestId) return;
     if (!aiPrompt.trim()) {
@@ -388,7 +439,9 @@ export default function ClassDetail(): ReactElement {
         .filter((q): q is Question => !!q);
       if (!normalized.length)
         throw new Error("No usable questions returned by AI");
-      await bulkPersistQuestions(normalized);
+      
+      appendAiMessage(`✅ Generated ${normalized.length} questions. Review and approve to add.`);
+      showApprovalModalForQuestions(normalized);
     } catch (err) {
       appendAiMessage(
         `❌ Prompt generation error: ${
@@ -425,7 +478,9 @@ export default function ClassDetail(): ReactElement {
         .filter((q): q is Question => !!q);
       if (!normalized.length)
         throw new Error("No questions extracted from PDF");
-      await bulkPersistQuestions(normalized);
+      
+      appendAiMessage(`✅ Generated ${normalized.length} questions from PDF. Review and approve to add.`);
+      showApprovalModalForQuestions(normalized);
     } catch (err) {
       appendAiMessage(
         `❌ PDF generation error: ${
@@ -1685,6 +1740,168 @@ export default function ClassDetail(): ReactElement {
                 >
                   {loadingQuestions ? "Saving..." : "Save Changes"}
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Question Approval Modal */}
+      {showApprovalModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-white">Review AI Generated Questions</h3>
+                <p className="text-indigo-200 mt-1">
+                  {approvedQuestionIds.size} of {pendingApprovalQuestions.length} questions selected
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowApprovalModal(false);
+                  setPendingApprovalQuestions([]);
+                  setApprovedQuestionIds(new Set());
+                }}
+                className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors text-white font-bold text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1">
+              {pendingApprovalQuestions.length === 0 ? (
+                <div className="text-center py-16">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+                    🤖
+                  </div>
+                  <p className="text-gray-600 font-bold text-lg">No questions to review</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-indigo-200 rounded-2xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
+                        ✓
+                      </div>
+                      <span className="text-gray-800 font-bold">Select questions to add to your test</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          const allIds = new Set(pendingApprovalQuestions.map(q => q.id));
+                          setApprovedQuestionIds(allIds);
+                        }}
+                        className="px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-colors text-sm"
+                      >
+                        Select All
+                      </button>
+                      <button
+                        onClick={() => setApprovedQuestionIds(new Set())}
+                        className="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors text-sm"
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+
+                  {pendingApprovalQuestions.map((question, index) => (
+                    <div
+                      key={question.id}
+                      className={`border-2 rounded-2xl p-6 transition-all cursor-pointer hover:shadow-lg ${
+                        approvedQuestionIds.has(question.id)
+                          ? 'border-green-400 bg-gradient-to-r from-green-50 to-emerald-50'
+                          : 'border-gray-200 bg-gradient-to-r from-gray-50 to-blue-50 hover:border-indigo-300'
+                      }`}
+                      onClick={() => toggleQuestionApproval(question.id)}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${
+                            approvedQuestionIds.has(question.id)
+                              ? 'bg-green-500 text-white'
+                              : 'bg-gray-200 text-gray-600 hover:bg-indigo-500 hover:text-white'
+                          }`}>
+                            {approvedQuestionIds.has(question.id) ? '✓' : index + 1}
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                question.type === 'MULTIPLE_CHOICE' ? 'bg-blue-100 text-blue-800' :
+                                question.type === 'TRUE_FALSE' ? 'bg-purple-100 text-purple-800' :
+                                question.type === 'SHORT_ANSWER' ? 'bg-green-100 text-green-800' :
+                                'bg-orange-100 text-orange-800'
+                              }`}>
+                                {question.type.replace('_', ' ')}
+                              </span>
+                              <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">
+                                {question.maxMarks} {question.maxMarks === 1 ? 'Mark' : 'Marks'}
+                              </span>
+                            </div>
+                          </div>
+
+                          <p className="text-gray-900 font-medium mb-4 text-lg leading-relaxed">
+                            {question.text}
+                          </p>
+
+                          {question.options && question.options.length > 0 && (
+                            <div className="space-y-2">
+                              {question.options.map((option, optIndex) => (
+                                <div
+                                  key={optIndex}
+                                  className={`px-4 py-2 rounded-lg text-sm ${
+                                    question.correctAnswer === optIndex
+                                      ? 'bg-green-100 border-2 border-green-300 text-green-800 font-bold'
+                                      : 'bg-white border border-gray-200 text-gray-700'
+                                  }`}
+                                >
+                                  <span className="font-bold mr-2">
+                                    {String.fromCharCode(65 + optIndex)}.
+                                  </span>
+                                  {option}
+                                  {question.correctAnswer === optIndex && (
+                                    <span className="ml-2 text-green-600 font-bold">✓ Correct</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="px-8 py-6 bg-gray-50 border-t-2 border-gray-200">
+              <div className="flex items-center justify-between gap-4">
+                <div className="text-gray-600">
+                  <span className="font-bold text-lg text-indigo-600">{approvedQuestionIds.size}</span> 
+                  <span className="ml-1">questions selected</span>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowApprovalModal(false);
+                      setPendingApprovalQuestions([]);
+                      setApprovedQuestionIds(new Set());
+                    }}
+                    className="px-6 py-3 bg-gray-500 text-white font-bold rounded-xl hover:bg-gray-600 transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleApproveAndAddQuestions}
+                    disabled={approvedQuestionIds.size === 0}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Add {approvedQuestionIds.size} Selected Question{approvedQuestionIds.size !== 1 ? 's' : ''}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
