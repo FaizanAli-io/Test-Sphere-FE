@@ -28,7 +28,7 @@ interface TestData {
 export default function CreateTestPage() {
   const searchParams = useSearchParams();
   // Removed unused router (was not referenced elsewhere)
-  const classIdFromUrl = searchParams.get("classId");
+  const classIdFromUrl = searchParams?.get("classId") || null;
 
   const [formData, setFormData] = useState<TestData>({
     classId: classIdFromUrl ? Number(classIdFromUrl) : 0,
@@ -37,14 +37,17 @@ export default function CreateTestPage() {
     duration: 60,
     startAt: "",
     endAt: "",
-    status: "DRAFT"
+    status: "DRAFT",
   });
 
   const [loading, setLoading] = useState(false);
   const [showQuestions, setShowQuestions] = useState(false);
   const [createdTestId, setCreatedTestId] = useState<number | null>(null);
 
-  const handleChange = <K extends keyof TestData>(key: K, value: TestData[K]) => {
+  const handleChange = <K extends keyof TestData>(
+    key: K,
+    value: TestData[K]
+  ) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -75,13 +78,13 @@ export default function CreateTestPage() {
         duration: Number(formData.duration),
         startAt: formData.startAt,
         endAt: formData.endAt,
-        status: formData.status
+        status: formData.status,
       };
 
       const res = await api("/tests", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -130,10 +133,14 @@ export default function CreateTestPage() {
                   ✅
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Test Created Successfully!</h3>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    Test Created Successfully!
+                  </h3>
                   <p className="text-sm text-gray-600">
                     Test ID:{" "}
-                    <span className="font-mono font-bold text-green-700">#{createdTestId}</span>
+                    <span className="font-mono font-bold text-green-700">
+                      #{createdTestId}
+                    </span>
                   </p>
                 </div>
               </div>
@@ -154,7 +161,9 @@ export default function CreateTestPage() {
               <span className="text-3xl">📋</span>
               Test Information
             </h2>
-            <p className="mt-1 text-purple-100">Configure the basic details of your test</p>
+            <p className="mt-1 text-purple-100">
+              Configure the basic details of your test
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
@@ -168,7 +177,9 @@ export default function CreateTestPage() {
                 type="number"
                 min="1"
                 value={formData.classId || ""}
-                onChange={(e) => handleChange("classId", Number(e.target.value))}
+                onChange={(e) =>
+                  handleChange("classId", Number(e.target.value))
+                }
                 placeholder="Enter class ID"
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
                 disabled={!!classIdFromUrl}
@@ -205,7 +216,9 @@ export default function CreateTestPage() {
                   type="number"
                   min="1"
                   value={formData.duration}
-                  onChange={(e) => handleChange("duration", Number(e.target.value))}
+                  onChange={(e) =>
+                    handleChange("duration", Number(e.target.value))
+                  }
                   placeholder="60"
                   className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
                 />
@@ -263,7 +276,9 @@ export default function CreateTestPage() {
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => handleChange("status", e.target.value as TestData["status"])}
+                onChange={(e) =>
+                  handleChange("status", e.target.value as TestData["status"])
+                }
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium"
               >
                 <option value="DRAFT">Draft - Not visible to students</option>
@@ -295,7 +310,9 @@ export default function CreateTestPage() {
         </div>
 
         {/* Questions Manager */}
-        {showQuestions && createdTestId && <TestQuestionsManager testId={createdTestId} />}
+        {showQuestions && createdTestId && (
+          <TestQuestionsManager testId={createdTestId} />
+        )}
       </div>
     </div>
   );
@@ -313,11 +330,21 @@ function TestQuestionsManager({ testId }: { testId: number }) {
     options: ["Option A", "Option B", "Option C", "Option D"],
     correctAnswer: 0,
     maxMarks: 1,
-    image: ""
+    image: "",
   });
   const [loading, setLoading] = useState(false);
+  // AI integration state
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiPdfUploading, setAiPdfUploading] = useState(false);
+  const [aiDesiredCount, setAiDesiredCount] = useState(5);
+  const [aiMessages, setAiMessages] = useState<string[]>([]);
+  const [showAiSection, setShowAiSection] = useState(false);
 
-  const handleChange = <K extends keyof Question>(key: K, value: Question[K]) => {
+  const handleChange = <K extends keyof Question>(
+    key: K,
+    value: Question[K]
+  ) => {
     setNewQuestion((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -333,7 +360,10 @@ function TestQuestionsManager({ testId }: { testId: number }) {
         alert("Multiple choice questions must have at least 2 options");
         return;
       }
-      if (newQuestion.correctAnswer === undefined || newQuestion.correctAnswer < 0) {
+      if (
+        newQuestion.correctAnswer === undefined ||
+        newQuestion.correctAnswer < 0
+      ) {
         alert("Please select the correct answer");
         return;
       }
@@ -350,11 +380,12 @@ function TestQuestionsManager({ testId }: { testId: number }) {
         testId,
         text: newQuestion.text.trim(),
         type: newQuestion.type,
-        maxMarks: Number(newQuestion.maxMarks)
+        maxMarks: Number(newQuestion.maxMarks),
       };
 
       if (newQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
+        payload.options =
+          newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(newQuestion.correctAnswer);
       }
 
@@ -370,7 +401,7 @@ function TestQuestionsManager({ testId }: { testId: number }) {
       const res = await api(`/tests/${testId}/questions`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ questions: [payload] })
+        body: JSON.stringify({ questions: [payload] }),
       });
 
       if (!res.ok) {
@@ -390,13 +421,176 @@ function TestQuestionsManager({ testId }: { testId: number }) {
         options: ["Option A", "Option B", "Option C", "Option D"],
         correctAnswer: 0,
         maxMarks: 1,
-        image: ""
+        image: "",
       });
     } catch (err) {
       console.error("Failed to add question:", err);
       alert(err instanceof Error ? err.message : "Error adding question");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ------------------------ AI HELPERS ------------------------
+  interface AIQuestionRaw {
+    text?: string;
+    question?: string; // alternate key
+    type?: string;
+    options?: string[];
+    correctAnswer?: number | string; // may come as letter
+    answer?: number | string; // alternate key
+    maxMarks?: number;
+    marks?: number; // alternate key
+  }
+
+  const normalizeAIQuestion = (q: AIQuestionRaw): Question | null => {
+    const text = (q.text || q.question || "").trim();
+    if (!text) return null;
+    const rawType = (q.type || "MULTIPLE_CHOICE").toUpperCase();
+    let type: Question["type"] = "MULTIPLE_CHOICE";
+    if (
+      ["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(
+        rawType
+      )
+    ) {
+      type = rawType as Question["type"];
+    }
+    let options = q.options;
+    if (type === "TRUE_FALSE" && !options) options = ["True", "False"];
+    let correctAnswer: number | undefined = undefined;
+    const rawAnswer = q.correctAnswer ?? q.answer;
+    if (type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE") {
+      if (typeof rawAnswer === "number") correctAnswer = rawAnswer;
+      else if (typeof rawAnswer === "string") {
+        const upper = rawAnswer.trim().toUpperCase();
+        if (/^[A-D]$/.test(upper)) correctAnswer = upper.charCodeAt(0) - 65;
+        else if (upper === "TRUE") correctAnswer = 0;
+        else if (upper === "FALSE") correctAnswer = 1;
+      }
+      if (correctAnswer === undefined && type === "TRUE_FALSE")
+        correctAnswer = 0;
+    }
+    const maxMarks = Number(q.maxMarks ?? q.marks ?? 1) || 1;
+    return { text, type, options, correctAnswer, maxMarks };
+  };
+
+  const appendAiMessage = (msg: string) => setAiMessages((m) => [...m, msg]);
+
+  const bulkPersistQuestions = async (generated: Question[]) => {
+    if (!generated.length) return;
+    try {
+      const payload = generated.map((g) => {
+        const base: any = {
+          testId,
+          text: g.text,
+          type: g.type,
+          maxMarks: g.maxMarks || 1,
+        };
+        if (g.type === "MULTIPLE_CHOICE" || g.type === "TRUE_FALSE") {
+          base.options =
+            g.type === "TRUE_FALSE" ? ["True", "False"] : g.options || [];
+          base.correctAnswer =
+            typeof g.correctAnswer === "number" ? g.correctAnswer : 0;
+        }
+        if (g.image) base.image = g.image;
+        return base;
+      });
+      const res = await api(`/tests/${testId}/questions`, {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({ questions: payload }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to persist AI questions");
+      }
+      setQuestions((prev) => [...prev, ...generated]);
+      appendAiMessage(`✅ Added ${generated.length} AI generated question(s).`);
+    } catch (err) {
+      console.error(err);
+      appendAiMessage(
+        `❌ Failed to save generated questions: ${
+          err instanceof Error ? err.message : "Unknown error"
+        }`
+      );
+    }
+  };
+
+  const handleGenerateFromPrompt = async () => {
+    if (!aiPrompt.trim()) {
+      alert("Enter a topic or prompt first");
+      return;
+    }
+    setAiGenerating(true);
+    appendAiMessage("🧠 Generating questions from prompt...");
+    try {
+      const body = {
+        prompt: `${aiPrompt}\nReturn ${aiDesiredCount} diverse questions with types (MULTIPLE_CHOICE / TRUE_FALSE / SHORT_ANSWER).`,
+      };
+      const res = await api(`/agent/generate-questions/ask`, {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Generation failed");
+      }
+      const data = await res.json();
+      const rawList: AIQuestionRaw[] = Array.isArray(data)
+        ? data
+        : data.questions || [];
+      const normalized: Question[] = rawList
+        .map(normalizeAIQuestion)
+        .filter((q): q is Question => !!q);
+      if (!normalized.length)
+        throw new Error("No usable questions returned by AI");
+      await bulkPersistQuestions(normalized);
+    } catch (err) {
+      appendAiMessage(
+        `❌ Prompt generation error: ${
+          err instanceof Error ? err.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
+  const handleGenerateFromPdf = async (file: File | null) => {
+    if (!file) return;
+    setAiPdfUploading(true);
+    appendAiMessage(`📄 Uploading PDF: ${file.name}`);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await api(`/agent/generate-questions/pdf`, {
+        method: "POST",
+        auth: true,
+        body: formData, // api helper must support FormData
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "PDF processing failed");
+      }
+      const data = await res.json();
+      const rawList: AIQuestionRaw[] = Array.isArray(data)
+        ? data
+        : data.questions || [];
+      const normalized: Question[] = rawList
+        .map(normalizeAIQuestion)
+        .filter((q): q is Question => !!q);
+      if (!normalized.length)
+        throw new Error("No questions extracted from PDF");
+      await bulkPersistQuestions(normalized);
+    } catch (err) {
+      appendAiMessage(
+        `❌ PDF generation error: ${
+          err instanceof Error ? err.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setAiPdfUploading(false);
     }
   };
 
@@ -412,6 +606,92 @@ function TestQuestionsManager({ testId }: { testId: number }) {
 
       {/* New Question Form */}
       <div className="p-8 bg-gradient-to-br from-orange-50 to-red-50 border-b-2 border-gray-200">
+        {/* AI Assistant Toggle */}
+        <div className="mb-10">
+          <button
+            type="button"
+            onClick={() => setShowAiSection(!showAiSection)}
+            className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
+          >
+            <span className="flex items-center gap-3 text-lg">
+              <span>🧠</span>{" "}
+              {showAiSection
+                ? "Hide AI Question Generator"
+                : "AI Question Generator"}
+            </span>
+            <span>{showAiSection ? "▲" : "▼"}</span>
+          </button>
+          {showAiSection && (
+            <div className="mt-6 bg-white/70 backdrop-blur rounded-2xl border-2 border-indigo-200 p-6 space-y-6 animate-slideUp">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span>✨</span> Generate Questions with AI
+              </h3>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Prompt / Topic *
+                </label>
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="e.g., Basics of Photosynthesis for grade 9 biology"
+                  rows={3}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 resize-none"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    # Questions
+                  </label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={25}
+                    value={aiDesiredCount}
+                    onChange={(e) => setAiDesiredCount(Number(e.target.value))}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900"
+                  />
+                </div>
+                <div className="md:col-span-2 flex items-end gap-4">
+                  <button
+                    type="button"
+                    onClick={handleGenerateFromPrompt}
+                    disabled={aiGenerating}
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+                  >
+                    {aiGenerating ? "Generating..." : "Generate from Prompt"}
+                  </button>
+                  <label className="px-6 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl cursor-pointer hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50">
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={(e) =>
+                        handleGenerateFromPdf(e.target.files?.[0] || null)
+                      }
+                      disabled={aiPdfUploading}
+                    />
+                    {aiPdfUploading ? "Processing PDF..." : "Generate from PDF"}
+                  </label>
+                </div>
+              </div>
+              {aiMessages.length > 0 && (
+                <div className="max-h-40 overflow-y-auto space-y-2 bg-gray-50 border-2 border-gray-200 rounded-xl p-4 text-sm font-mono">
+                  {aiMessages.map((m, i) => (
+                    <div key={i} className="text-gray-700">
+                      {m}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-xs text-gray-500">
+                AI generated questions are added automatically once created.
+                Please review them for accuracy.
+              </p>
+            </div>
+          )}
+        </div>
+
         <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
           <span className="text-2xl">➕</span>
           Add New Question
@@ -420,7 +700,9 @@ function TestQuestionsManager({ testId }: { testId: number }) {
         <div className="space-y-6">
           {/* Question Text */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Question Text *</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Question Text *
+            </label>
             <textarea
               placeholder="Enter your question here..."
               value={newQuestion.text}
@@ -433,7 +715,9 @@ function TestQuestionsManager({ testId }: { testId: number }) {
           {/* Question Type & Marks */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Question Type *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Question Type *
+              </label>
               <select
                 value={newQuestion.type}
                 onChange={(e) => {
@@ -445,7 +729,12 @@ function TestQuestionsManager({ testId }: { testId: number }) {
                     handleChange("options", ["True", "False"]);
                     handleChange("correctAnswer", 0);
                   } else if (type === "MULTIPLE_CHOICE") {
-                    handleChange("options", ["Option A", "Option B", "Option C", "Option D"]);
+                    handleChange("options", [
+                      "Option A",
+                      "Option B",
+                      "Option C",
+                      "Option D",
+                    ]);
                     handleChange("correctAnswer", 0);
                   } else {
                     handleChange("options", undefined);
@@ -462,12 +751,16 @@ function TestQuestionsManager({ testId }: { testId: number }) {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Maximum Marks *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Maximum Marks *
+              </label>
               <input
                 type="number"
                 min="1"
                 value={newQuestion.maxMarks}
-                onChange={(e) => handleChange("maxMarks", Number(e.target.value))}
+                onChange={(e) =>
+                  handleChange("maxMarks", Number(e.target.value))
+                }
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all text-gray-900 font-medium"
               />
             </div>
@@ -490,7 +783,9 @@ function TestQuestionsManager({ testId }: { testId: number }) {
           {/* Options for MULTIPLE_CHOICE */}
           {newQuestion.type === "MULTIPLE_CHOICE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">
+                Answer Options *
+              </label>
               <div className="space-y-3">
                 {newQuestion.options?.map((opt, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -516,18 +811,25 @@ function TestQuestionsManager({ testId }: { testId: number }) {
                         onChange={() => handleChange("correctAnswer", i)}
                         className="w-4 h-4 text-green-600"
                       />
-                      <span className="text-sm font-bold text-gray-700">Correct</span>
+                      <span className="text-sm font-bold text-gray-700">
+                        Correct
+                      </span>
                     </label>
                     {(newQuestion.options?.length || 0) > 2 && (
                       <button
                         type="button"
                         onClick={() => {
-                          const newOpts = newQuestion.options?.filter((_, idx) => idx !== i);
+                          const newOpts = newQuestion.options?.filter(
+                            (_, idx) => idx !== i
+                          );
                           handleChange("options", newOpts);
                           if (newQuestion.correctAnswer === i) {
                             handleChange("correctAnswer", 0);
                           } else if (newQuestion.correctAnswer! > i) {
-                            handleChange("correctAnswer", newQuestion.correctAnswer! - 1);
+                            handleChange(
+                              "correctAnswer",
+                              newQuestion.correctAnswer! - 1
+                            );
                           }
                         }}
                         className="px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-bold transition-colors border-2 border-red-200"
@@ -543,7 +845,9 @@ function TestQuestionsManager({ testId }: { testId: number }) {
                 onClick={() => {
                   const newOpts = [
                     ...(newQuestion.options || []),
-                    `Option ${String.fromCharCode(65 + (newQuestion.options?.length || 0))}`
+                    `Option ${String.fromCharCode(
+                      65 + (newQuestion.options?.length || 0)
+                    )}`,
                   ];
                   handleChange("options", newOpts);
                 }}
@@ -557,7 +861,9 @@ function TestQuestionsManager({ testId }: { testId: number }) {
           {/* TRUE_FALSE Correct Answer */}
           {newQuestion.type === "TRUE_FALSE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">
+                Correct Answer *
+              </label>
               <div className="flex gap-4">
                 <label className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-green-50 border-2 border-green-300 rounded-xl cursor-pointer hover:bg-green-100 transition-colors">
                   <input
@@ -584,7 +890,8 @@ function TestQuestionsManager({ testId }: { testId: number }) {
           )}
 
           {/* Info for text-based questions */}
-          {(newQuestion.type === "SHORT_ANSWER" || newQuestion.type === "LONG_ANSWER") && (
+          {(newQuestion.type === "SHORT_ANSWER" ||
+            newQuestion.type === "LONG_ANSWER") && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
               <p className="text-sm text-blue-800 font-medium flex items-center gap-2">
                 <span className="text-xl">ℹ️</span>
@@ -625,8 +932,12 @@ function TestQuestionsManager({ testId }: { testId: number }) {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
               ❓
             </div>
-            <p className="text-gray-600 font-bold text-lg">No questions added yet</p>
-            <p className="text-gray-500 mt-2">Add your first question using the form above</p>
+            <p className="text-gray-600 font-bold text-lg">
+              No questions added yet
+            </p>
+            <p className="text-gray-500 mt-2">
+              Add your first question using the form above
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -650,7 +961,9 @@ function TestQuestionsManager({ testId }: { testId: number }) {
                     {q.maxMarks} {q.maxMarks === 1 ? "mark" : "marks"}
                   </span>
                 </div>
-                <p className="text-gray-900 font-medium text-lg mb-3">{q.text}</p>
+                <p className="text-gray-900 font-medium text-lg mb-3">
+                  {q.text}
+                </p>
                 {q.options && q.options.length > 0 && (
                   <div className="space-y-2">
                     {q.options.map((opt, i) => (
@@ -662,10 +975,14 @@ function TestQuestionsManager({ testId }: { testId: number }) {
                             : "bg-white border border-gray-300 text-gray-700"
                         }`}
                       >
-                        <span className="font-bold mr-2">{String.fromCharCode(65 + i)}.</span>
+                        <span className="font-bold mr-2">
+                          {String.fromCharCode(65 + i)}.
+                        </span>
                         {opt}
                         {q.correctAnswer === i && (
-                          <span className="ml-2 text-green-700 font-bold">✓ Correct</span>
+                          <span className="ml-2 text-green-700 font-bold">
+                            ✓ Correct
+                          </span>
                         )}
                       </div>
                     ))}
