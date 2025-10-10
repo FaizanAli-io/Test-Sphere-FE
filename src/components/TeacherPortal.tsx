@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import type { ReactElement } from "react";
 import { useRouter } from "next/navigation";
 import api from "../hooks/useApi";
+import CreateTestModal from "./CreateTestModal";
 
 interface Class {
   id: string;
@@ -15,43 +16,13 @@ interface Class {
   createdAt?: string;
 }
 
-interface TestItem {
-  id: number;
-  title: string;
-  description?: string;
-  duration?: number;
-  startAt?: string;
-  endAt?: string;
-  status?: string;
-}
-
-type QuestionType = "TRUE_FALSE" | "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "LONG_ANSWER";
-
-interface SubmissionAnswer {
-  id: number; // answerId
-  questionId?: number;
-  questionText?: string;
-  questionType?: QuestionType;
-  maxMarks?: number;
-  answer?: string; // raw answer string
-  obtainedMarks?: number | null; // may be null if not graded
-  isAutoEvaluated?: boolean;
-}
-
-interface SubmissionItem {
-  id: number; // submission id
-  student?: { id?: number; name?: string; email?: string };
-  totalMarks?: number;
-  obtainedMarks?: number | null;
-  answers?: SubmissionAnswer[];
-}
-
 export default function TeacherPortal(): ReactElement {
   const router = useRouter();
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateTestModal, setShowCreateTestModal] = useState(false);
   const [newClass, setNewClass] = useState({ name: "", description: "" });
   const [showEditModal, setShowEditModal] = useState(false);
   const [editClass, setEditClass] = useState<Class | null>(null);
@@ -63,18 +34,6 @@ export default function TeacherPortal(): ReactElement {
     studentId: number;
     studentName: string;
   } | null>(null);
-  // Tests modal state
-  const [showTestsModal, setShowTestsModal] = useState(false);
-  const [testsLoading, setTestsLoading] = useState(false);
-  const [testsForClass, setTestsForClass] = useState<string | null>(null);
-  const [tests, setTests] = useState<TestItem[]>([]);
-  // Submissions modal state
-  const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
-  const [submissionsLoading, setSubmissionsLoading] = useState(false);
-  const [selectedTestId, setSelectedTestId] = useState<number | null>(null);
-  const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
-  // Local grading state per submissionId -> answerId -> obtainedMarks
-  const [gradeDraft, setGradeDraft] = useState<Record<number, Record<number, number>>>({});
 
   const fetchClasses = async () => {
     setLoading(true);
@@ -113,194 +72,6 @@ export default function TeacherPortal(): ReactElement {
     router.push(`/class/${classId}`);
   };
 
-  const fetchTestsForClass = async (classId: string) => {
-    setTestsLoading(true);
-    setError(null);
-    try {
-      const response = await api(`/tests/class/${classId}`, { method: "GET", auth: true });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch tests for class");
-      }
-      const data = await response.json();
-      interface RawTest {
-        id?: number;
-        title?: string;
-        description?: string;
-        duration?: number;
-        startAt?: string;
-        endAt?: string;
-        status?: string;
-      }
-      const normalized: TestItem[] = Array.isArray(data)
-        ? data
-            .map((t: unknown) => {
-              if (!t || typeof t !== "object") return null;
-              const obj = t as RawTest;
-              return {
-                id: Number(obj.id),
-                title: obj.title ?? "",
-                description: obj.description,
-                duration: typeof obj.duration === "number" ? obj.duration : undefined,
-                startAt: obj.startAt,
-                endAt: obj.endAt,
-                status: obj.status
-              } as TestItem;
-            })
-            .filter((t): t is TestItem => !!t && Number.isFinite(t.id))
-        : [];
-      setTests(normalized.filter((t) => Number.isFinite(t.id)));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch tests for class");
-      setTests([]);
-    } finally {
-      setTestsLoading(false);
-    }
-  };
-
-  const openTestsModal = async (cls: Class) => {
-    setTestsForClass(cls.id);
-    setShowTestsModal(true);
-    await fetchTestsForClass(cls.id);
-  };
-
-  const fetchSubmissionsForTest = async (testId: number) => {
-    setSubmissionsLoading(true);
-    setError(null);
-    try {
-      const response = await api(`/submissions/test/${testId}`, { method: "GET", auth: true });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch submissions");
-      }
-      const data = await response.json();
-      interface RawAnswer {
-        id?: number;
-        answerId?: number;
-        questionId?: number;
-        questionText?: string;
-        question?: { text?: string; type?: QuestionType; maxMarks?: number };
-        questionType?: QuestionType;
-        maxMarks?: number;
-        answer?: string;
-        text?: string;
-        obtainedMarks?: number | null;
-        score?: number | null;
-        isAutoEvaluated?: boolean;
-        autoGraded?: boolean;
-      }
-      interface RawSubmission {
-        id?: number;
-        submissionId?: number;
-        submission?: { id?: number };
-        student?: { id?: number; name?: string; email?: string };
-        user?: { id?: number; name?: string; email?: string };
-        learner?: { id?: number; name?: string; email?: string };
-        totalMarks?: number;
-        maxMarks?: number;
-        obtainedMarks?: number | null;
-        score?: number | null;
-        answers?: RawAnswer[];
-      }
-      const normalized: SubmissionItem[] = Array.isArray(data)
-        ? (data as unknown[])
-            .map((s) => {
-              if (!s || typeof s !== "object") return null;
-              const obj = s as RawSubmission;
-              const answersArr: SubmissionAnswer[] = Array.isArray(obj.answers)
-                ? obj.answers
-                    .map((ans) => {
-                      if (!ans || typeof ans !== "object") return null;
-                      const a = ans as RawAnswer;
-                      return {
-                        id: Number(a.id ?? a.answerId),
-                        questionId: a.questionId,
-                        questionText: a.questionText ?? a.question?.text,
-                        questionType: a.questionType ?? a.question?.type,
-                        maxMarks: a.maxMarks ?? a.question?.maxMarks,
-                        answer: a.answer ?? a.text,
-                        obtainedMarks: a.obtainedMarks ?? a.score ?? null,
-                        isAutoEvaluated: a.isAutoEvaluated ?? a.autoGraded ?? false
-                      } as SubmissionAnswer;
-                    })
-                    .filter((x): x is SubmissionAnswer => !!x)
-                : [];
-              return {
-                id: Number(obj.id ?? obj.submissionId ?? obj.submission?.id),
-                student: obj.student ?? obj.user ?? obj.learner ?? undefined,
-                totalMarks: obj.totalMarks ?? obj.maxMarks ?? undefined,
-                obtainedMarks: obj.obtainedMarks ?? obj.score ?? null,
-                answers: answersArr
-              } as SubmissionItem;
-            })
-            .filter((s): s is SubmissionItem => !!s && Number.isFinite(s.id))
-        : [];
-      setSubmissions(normalized.filter((s) => Number.isFinite(s.id)));
-      // Initialize grade draft for manual questions with existing marks
-      const initial: Record<number, Record<number, number>> = {};
-      normalized.forEach((s) => {
-        initial[s.id] = {};
-        (s.answers ?? []).forEach((a) => {
-          if (typeof a.obtainedMarks === "number") {
-            initial[s.id][a.id] = a.obtainedMarks;
-          }
-        });
-      });
-      setGradeDraft(initial);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch submissions");
-      setSubmissions([]);
-    } finally {
-      setSubmissionsLoading(false);
-    }
-  };
-
-  const openSubmissionsModal = async (testId: number) => {
-    setSelectedTestId(testId);
-    setShowSubmissionsModal(true);
-    await fetchSubmissionsForTest(testId);
-  };
-
-  const updateDraftMark = (submissionId: number, answerId: number, value: number, max?: number) => {
-    const safe = Math.max(0, typeof max === "number" ? Math.min(value, max) : value);
-    setGradeDraft((prev) => ({
-      ...prev,
-      [submissionId]: { ...(prev[submissionId] || {}), [answerId]: safe }
-    }));
-  };
-
-  const submitGrades = async (submission: SubmissionItem) => {
-    const draft = gradeDraft[submission.id] || {};
-    const answersPayload = Object.entries(draft).map(([answerId, obtainedMarks]) => ({
-      answerId: Number(answerId),
-      obtainedMarks
-    }));
-    if (answersPayload.length === 0) {
-      alert("No manual grades to submit for this submission.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const response = await api(`/submissions/${submission.id}/grade`, {
-        method: "POST",
-        auth: true,
-        body: JSON.stringify({ answers: answersPayload })
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to grade submission");
-      }
-      alert("✅ Submission graded successfully");
-      if (selectedTestId) {
-        await fetchSubmissionsForTest(selectedTestId);
-      }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to grade submission");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCreateClass = async () => {
     if (!newClass.name.trim()) {
       alert("Please enter a class name");
@@ -331,6 +102,11 @@ export default function TeacherPortal(): ReactElement {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTestCreated = () => {
+    setShowCreateTestModal(false);
+    // Optionally refresh data if needed
   };
 
   const handleEditClass = async () => {
@@ -466,7 +242,7 @@ export default function TeacherPortal(): ReactElement {
           </div>
 
           <div
-            onClick={() => router.push("/create-test")}
+            onClick={() => setShowCreateTestModal(true)}
             className="group relative bg-white rounded-2xl shadow-md border-2 border-transparent p-8 hover:shadow-2xl hover:border-orange-200 transition-all duration-300 cursor-pointer overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-100 to-red-100 rounded-full -mr-16 -mt-16 opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
@@ -623,15 +399,6 @@ export default function TeacherPortal(): ReactElement {
                       >
                         Delete
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openTestsModal(cls);
-                        }}
-                        className="px-4 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white text-sm font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-md hover:shadow-lg hover:scale-105"
-                      >
-                        View Tests
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -691,205 +458,6 @@ export default function TeacherPortal(): ReactElement {
                 {loading ? "Creating..." : "Create Class"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Tests Modal */}
-      {showTestsModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-8 max-w-3xl w-full shadow-2xl transform animate-slideUp max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-2xl">
-                  📝
-                </div>
-                <div>
-                  <h3 className="text-3xl font-bold text-gray-900">Class Tests</h3>
-                  {testsForClass && <p className="text-gray-600 mt-1">Class #{testsForClass}</p>}
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowTestsModal(false);
-                  setTestsForClass(null);
-                  setTests([]);
-                }}
-                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition-colors text-gray-600 font-bold text-xl"
-              >
-                ✕
-              </button>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
-
-            {testsLoading ? (
-              <div className="text-center text-gray-600 py-10">Loading tests…</div>
-            ) : tests.length === 0 ? (
-              <div className="text-center text-gray-500 py-10">
-                No tests available for this class.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {tests.map((t) => (
-                  <div
-                    key={t.id}
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-orange-50 rounded-xl border-2 border-gray-200"
-                  >
-                    <div>
-                      <p className="font-bold text-gray-900 text-lg">{t.title}</p>
-                      {t.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2">{t.description}</p>
-                      )}
-                      <div className="text-xs text-gray-500 mt-2 flex gap-4 flex-wrap">
-                        {typeof t.duration === "number" && <span>Duration: {t.duration} min</span>}
-                        {t.status && <span>Status: {t.status}</span>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => openSubmissionsModal(t.id)}
-                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-                      >
-                        View Submissions
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Submissions Modal */}
-      {showSubmissionsModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white rounded-3xl p-8 max-w-5xl w-full shadow-2xl transform animate-slideUp max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center text-2xl">
-                  📄
-                </div>
-                <div>
-                  <h3 className="text-3xl font-bold text-gray-900">Test Submissions</h3>
-                  {selectedTestId && <p className="text-gray-600 mt-1">Test #{selectedTestId}</p>}
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setShowSubmissionsModal(false);
-                  setSelectedTestId(null);
-                  setSubmissions([]);
-                }}
-                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-xl flex items-center justify-center transition-colors text-gray-600 font-bold text-xl"
-              >
-                ✕
-              </button>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
-
-            {submissionsLoading ? (
-              <div className="text-center text-gray-600 py-10">Loading submissions…</div>
-            ) : submissions.length === 0 ? (
-              <div className="text-center text-gray-500 py-10">No submissions yet.</div>
-            ) : (
-              <div className="space-y-6">
-                {submissions.map((s) => (
-                  <div key={s.id} className="border rounded-2xl p-6 bg-white shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <p className="text-lg font-bold text-gray-900">
-                          {s.student?.name || s.student?.email || `Submission #${s.id}`}
-                        </p>
-                        <p className="text-sm text-gray-600">ID: {s.id}</p>
-                      </div>
-                      <button
-                        onClick={() => submitGrades(s)}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-                      >
-                        Submit Grades
-                      </button>
-                    </div>
-
-                    <div className="space-y-4">
-                      {(s.answers ?? []).map((a) => {
-                        const manual =
-                          a.questionType === "SHORT_ANSWER" || a.questionType === "LONG_ANSWER";
-                        const value =
-                          gradeDraft[s.id]?.[a.id] ??
-                          (typeof a.obtainedMarks === "number" ? a.obtainedMarks : 0);
-                        return (
-                          <div key={a.id} className="p-4 rounded-xl border bg-gray-50">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold px-2 py-1 rounded bg-indigo-100 text-indigo-800">
-                                  {a.questionType || "UNKNOWN"}
-                                </span>
-                                {typeof a.maxMarks === "number" && (
-                                  <span className="text-xs font-bold px-2 py-1 rounded bg-green-100 text-green-800">
-                                    Max {a.maxMarks}
-                                  </span>
-                                )}
-                              </div>
-                              {!manual && (
-                                <span className="text-xs text-gray-600">Auto-graded</span>
-                              )}
-                            </div>
-                            {a.questionText && (
-                              <p className="text-gray-900 font-semibold mb-1">{a.questionText}</p>
-                            )}
-                            {typeof a.answer === "string" && (
-                              <p className="text-gray-700 text-sm whitespace-pre-wrap">
-                                {a.answer}
-                              </p>
-                            )}
-                            <div className="mt-3">
-                              {manual ? (
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    step={0.5}
-                                    value={value}
-                                    onChange={(e) =>
-                                      updateDraftMark(
-                                        s.id,
-                                        a.id,
-                                        Number(e.target.value),
-                                        a.maxMarks
-                                      )
-                                    }
-                                    className="w-28 px-3 py-2 border rounded-lg"
-                                  />
-                                  {typeof a.maxMarks === "number" && (
-                                    <span className="text-sm text-gray-600">/ {a.maxMarks}</span>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="text-sm text-gray-700">
-                                  Marks: {typeof a.obtainedMarks === "number" ? a.obtainedMarks : 0}
-                                  {typeof a.maxMarks === "number" && ` / ${a.maxMarks}`}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -1086,6 +654,15 @@ export default function TeacherPortal(): ReactElement {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Create Test Modal */}
+      {showCreateTestModal && (
+        <CreateTestModal
+          isOpen={showCreateTestModal}
+          onClose={() => setShowCreateTestModal(false)}
+          onTestCreated={handleTestCreated}
+        />
       )}
 
       <style jsx>{`
