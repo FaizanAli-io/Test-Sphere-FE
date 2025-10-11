@@ -18,7 +18,8 @@ interface ChatMessage {
 const genId = () => Math.random().toString(36).slice(2, 11);
 
 export default function PrepGuru() {
-  const { message, setMessage, send, abort, isStreaming, response, error } = useAgentStream();
+  const { message, setMessage, send, abort, isStreaming, response, error } =
+    useAgentStream();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export default function PrepGuru() {
       },
       (err) => {
         console.error("Could not copy text: ", err);
-      }
+      },
     );
   };
 
@@ -42,8 +43,12 @@ export default function PrepGuru() {
   useEffect(() => {
     if (isStreaming) {
       setMessages((prev) => {
-        if (prev.some((m) => m.streaming && m.role === "assistant")) return prev;
-        return [...prev, { id: genId(), role: "assistant", content: "", streaming: true }];
+        if (prev.some((m) => m.streaming && m.role === "assistant"))
+          return prev;
+        return [
+          ...prev,
+          { id: genId(), role: "assistant", content: "", streaming: true },
+        ];
       });
     }
   }, [isStreaming]);
@@ -52,14 +57,18 @@ export default function PrepGuru() {
   useEffect(() => {
     if (!response) return;
     setMessages((prev) =>
-      prev.map((m) => (m.streaming && m.role === "assistant" ? { ...m, content: response } : m))
+      prev.map((m) =>
+        m.streaming && m.role === "assistant" ? { ...m, content: response } : m,
+      ),
     );
   }, [response]);
 
   // mark message done streaming
   useEffect(() => {
     if (!isStreaming) {
-      setMessages((prev) => prev.map((m) => (m.streaming ? { ...m, streaming: false } : m)));
+      setMessages((prev) =>
+        prev.map((m) => (m.streaming ? { ...m, streaming: false } : m)),
+      );
     }
   }, [isStreaming]);
 
@@ -78,7 +87,10 @@ export default function PrepGuru() {
   const sendPrompt = () => {
     if (!message.trim() || isStreaming) return;
     const trimmed = message.trim();
-    setMessages((prev) => [...prev, { id: genId(), role: "user", content: trimmed }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: genId(), role: "user", content: trimmed },
+    ]);
     send(trimmed);
     setMessage("");
     if (textareaRef.current) textareaRef.current.style.height = "auto";
@@ -127,7 +139,9 @@ export default function PrepGuru() {
           <div key={m.id} className="flex gap-3">
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                m.role === "user" ? "bg-indigo-600 text-white" : "bg-blue-500 text-white"
+                m.role === "user"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-blue-500 text-white"
               }`}
             >
               {m.role === "user" ? "Y" : "AI"}
@@ -140,7 +154,9 @@ export default function PrepGuru() {
 
               <div
                 className={`rounded-xl border p-4 text-gray-800 leading-relaxed relative group ${
-                  m.role === "user" ? "bg-indigo-50 border-indigo-100" : "bg-white border-gray-200"
+                  m.role === "user"
+                    ? "bg-indigo-50 border-indigo-100"
+                    : "bg-white border-gray-200"
                 }`}
               >
                 {m.role === "assistant" && !m.streaming && (
@@ -157,10 +173,15 @@ export default function PrepGuru() {
                     )}
                   </button>
                 )}
-                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeHighlight]}
+                >
                   {m.content}
                 </ReactMarkdown>
-                {m.streaming && <span className="opacity-50 animate-pulse">▌</span>}
+                {m.streaming && (
+                  <span className="opacity-50 animate-pulse">▌</span>
+                )}
               </div>
             </div>
           </div>

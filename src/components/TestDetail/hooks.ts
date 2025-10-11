@@ -10,7 +10,7 @@ import {
   QuestionCreatePayload,
   QuestionUpdatePayload,
   GradingStatus,
-  SubmissionStatus
+  SubmissionStatus,
 } from "./types";
 
 export const useTestDetail = (testId: string) => {
@@ -27,7 +27,7 @@ export const useTestDetail = (testId: string) => {
     try {
       const testRes = await api(`/tests/${testId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!testRes.ok) {
         const errorData = await testRes.json();
@@ -37,7 +37,9 @@ export const useTestDetail = (testId: string) => {
       setTestData(testData);
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Failed to fetch test data");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch test data",
+      );
     } finally {
       setLoading(false);
     }
@@ -51,13 +53,13 @@ export const useTestDetail = (testId: string) => {
         duration: Number(editingTest.duration),
         startAt: editingTest.startAt,
         endAt: editingTest.endAt,
-        status: editingTest.status
+        status: editingTest.status,
       };
 
       const res = await api(`/tests/${editingTest.id}`, {
         method: "PATCH",
         auth: true,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -76,13 +78,17 @@ export const useTestDetail = (testId: string) => {
 
   const handleDeleteTest = async () => {
     if (!testData) return;
-    if (!confirm("Are you sure you want to delete this test? This action cannot be undone."))
+    if (
+      !confirm(
+        "Are you sure you want to delete this test? This action cannot be undone.",
+      )
+    )
       return;
 
     try {
       const res = await api(`/tests/${testData.id}`, {
         method: "DELETE",
-        auth: true
+        auth: true,
       });
 
       if (!res.ok) {
@@ -112,7 +118,7 @@ export const useTestDetail = (testId: string) => {
     error,
     fetchTestDetails,
     handleUpdateTest,
-    handleDeleteTest
+    handleDeleteTest,
   };
 };
 
@@ -128,7 +134,7 @@ export const useQuestions = (testId: string) => {
     try {
       const res = await api(`/tests/${testId}/questions`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -138,7 +144,9 @@ export const useQuestions = (testId: string) => {
       setQuestions(data || []); // Ensure we always have an array
     } catch (err) {
       console.error("Failed to fetch questions:", err);
-      setQuestionsError(err instanceof Error ? err.message : "Failed to fetch questions");
+      setQuestionsError(
+        err instanceof Error ? err.message : "Failed to fetch questions",
+      );
       setQuestions([]); // Set empty array on error so the interface still works
     } finally {
       setLoadingQuestions(false);
@@ -157,7 +165,10 @@ export const useQuestions = (testId: string) => {
         alert("Multiple choice questions must have at least 2 options");
         return false;
       }
-      if (newQuestion.correctAnswer === undefined || newQuestion.correctAnswer < 0) {
+      if (
+        newQuestion.correctAnswer === undefined ||
+        newQuestion.correctAnswer < 0
+      ) {
         alert("Please select the correct answer");
         return false;
       }
@@ -169,11 +180,12 @@ export const useQuestions = (testId: string) => {
         testId: Number(testId),
         text: newQuestion.text.trim(),
         type: newQuestion.type,
-        maxMarks: Number(newQuestion.maxMarks)
+        maxMarks: Number(newQuestion.maxMarks),
       };
 
       if (newQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
+        payload.options =
+          newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(newQuestion.correctAnswer);
       }
 
@@ -189,7 +201,7 @@ export const useQuestions = (testId: string) => {
       const res = await api(`/tests/${testId}/questions`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ questions: [payload] })
+        body: JSON.stringify({ questions: [payload] }),
       });
 
       if (!res.ok) {
@@ -216,11 +228,12 @@ export const useQuestions = (testId: string) => {
       const payload: QuestionUpdatePayload = {
         text: editingQuestion.text.trim(),
         type: editingQuestion.type,
-        maxMarks: Number(editingQuestion.maxMarks)
+        maxMarks: Number(editingQuestion.maxMarks),
       };
 
       if (editingQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = editingQuestion.options?.filter((opt) => opt.trim() !== "") || [];
+        payload.options =
+          editingQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(editingQuestion.correctAnswer);
       }
 
@@ -236,7 +249,7 @@ export const useQuestions = (testId: string) => {
       const res = await api(`/tests/questions/${editingQuestion.id}`, {
         method: "PATCH",
         auth: true,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -261,7 +274,7 @@ export const useQuestions = (testId: string) => {
     try {
       const res = await api(`/tests/questions/${questionId}`, {
         method: "DELETE",
-        auth: true
+        auth: true,
       });
 
       if (!res.ok) {
@@ -288,7 +301,7 @@ export const useQuestions = (testId: string) => {
     fetchQuestions,
     handleAddQuestion,
     handleUpdateQuestion,
-    handleDeleteQuestion
+    handleDeleteQuestion,
   };
 };
 
@@ -296,7 +309,9 @@ export const useSubmissions = (testId: string) => {
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
-  const [gradeDraft, setGradeDraft] = useState<Record<number, Record<number, number>>>({});
+  const [gradeDraft, setGradeDraft] = useState<
+    Record<number, Record<number, number>>
+  >({});
 
   const fetchSubmissions = useCallback(async () => {
     if (!testId) return;
@@ -304,7 +319,7 @@ export const useSubmissions = (testId: string) => {
     try {
       const response = await api(`/submissions/test/${testId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -320,7 +335,11 @@ export const useSubmissions = (testId: string) => {
         answerId?: number;
         questionId?: number;
         questionText?: string;
-        question?: { text?: string; type?: Question["type"]; maxMarks?: number };
+        question?: {
+          text?: string;
+          type?: Question["type"];
+          maxMarks?: number;
+        };
         questionType?: Question["type"];
         maxMarks?: number;
         answer?: string;
@@ -369,8 +388,11 @@ export const useSubmissions = (testId: string) => {
                         maxMarks: a.maxMarks ?? a.question?.maxMarks,
                         answer: a.answer ?? a.text,
                         obtainedMarks: a.obtainedMarks ?? a.score ?? null,
-                        isAutoEvaluated: a.isAutoEvaluated ?? a.autoGraded ?? false,
-                        gradingStatus: (a.gradingStatus ?? a.status ?? "PENDING") as GradingStatus
+                        isAutoEvaluated:
+                          a.isAutoEvaluated ?? a.autoGraded ?? false,
+                        gradingStatus: (a.gradingStatus ??
+                          a.status ??
+                          "PENDING") as GradingStatus,
                       } as SubmissionAnswer;
                     })
                     .filter((x): x is SubmissionAnswer => !!x)
@@ -381,9 +403,11 @@ export const useSubmissions = (testId: string) => {
                 totalMarks: obj.totalMarks ?? obj.maxMarks ?? undefined,
                 obtainedMarks: obj.obtainedMarks ?? obj.score ?? null,
                 answers: answersArr,
-                status: (obj.status ?? obj.submissionStatus ?? "SUBMITTED") as SubmissionStatus,
+                status: (obj.status ??
+                  obj.submissionStatus ??
+                  "SUBMITTED") as SubmissionStatus,
                 submittedAt: obj.submittedAt,
-                gradedAt: obj.gradedAt
+                gradedAt: obj.gradedAt,
               } as SubmissionItem;
             })
             .filter((s): s is SubmissionItem => !!s && Number.isFinite(s.id))
@@ -397,7 +421,10 @@ export const useSubmissions = (testId: string) => {
         initial[s.id] = {};
         (s.answers ?? []).forEach((a) => {
           // Only add to draft if it's not already graded and has marks
-          if (a.gradingStatus !== "GRADED" && typeof a.obtainedMarks === "number") {
+          if (
+            a.gradingStatus !== "GRADED" &&
+            typeof a.obtainedMarks === "number"
+          ) {
             initial[s.id][a.id] = a.obtainedMarks;
           }
         });
@@ -416,20 +443,30 @@ export const useSubmissions = (testId: string) => {
     await fetchSubmissions();
   };
 
-  const updateDraftMark = (submissionId: number, answerId: number, value: number, max?: number) => {
-    const safe = Math.max(0, typeof max === "number" ? Math.min(value, max) : value);
+  const updateDraftMark = (
+    submissionId: number,
+    answerId: number,
+    value: number,
+    max?: number,
+  ) => {
+    const safe = Math.max(
+      0,
+      typeof max === "number" ? Math.min(value, max) : value,
+    );
     setGradeDraft((prev) => ({
       ...prev,
-      [submissionId]: { ...(prev[submissionId] || {}), [answerId]: safe }
+      [submissionId]: { ...(prev[submissionId] || {}), [answerId]: safe },
     }));
   };
 
   const submitGrades = async (submission: SubmissionItem) => {
     const draft = gradeDraft[submission.id] || {};
-    const answersPayload = Object.entries(draft).map(([answerId, obtainedMarks]) => ({
-      answerId: Number(answerId),
-      obtainedMarks
-    }));
+    const answersPayload = Object.entries(draft).map(
+      ([answerId, obtainedMarks]) => ({
+        answerId: Number(answerId),
+        obtainedMarks,
+      }),
+    );
 
     if (answersPayload.length === 0) {
       alert("No manual grades to submit for this submission.");
@@ -441,7 +478,7 @@ export const useSubmissions = (testId: string) => {
       const response = await api(`/submissions/${submission.id}/grade`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ answers: answersPayload })
+        body: JSON.stringify({ answers: answersPayload }),
       });
 
       if (!response.ok) {
@@ -454,12 +491,14 @@ export const useSubmissions = (testId: string) => {
         prevSubmissions.map((s) => {
           if (s.id === submission.id) {
             const updatedAnswers = s.answers?.map((answer) => {
-              const gradeUpdate = answersPayload.find((ap) => ap.answerId === answer.id);
+              const gradeUpdate = answersPayload.find(
+                (ap) => ap.answerId === answer.id,
+              );
               if (gradeUpdate) {
                 return {
                   ...answer,
                   obtainedMarks: gradeUpdate.obtainedMarks,
-                  gradingStatus: "GRADED" as GradingStatus
+                  gradingStatus: "GRADED" as GradingStatus,
                 };
               }
               return answer;
@@ -467,18 +506,21 @@ export const useSubmissions = (testId: string) => {
 
             // Calculate total obtained marks
             const totalObtained =
-              updatedAnswers?.reduce((sum, ans) => sum + (ans.obtainedMarks ?? 0), 0) ?? 0;
+              updatedAnswers?.reduce(
+                (sum, ans) => sum + (ans.obtainedMarks ?? 0),
+                0,
+              ) ?? 0;
 
             return {
               ...s,
               answers: updatedAnswers,
               obtainedMarks: totalObtained,
               status: "GRADED" as SubmissionStatus,
-              gradedAt: new Date().toISOString()
+              gradedAt: new Date().toISOString(),
             };
           }
           return s;
-        })
+        }),
       );
 
       // Clear the draft for this submission
@@ -511,11 +553,14 @@ export const useSubmissions = (testId: string) => {
     gradeDraft,
     openSubmissionsModal,
     updateDraftMark,
-    submitGrades
+    submitGrades,
   };
 };
 
-export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<void>) => {
+export const useAIQuestions = (
+  testId: string,
+  fetchQuestions: () => Promise<void>,
+) => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiPdfUploading, setAiPdfUploading] = useState(false);
@@ -523,15 +568,23 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
   const [aiMessages, setAiMessages] = useState<string[]>([]);
   const [showAiSection, setShowAiSection] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
-  const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<Question[]>([]);
-  const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(new Set());
+  const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<
+    Question[]
+  >([]);
+  const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(
+    new Set(),
+  );
 
   const normalizeAIQuestion = (q: AIQuestionRaw): Question | null => {
     const text = (q.text || q.question || "").trim();
     if (!text) return null;
     const rawType = (q.type || "MULTIPLE_CHOICE").toUpperCase();
     let type: Question["type"] = "MULTIPLE_CHOICE";
-    if (["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(rawType)) {
+    if (
+      ["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(
+        rawType,
+      )
+    ) {
       type = rawType as Question["type"];
     }
     let options = q.options;
@@ -546,7 +599,8 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
         else if (upper === "TRUE") correctAnswer = 0;
         else if (upper === "FALSE") correctAnswer = 1;
       }
-      if (correctAnswer === undefined && type === "TRUE_FALSE") correctAnswer = 0;
+      if (correctAnswer === undefined && type === "TRUE_FALSE")
+        correctAnswer = 0;
     }
     const maxMarks = Number(q.maxMarks ?? q.marks ?? 1) || 1;
     return {
@@ -556,7 +610,7 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
       type,
       options,
       correctAnswer,
-      maxMarks
+      maxMarks,
     };
   };
 
@@ -570,11 +624,13 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
           testId: Number(testId),
           text: g.text,
           type: g.type as Question["type"],
-          maxMarks: g.maxMarks || 1
+          maxMarks: g.maxMarks || 1,
         };
         if (g.type === "MULTIPLE_CHOICE" || g.type === "TRUE_FALSE") {
-          base.options = g.type === "TRUE_FALSE" ? ["True", "False"] : g.options || [];
-          base.correctAnswer = typeof g.correctAnswer === "number" ? g.correctAnswer : 0;
+          base.options =
+            g.type === "TRUE_FALSE" ? ["True", "False"] : g.options || [];
+          base.correctAnswer =
+            typeof g.correctAnswer === "number" ? g.correctAnswer : 0;
         }
         if (g.image) base.image = g.image;
         return base;
@@ -582,7 +638,7 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
       const res = await api(`/tests/${testId}/questions`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ questions: payload })
+        body: JSON.stringify({ questions: payload }),
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -595,7 +651,7 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
       appendAiMessage(
         `❌ Failed to save generated questions: ${
           err instanceof Error ? err.message : "Unknown error"
-        }`
+        }`,
       );
     }
   };
@@ -603,7 +659,7 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
   const showApprovalModalForQuestions = (questions: Question[]) => {
     const questionsWithTempIds = questions.map((q, index) => ({
       ...q,
-      id: index + 1
+      id: index + 1,
     }));
     setPendingApprovalQuestions(questionsWithTempIds);
     setApprovedQuestionIds(new Set());
@@ -621,7 +677,9 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
   };
 
   const handleApproveAndAddQuestions = async () => {
-    const approvedQuestions = pendingApprovalQuestions.filter((q) => approvedQuestionIds.has(q.id));
+    const approvedQuestions = pendingApprovalQuestions.filter((q) =>
+      approvedQuestionIds.has(q.id),
+    );
 
     if (approvedQuestions.length === 0) {
       alert("Please approve at least one question to add.");
@@ -631,7 +689,7 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
     const questionsToAdd = approvedQuestions.map((q) => ({
       ...q,
       id: 0,
-      testId: Number(testId) || 0
+      testId: Number(testId) || 0,
     }));
 
     await bulkPersistQuestions(questionsToAdd);
@@ -651,29 +709,34 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
     appendAiMessage("🧠 Generating questions from prompt...");
     try {
       const body = {
-        prompt: `${aiPrompt}\nReturn ${aiDesiredCount} diverse questions with types (MULTIPLE_CHOICE / TRUE_FALSE / SHORT_ANSWER).`
+        prompt: `${aiPrompt}\nReturn ${aiDesiredCount} diverse questions with types (MULTIPLE_CHOICE / TRUE_FALSE / SHORT_ANSWER).`,
       };
       const res = await api(`/agent/generate-questions/ask`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Generation failed");
       }
       const data = await res.json();
-      const rawList: AIQuestionRaw[] = Array.isArray(data) ? data : data.questions || [];
+      const rawList: AIQuestionRaw[] = Array.isArray(data)
+        ? data
+        : data.questions || [];
       const normalized: Question[] = rawList
         .map(normalizeAIQuestion)
         .filter((q): q is Question => !!q);
-      if (!normalized.length) throw new Error("No usable questions returned by AI");
+      if (!normalized.length)
+        throw new Error("No usable questions returned by AI");
 
-      appendAiMessage(`✅ Generated ${normalized.length} questions. Review and approve to add.`);
+      appendAiMessage(
+        `✅ Generated ${normalized.length} questions. Review and approve to add.`,
+      );
       showApprovalModalForQuestions(normalized);
     } catch (err) {
       appendAiMessage(
-        `❌ Prompt generation error: ${err instanceof Error ? err.message : "Unknown error"}`
+        `❌ Prompt generation error: ${err instanceof Error ? err.message : "Unknown error"}`,
       );
     } finally {
       setAiGenerating(false);
@@ -690,26 +753,29 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
       const res = await api(`/agent/generate-questions/pdf`, {
         method: "POST",
         auth: true,
-        body: formData
+        body: formData,
       });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "PDF processing failed");
       }
       const data = await res.json();
-      const rawList: AIQuestionRaw[] = Array.isArray(data) ? data : data.questions || [];
+      const rawList: AIQuestionRaw[] = Array.isArray(data)
+        ? data
+        : data.questions || [];
       const normalized: Question[] = rawList
         .map(normalizeAIQuestion)
         .filter((q): q is Question => !!q);
-      if (!normalized.length) throw new Error("No questions extracted from PDF");
+      if (!normalized.length)
+        throw new Error("No questions extracted from PDF");
 
       appendAiMessage(
-        `✅ Generated ${normalized.length} questions from PDF. Review and approve to add.`
+        `✅ Generated ${normalized.length} questions from PDF. Review and approve to add.`,
       );
       showApprovalModalForQuestions(normalized);
     } catch (err) {
       appendAiMessage(
-        `❌ PDF generation error: ${err instanceof Error ? err.message : "Unknown error"}`
+        `❌ PDF generation error: ${err instanceof Error ? err.message : "Unknown error"}`,
       );
     } finally {
       setAiPdfUploading(false);
@@ -736,6 +802,6 @@ export const useAIQuestions = (testId: string, fetchQuestions: () => Promise<voi
     toggleQuestionApproval,
     handleApproveAndAddQuestions,
     handleGenerateFromPrompt,
-    handleGenerateFromPdf
+    handleGenerateFromPdf,
   };
 };

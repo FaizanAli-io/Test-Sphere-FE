@@ -19,7 +19,7 @@ export default function ForgotPasswordForm({
   setError,
   setSuccess,
   setLoading,
-  setOtpSent
+  setOtpSent,
 }: ForgotPasswordFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +29,7 @@ export default function ForgotPasswordForm({
     try {
       const res = await api("/auth/forgot-password", {
         method: "POST",
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email }),
       });
 
       const data: { message?: string } = await res.json();
@@ -50,7 +50,9 @@ export default function ForgotPasswordForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Email Address
+        </label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input

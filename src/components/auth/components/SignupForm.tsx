@@ -48,7 +48,7 @@ export default function SignupForm({
       const identifier =
         uniqueIdentifier ||
         `${email.split("@")[0].slice(0, 10)}-${Math.floor(
-          Math.random() * 10000
+          Math.random() * 10000,
         )}`.slice(0, 20);
 
       const requestBody = {
@@ -70,13 +70,13 @@ export default function SignupForm({
       if (!res.ok) {
         if (res.status === 409) {
           setError(
-            "Email already registered. If you haven't verified your account, you can try to verify with OTP or login if already verified."
+            "Email already registered. If you haven't verified your account, you can try to verify with OTP or login if already verified.",
           );
           setOtpSent(true);
           return;
         } else if (res.status === 500) {
           setError(
-            "Account created but there was an issue sending verification email. You can try to verify with OTP or login if already verified."
+            "Account created but there was an issue sending verification email. You can try to verify with OTP or login if already verified.",
           );
           setOtpSent(true);
           return;
@@ -91,8 +91,8 @@ export default function SignupForm({
       setError(
         extractErrorMessage(
           err,
-          "An unexpected error occurred. Please try again."
-        )
+          "An unexpected error occurred. Please try again.",
+        ),
       );
     } finally {
       setLoading(false);

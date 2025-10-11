@@ -31,19 +31,19 @@ export default function LoginForm({
   setSuccess,
   setLoading,
   onForgotPassword,
-  router,
+  router
 }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError("");
 
     try {
       const res = await api("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password })
       });
 
       const data: {

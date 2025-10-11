@@ -28,7 +28,7 @@ export default function OtpVerification({
   setSuccess,
   setLoading,
   onBackToLogin,
-  router
+  router,
 }: OtpVerificationProps) {
   const [otp, setOtp] = useState("");
   const [resendCooldown, setResendCooldown] = useState(60);
@@ -42,7 +42,7 @@ export default function OtpVerification({
         try {
           const res = await api("/auth/resend-otp", {
             method: "POST",
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ email }),
           });
 
           // We intentionally ignore response body unless needed later
@@ -80,7 +80,7 @@ export default function OtpVerification({
     try {
       const res = await api("/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ email, otp })
+        body: JSON.stringify({ email, otp }),
       });
 
       const data: { message?: string } = await res.json();
@@ -94,7 +94,7 @@ export default function OtpVerification({
       setTimeout(async () => {
         const loginRes = await api("/auth/login", {
           method: "POST",
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password }),
         });
         const loginData: {
           token?: string;
@@ -126,7 +126,7 @@ export default function OtpVerification({
     try {
       const res = await api("/auth/resend-otp", {
         method: "POST",
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
@@ -183,8 +183,8 @@ export default function OtpVerification({
           {autoResending
             ? "Automatically resending verification code..."
             : error && error.includes("issue sending verification email")
-            ? "There was an issue sending the verification email. Please use the resend button below to get your verification code."
-            : `We've sent a 6-digit verification code to ${email}`}
+              ? "There was an issue sending the verification email. Please use the resend button below to get your verification code."
+              : `We've sent a 6-digit verification code to ${email}`}
         </p>
       </div>
 
@@ -198,7 +198,9 @@ export default function OtpVerification({
             <input
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               placeholder="000000"
               className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-center text-3xl tracking-[0.5em] font-bold bg-gray-50"
               required
@@ -252,8 +254,8 @@ export default function OtpVerification({
             {loading
               ? "Resending..."
               : resendCooldown > 0
-              ? `Resend in ${resendCooldown}s`
-              : "Resend Verification Code"}
+                ? `Resend in ${resendCooldown}s`
+                : "Resend Verification Code"}
           </button>
 
           <div className="text-center">

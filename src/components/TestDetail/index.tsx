@@ -9,8 +9,8 @@ export * from "./types";
 export * from "./hooks";
 
 // Component exports
-export { default as EditTestModal } from "./components/EditTestModal";
-export { default as AddQuestionModal } from "./components/AddQuestionModal";
-export { default as EditQuestionModal } from "./components/EditQuestionModal";
-export { default as AIApprovalModal } from "./components/AIApprovalModal";
-export { default as SubmissionsModal } from "./components/SubmissionsModal";
+export { default as EditTestModal } from "./EditTestModal";
+export { default as AIApprovalModal } from "./AIApprovalModal";
+export { default as AddQuestionModal } from "./AddQuestionModal";
+export { default as SubmissionsModal } from "./SubmissionsModal";
+export { default as EditQuestionModal } from "./EditQuestionModal";

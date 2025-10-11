@@ -18,7 +18,7 @@ export default function ResetPasswordForm({
   setError,
   setSuccess,
   setLoading,
-  onResetComplete
+  onResetComplete,
 }: ResetPasswordFormProps) {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -44,7 +44,7 @@ export default function ResetPasswordForm({
     try {
       const res = await api("/auth/reset-password", {
         method: "POST",
-        body: JSON.stringify({ email, otp, newPassword })
+        body: JSON.stringify({ email, otp, newPassword }),
       });
 
       const data: { message?: string } = await res.json();
@@ -72,7 +72,7 @@ export default function ResetPasswordForm({
     try {
       const res = await api("/auth/forgot-password", {
         method: "POST",
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
@@ -92,13 +92,17 @@ export default function ResetPasswordForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">Verification Code</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Verification Code
+        </label>
         <div className="relative">
           <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
             value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            onChange={(e) =>
+              setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+            }
             placeholder="Enter 6-digit OTP"
             className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-center text-2xl tracking-widest font-semibold"
             required
@@ -110,7 +114,9 @@ export default function ResetPasswordForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          New Password
+        </label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -128,7 +134,11 @@ export default function ResetPasswordForm({
             onClick={() => setShowNewPassword(!showNewPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showNewPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>

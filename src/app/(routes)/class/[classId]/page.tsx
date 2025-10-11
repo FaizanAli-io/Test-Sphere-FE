@@ -7,5 +7,3 @@ import ClassDetail from "@/components/ClassDetail";
 export default function ClassDetailPage(): ReactElement {
   return <ClassDetail />;
 }
-
-

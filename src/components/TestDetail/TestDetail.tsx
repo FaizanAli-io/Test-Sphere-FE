@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useTestDetail, useQuestions, useSubmissions, useAIQuestions } from "./hooks";
+import Image from "next/image";
+
 import { Question, Test } from "./types";
-import EditTestModal from "./components/EditTestModal";
-import AddQuestionModal from "./components/AddQuestionModal";
-import EditQuestionModal from "./components/EditQuestionModal";
-import AIApprovalModal from "./components/AIApprovalModal";
-import SubmissionsModal from "./components/SubmissionsModal";
+import EditTestModal from "./EditTestModal";
+import AIApprovalModal from "./AIApprovalModal";
+import AddQuestionModal from "./AddQuestionModal";
+import SubmissionsModal from "./SubmissionsModal";
+import EditQuestionModal from "./EditQuestionModal";
+import {
+  useQuestions,
+  useTestDetail,
+  useAIQuestions,
+  useSubmissions
+} from "./hooks";
 
 interface TestDetailProps {
   testId?: string;
@@ -100,7 +107,11 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     questionIndex: number,
     score: number
   ) => {
-    submissionsHook.updateDraftMark(parseInt(submissionId), questionIndex, score);
+    submissionsHook.updateDraftMark(
+      parseInt(submissionId),
+      questionIndex,
+      score
+    );
   };
 
   // Hooks automatically fetch data when testId changes
@@ -124,9 +135,12 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="text-6xl mb-4">😞</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Test Not Found</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Test Not Found
+            </h2>
             <p className="text-gray-600 mb-4">
-              The test you&apos;re looking for doesn&apos;t exist or has been deleted.
+              The test you&apos;re looking for doesn&apos;t exist or has been
+              deleted.
             </p>
             <button
               onClick={() => router.push("/teacher")}
@@ -173,7 +187,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-3xl font-bold text-gray-900">{test.title}</h1>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {test.title}
+                </h1>
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
                     test.status
@@ -227,7 +243,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         {/* Questions Section */}
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Questions ({questions.length})</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Questions ({questions.length})
+            </h2>
             <button
               onClick={handleAddQuestion}
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl"
@@ -244,7 +262,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           ) : questions.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">❓</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Questions Yet</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No Questions Yet
+              </h3>
               <p className="text-gray-600 mb-6">
                 Add some questions to get started with your test.
               </p>
@@ -272,50 +292,62 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                           {question.type === "MULTIPLE_CHOICE"
                             ? "Multiple Choice"
                             : question.type === "TRUE_FALSE"
-                            ? "True/False"
-                            : question.type === "SHORT_ANSWER"
-                            ? "Short Answer"
-                            : "Long Answer"}
+                              ? "True/False"
+                              : question.type === "SHORT_ANSWER"
+                                ? "Short Answer"
+                                : "Long Answer"}
                         </span>
                         <span className="text-sm text-gray-600">
-                          {question.maxMarks} {question.maxMarks === 1 ? "mark" : "marks"}
+                          {question.maxMarks}{" "}
+                          {question.maxMarks === 1 ? "mark" : "marks"}
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">{question.text}</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                        {question.text}
+                      </h3>
 
                       {question.image && (
-                        <div className="mb-4">
-                          <img
+                        <div
+                          className="mb-4 relative w-full"
+                          style={{ maxHeight: "300px" }}
+                        >
+                          <Image
                             src={question.image}
                             alt="Question image"
-                            className="max-w-full h-auto rounded-lg border border-gray-200"
-                            style={{ maxHeight: "300px" }}
+                            width={0}
+                            height={0}
+                            sizes="100vw"
+                            className="w-full h-auto rounded-lg border border-gray-200"
+                            style={{ maxHeight: "300px", width: "auto" }}
                           />
                         </div>
                       )}
 
-                      {question.type === "MULTIPLE_CHOICE" && question.options && (
-                        <div className="space-y-2">
-                          {question.options.map((option, optIndex) => (
-                            <div
-                              key={optIndex}
-                              className={`p-3 rounded-lg border ${
-                                question.correctAnswer === optIndex
-                                  ? "bg-green-50 border-green-200 text-green-800"
-                                  : "bg-gray-50 border-gray-200"
-                              }`}
-                            >
-                              <span className="font-medium">
-                                {String.fromCharCode(65 + optIndex)}.
-                              </span>{" "}
-                              {option}
-                              {question.correctAnswer === optIndex && (
-                                <span className="text-green-600 font-bold ml-2">✓</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      {question.type === "MULTIPLE_CHOICE" &&
+                        question.options && (
+                          <div className="space-y-2">
+                            {question.options.map((option, optIndex) => (
+                              <div
+                                key={optIndex}
+                                className={`p-3 rounded-lg border ${
+                                  question.correctAnswer === optIndex
+                                    ? "bg-green-50 border-green-200 text-green-800"
+                                    : "bg-gray-50 border-gray-200"
+                                }`}
+                              >
+                                <span className="font-medium">
+                                  {String.fromCharCode(65 + optIndex)}.
+                                </span>{" "}
+                                {option}
+                                {question.correctAnswer === optIndex && (
+                                  <span className="text-green-600 font-bold ml-2">
+                                    ✓
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
 
                       {question.type === "TRUE_FALSE" && (
                         <div className="flex gap-4">
@@ -328,7 +360,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                           >
                             True{" "}
                             {question.correctAnswer === 0 && (
-                              <span className="text-green-600 font-bold">✓</span>
+                              <span className="text-green-600 font-bold">
+                                ✓
+                              </span>
                             )}
                           </div>
                           <div
@@ -340,7 +374,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                           >
                             False{" "}
                             {question.correctAnswer === 1 && (
-                              <span className="text-green-600 font-bold">✓</span>
+                              <span className="text-green-600 font-bold">
+                                ✓
+                              </span>
                             )}
                           </div>
                         </div>
@@ -370,7 +406,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         {/* Submissions Section */}
         <div className="bg-white rounded-3xl shadow-xl p-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Submissions ({submissions.length})</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Submissions ({submissions.length})
+            </h2>
             <button
               onClick={handleViewSubmissions}
               className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:from-purple-600 hover:to-indigo-600 transition-all shadow-lg hover:shadow-xl"
@@ -387,8 +425,12 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           ) : submissions.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📝</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Submissions Yet</h3>
-              <p className="text-gray-600">Students haven&apos;t submitted their tests yet.</p>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No Submissions Yet
+              </h3>
+              <p className="text-gray-600">
+                Students haven&apos;t submitted their tests yet.
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -403,7 +445,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                   <p className="text-sm text-gray-600 mb-2">
                     {submission.answers?.length || 0} questions answered
                   </p>
-                  {submission.obtainedMarks !== null && submission.obtainedMarks !== undefined ? (
+                  {submission.obtainedMarks !== null &&
+                  submission.obtainedMarks !== undefined ? (
                     <div className="text-sm">
                       <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">
                         Graded: {submission.obtainedMarks} marks

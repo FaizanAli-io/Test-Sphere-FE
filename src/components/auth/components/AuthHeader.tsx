@@ -7,7 +7,12 @@ interface AuthHeaderProps {
   showBackButton: boolean;
 }
 
-export default function AuthHeader({ authMode, otpSent, onBack, showBackButton }: AuthHeaderProps) {
+export default function AuthHeader({
+  authMode,
+  otpSent,
+  onBack,
+  showBackButton,
+}: AuthHeaderProps) {
   const getTitle = () => {
     if (authMode === "login") return "Welcome Back";
     if (authMode === "signup" && !otpSent) return "Create Account";
@@ -20,8 +25,10 @@ export default function AuthHeader({ authMode, otpSent, onBack, showBackButton }
 
   const getSubtitle = () => {
     if (authMode === "login") return "Sign in to continue your journey";
-    if (authMode === "signup" && !otpSent) return "Join us today and get started";
-    if (authMode === "signup" && otpSent) return "Enter the OTP sent to your email";
+    if (authMode === "signup" && !otpSent)
+      return "Join us today and get started";
+    if (authMode === "signup" && otpSent)
+      return "Enter the OTP sent to your email";
     if (authMode === "forgot" && !otpSent) return "We'll send you a reset code";
     if (authMode === "forgot" && otpSent) return "Enter OTP and new password";
     return "";
@@ -31,7 +38,10 @@ export default function AuthHeader({ authMode, otpSent, onBack, showBackButton }
     <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 text-white">
       <div className="flex items-center justify-between mb-2">
         {showBackButton && (
-          <button onClick={onBack} className="p-2 hover:bg-white/20 rounded-lg transition">
+          <button
+            onClick={onBack}
+            className="p-2 hover:bg-white/20 rounded-lg transition"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}

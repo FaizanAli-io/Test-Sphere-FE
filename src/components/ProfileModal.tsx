@@ -2,6 +2,7 @@
 
 import { createPortal } from "react-dom";
 import React, { useEffect } from "react";
+import Image from "next/image";
 import { useProfileEditor } from "@/hooks/useProfileEditor";
 import ProfileImageUpload from "./ProfileImageUpload";
 import { X, Edit2, Save, CheckCircle, AlertCircle } from "lucide-react";
@@ -85,7 +86,9 @@ export default function ProfileModal({
               {userProfile?.name?.charAt(0)?.toUpperCase() ?? "U"}
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-800">{userProfile?.name ?? "User"}</h3>
+              <h3 className="text-xl font-semibold text-gray-800">
+                {userProfile?.name ?? "User"}
+              </h3>
               <p className="text-sm font-medium text-indigo-600 capitalize">
                 {userProfile?.role ?? "Member"}
               </p>
@@ -111,7 +114,9 @@ export default function ProfileModal({
               title={editing ? "Cancel edit" : "Edit profile"}
             >
               <Edit2 className="w-4 h-4 text-indigo-600" />
-              <span className="text-gray-700">{editing ? "Cancel" : "Edit"}</span>
+              <span className="text-gray-700">
+                {editing ? "Cancel" : "Edit"}
+              </span>
             </button>
 
             <button
@@ -134,12 +139,15 @@ export default function ProfileModal({
             <>
               {/* Profile Preview */}
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center shadow-lg ring-4 ring-indigo-50 transform hover:scale-105 transition-transform duration-300">
+                <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center shadow-lg ring-4 ring-indigo-50 transform hover:scale-105 transition-transform duration-300">
                   {profileImage || userProfile?.profileImage ? (
-                    <img
-                      src={profileImage || userProfile?.profileImage}
+                    <Image
+                      src={
+                        (profileImage || userProfile?.profileImage) as string
+                      }
                       alt="avatar"
-                      className="w-full h-full object-cover"
+                      fill
+                      className="object-cover"
                       onError={() => {
                         // Clear the profile image to show fallback
                         setProfileImage("");
@@ -156,7 +164,9 @@ export default function ProfileModal({
                   <p className="text-xs font-medium text-indigo-600 uppercase tracking-wider mb-1">
                     Name
                   </p>
-                  <p className="text-base text-gray-900 font-semibold">{userProfile?.name}</p>
+                  <p className="text-base text-gray-900 font-semibold">
+                    {userProfile?.name}
+                  </p>
 
                   <p className="text-xs font-medium text-indigo-600 uppercase tracking-wider mt-4 mb-1">
                     User ID
@@ -196,7 +206,10 @@ export default function ProfileModal({
                     />
                   </div>
 
-                  <ProfileImageUpload profileImage={profileImage} onImageChange={setProfileImage} />
+                  <ProfileImageUpload
+                    profileImage={profileImage}
+                    onImageChange={setProfileImage}
+                  />
 
                   <div className="flex items-center gap-4 justify-end pt-4">
                     <button
@@ -212,7 +225,10 @@ export default function ProfileModal({
                       className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 text-white font-medium text-sm shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
                     >
                       {saving ? (
-                        <svg className="w-4.5 h-4.5 animate-spin" viewBox="0 0 24 24">
+                        <svg
+                          className="w-4.5 h-4.5 animate-spin"
+                          viewBox="0 0 24 24"
+                        >
                           <circle
                             cx="12"
                             cy="12"
@@ -280,11 +296,14 @@ export default function ProfileModal({
                     </div>
                     <p className="text-base font-medium text-gray-800">
                       {userProfile
-                        ? new Date(userProfile.createdAt).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric"
-                          })
+                        ? new Date(userProfile.createdAt).toLocaleDateString(
+                            undefined,
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric"
+                            }
+                          )
                         : "-"}
                     </p>
                   </div>

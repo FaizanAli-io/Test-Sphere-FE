@@ -45,7 +45,7 @@ export default function GoogleSignIn({
 
         console.log(
           "🚀 Google Signup Request:",
-          JSON.stringify(signupPayload, null, 2)
+          JSON.stringify(signupPayload, null, 2),
         );
 
         res = await api("/auth/signup", {
@@ -61,7 +61,7 @@ export default function GoogleSignIn({
 
         console.log(
           "🚀 Google Login Request:",
-          JSON.stringify(loginPayload, null, 2)
+          JSON.stringify(loginPayload, null, 2),
         );
 
         res = await api("/auth/login", {
@@ -78,7 +78,7 @@ export default function GoogleSignIn({
 
       if (!res.ok) {
         throw new Error(
-          data.message || `${mode === "signup" ? "Signup" : "Login"} failed`
+          data.message || `${mode === "signup" ? "Signup" : "Login"} failed`,
         );
       }
 

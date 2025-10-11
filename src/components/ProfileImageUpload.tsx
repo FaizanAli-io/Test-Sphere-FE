@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import Image from "next/image";
 import { IKContext, IKUpload } from "imagekitio-react";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 import { Upload, AlertCircle } from "lucide-react";
@@ -34,7 +35,16 @@ export default function ProfileImageUpload({
   }, []);
 
   const onUploadSuccess = useCallback(
-    (res: any) => {
+    (res: {
+      fileId: string;
+      url: string;
+      name: string;
+      size: number;
+      width: number;
+      height: number;
+      thumbnailUrl: string;
+      filePath: string;
+    }) => {
       console.log("✅ Upload successful:", res);
       onImageChange(res.url);
       setIsUploading(false);
@@ -44,7 +54,7 @@ export default function ProfileImageUpload({
   );
 
   const onUploadError = useCallback(
-    (err: any) => {
+    (err: Error | { message: string; [key: string]: unknown }) => {
       console.error("❌ Upload failed:", err);
       setIsUploading(false);
       handleUploadError(err);
@@ -62,11 +72,14 @@ export default function ProfileImageUpload({
       {/* Image preview */}
       <div className="flex items-center gap-4 mb-3">
         {profileImage ? (
-          <img
-            src={profileImage}
-            alt="Profile preview"
-            className="w-20 h-20 rounded-xl object-cover border border-gray-200 shadow-sm"
-          />
+          <div className="relative w-20 h-20">
+            <Image
+              src={profileImage}
+              alt="Profile preview"
+              fill
+              className="rounded-xl object-cover border border-gray-200 shadow-sm"
+            />
+          </div>
         ) : (
           <div className="w-20 h-20 flex items-center justify-center rounded-xl bg-gray-100 border border-gray-200 text-gray-500 text-sm">
             No Image
@@ -148,7 +161,9 @@ export default function ProfileImageUpload({
           <AlertCircle className="w-3 h-3" /> {uploadError}
         </p>
       )}
-      {isUploading && <p className="text-xs text-indigo-500 mt-1">Uploading image...</p>}
+      {isUploading && (
+        <p className="text-xs text-indigo-500 mt-1">Uploading image...</p>
+      )}
     </div>
   );
 }

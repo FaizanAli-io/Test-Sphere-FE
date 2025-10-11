@@ -16,14 +16,17 @@ interface UserProfile {
 
 export function useProfileEditor(
   userProfile: UserProfile | null,
-  onSaved: (updated: UserProfile) => void
+  onSaved: (updated: UserProfile) => void,
 ) {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [profileImage, setProfileImage] = useState("");
   const [uniqueIdentifier, setUniqueIdentifier] = useState("");
-  const [msg, setMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [msg, setMsg] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   // Initialize form data when userProfile changes
   useEffect(() => {
@@ -41,12 +44,12 @@ export function useProfileEditor(
       const payload: Partial<UserProfile> = {
         name: name || undefined,
         profileImage: profileImage || undefined,
-        uniqueIdentifier: uniqueIdentifier || undefined
+        uniqueIdentifier: uniqueIdentifier || undefined,
       };
       const res = await api("/auth/me", {
         auth: true,
         method: "PATCH",
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "Failed to update");
@@ -98,6 +101,6 @@ export function useProfileEditor(
     handleSave,
     handleCancel,
     toggleEditing,
-    setEditing
+    setEditing,
   };
 }

@@ -7,7 +7,7 @@ const firebaseConfig = {
   authDomain: "testsphere-1312e.firebaseapp.com",
   apiKey: "AIzaSyB_rlIQs8Je0EJSMeg4OZ59XrQCgZl_JyE",
   appId: "1:104923962249:web:f0c521ab72017e03a21f58",
-  storageBucket: "testsphere-1312e.firebasestorage.app"
+  storageBucket: "testsphere-1312e.firebasestorage.app",
 };
 
 // Initialize Firebase

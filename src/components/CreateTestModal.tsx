@@ -34,7 +34,7 @@ export default function CreateTestModal({
   isOpen,
   onClose,
   onTestCreated,
-  prefilledClassId
+  prefilledClassId,
 }: CreateTestModalProps) {
   const [formData, setFormData] = useState<TestData>({
     classId: prefilledClassId || 0,
@@ -43,7 +43,7 @@ export default function CreateTestModal({
     duration: 60,
     startAt: "",
     endAt: "",
-    status: "DRAFT"
+    status: "DRAFT",
   });
 
   const [loading, setLoading] = useState(false);
@@ -64,7 +64,9 @@ export default function CreateTestModal({
       const data = await response.json();
       setClasses(data);
     } catch (err) {
-      setClassesError(err instanceof Error ? err.message : "Failed to fetch classes");
+      setClassesError(
+        err instanceof Error ? err.message : "Failed to fetch classes",
+      );
     } finally {
       setClassesLoading(false);
     }
@@ -92,7 +94,10 @@ export default function CreateTestModal({
     }
   };
 
-  const handleChange = <K extends keyof TestData>(key: K, value: TestData[K]) => {
+  const handleChange = <K extends keyof TestData>(
+    key: K,
+    value: TestData[K],
+  ) => {
     const newFormData = { ...formData, [key]: value };
     setFormData(newFormData);
 
@@ -100,7 +105,7 @@ export default function CreateTestModal({
     if (key === "startAt" || key === "endAt") {
       validateDates(
         key === "startAt" ? (value as string) : newFormData.startAt,
-        key === "endAt" ? (value as string) : newFormData.endAt
+        key === "endAt" ? (value as string) : newFormData.endAt,
       );
     }
   };
@@ -113,7 +118,7 @@ export default function CreateTestModal({
       duration: 60,
       startAt: "",
       endAt: "",
-      status: "DRAFT"
+      status: "DRAFT",
     });
     setClasses([]);
     setClassesError(null);
@@ -167,13 +172,13 @@ export default function CreateTestModal({
         duration: Number(formData.duration),
         startAt: formData.startAt,
         endAt: formData.endAt,
-        status: formData.status
+        status: formData.status,
       };
 
       const res = await api("/tests", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -209,7 +214,9 @@ export default function CreateTestModal({
               <span className="text-3xl">📝</span>
               Create New Test
             </h2>
-            <p className="mt-1 text-purple-100">Configure the basic details of your test</p>
+            <p className="mt-1 text-purple-100">
+              Configure the basic details of your test
+            </p>
           </div>
           <button
             onClick={handleClose}
@@ -231,7 +238,9 @@ export default function CreateTestModal({
             {classesLoading ? (
               <div className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl bg-gray-50 flex items-center gap-3">
                 <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-500 border-t-transparent"></div>
-                <span className="text-gray-600 font-medium">Loading classes...</span>
+                <span className="text-gray-600 font-medium">
+                  Loading classes...
+                </span>
               </div>
             ) : classesError ? (
               <div className="space-y-3">
@@ -253,7 +262,9 @@ export default function CreateTestModal({
                 <div className="relative">
                   <select
                     value={formData.classId || ""}
-                    onChange={(e) => handleChange("classId", Number(e.target.value))}
+                    onChange={(e) =>
+                      handleChange("classId", Number(e.target.value))
+                    }
                     className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium appearance-none pr-12 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
                     disabled={!!prefilledClassId}
                   >
@@ -284,14 +295,15 @@ export default function CreateTestModal({
                 {prefilledClassId && (
                   <p className="mt-2 text-sm text-green-600 font-medium flex items-center gap-2">
                     <span>✓</span> Using prefilled class:{" "}
-                    {classes.find((c) => Number(c.id) === prefilledClassId)?.name ||
-                      `ID: ${prefilledClassId}`}
+                    {classes.find((c) => Number(c.id) === prefilledClassId)
+                      ?.name || `ID: ${prefilledClassId}`}
                   </p>
                 )}
 
                 {classes.length === 0 && !classesLoading && (
                   <p className="mt-2 text-sm text-amber-600 font-medium flex items-center gap-2">
-                    <span>📝</span> No classes found. Create a class first to add tests.
+                    <span>📝</span> No classes found. Create a class first to
+                    add tests.
                   </p>
                 )}
               </div>
@@ -323,7 +335,9 @@ export default function CreateTestModal({
                 type="number"
                 min="1"
                 value={formData.duration}
-                onChange={(e) => handleChange("duration", Number(e.target.value))}
+                onChange={(e) =>
+                  handleChange("duration", Number(e.target.value))
+                }
                 placeholder="60"
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
               />
@@ -399,8 +413,9 @@ export default function CreateTestModal({
                 <span className="text-lg">✅</span>
                 Test schedule is valid (
                 {Math.round(
-                  (new Date(formData.endAt).getTime() - new Date(formData.startAt).getTime()) /
-                    (1000 * 60)
+                  (new Date(formData.endAt).getTime() -
+                    new Date(formData.startAt).getTime()) /
+                    (1000 * 60),
                 )}{" "}
                 minutes duration)
               </div>
@@ -415,11 +430,15 @@ export default function CreateTestModal({
             </label>
             <select
               value={formData.status}
-              onChange={(e) => handleChange("status", e.target.value as TestData["status"])}
+              onChange={(e) =>
+                handleChange("status", e.target.value as TestData["status"])
+              }
               className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium"
             >
               <option value="DRAFT">Draft - Not visible to students</option>
-              <option value="ACTIVE">Active - Students can take the test</option>
+              <option value="ACTIVE">
+                Active - Students can take the test
+              </option>
               <option value="COMPLETED">Completed - Test has ended</option>
               <option value="ARCHIVED">Archived - Test is archived</option>
             </select>

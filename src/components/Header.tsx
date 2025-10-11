@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, User, UserCircle, Loader2, GraduationCap } from "lucide-react";
+import Image from "next/image";
+import { LogOut, UserCircle, Loader2, GraduationCap } from "lucide-react";
 import ProfileModal from "./ProfileModal";
 import { api } from "../hooks/useApi";
 
@@ -52,12 +53,14 @@ export default function Header() {
 
   useEffect(() => {
     // initial auth check
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("token") : null;
     setIsAuth(!!token);
     if (token) fetchUser();
 
     const onAuthChange = () => {
-      const t = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const t =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
       setIsAuth(!!t);
       if (t) fetchUser();
       else {
@@ -95,7 +98,9 @@ export default function Header() {
           {/* TestSphere logo (left) */}
           <div className="flex items-center">
             <button
-              onClick={() => router.push(user?.role === "teacher" ? "/teacher" : "/student")}
+              onClick={() =>
+                router.push(user?.role === "teacher" ? "/teacher" : "/student")
+              }
               className="flex items-center gap-2 group"
               aria-label="Go to Dashboard"
             >
@@ -139,7 +144,9 @@ export default function Header() {
               title="Logout"
             >
               <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="text-sm font-medium hidden sm:inline">Logout</span>
+              <span className="text-sm font-medium hidden sm:inline">
+                Logout
+              </span>
             </button>
 
             {/* Profile button */}
@@ -156,14 +163,17 @@ export default function Header() {
                 <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
               ) : user?.profileImage ? (
                 <>
-                  <img
+                  <Image
                     src={user.profileImage}
                     alt={user.name || "User"}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                     onError={() => {
                       // Use state-based approach instead of DOM manipulation
                       // This will trigger a re-render with the fallback div
-                      setUser((prev) => (prev ? { ...prev, profileImage: undefined } : prev));
+                      setUser((prev) =>
+                        prev ? { ...prev, profileImage: undefined } : prev
+                      );
                     }}
                   />
                   {/* Hidden fallback that will be shown if setUser triggers re-render */}

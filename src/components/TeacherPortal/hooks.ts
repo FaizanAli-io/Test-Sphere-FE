@@ -1,0 +1,223 @@
+import { useState, useCallback, useEffect } from "react";
+import api from "../../hooks/useApi";
+import { Class, NewClass, KickConfirm } from "./types";
+
+export const useTeacherPortal = () => {
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchClasses = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api("/classes", { method: "GET", auth: true });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch classes");
+      }
+      const data = await response.json();
+
+      // Normalize the data to ensure correct counts
+      const normalized = Array.isArray(data)
+        ? data.map(
+            (cls: Record<string, unknown>) =>
+              ({
+                ...cls,
+                testCount: Array.isArray(cls.tests)
+                  ? cls.tests.length
+                  : typeof cls.testCount === "number"
+                    ? cls.testCount
+                    : 0
+              }) as Class
+          )
+        : [];
+
+      setClasses(normalized);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to fetch classes");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const createClass = async (newClass: NewClass): Promise<boolean> => {
+    if (!newClass.name.trim()) {
+      alert("Please enter a class name");
+      return false;
+    }
+    setLoading(true);
+    try {
+      const response = await api("/classes", {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify(newClass)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create class");
+      }
+
+      const data = await response.json();
+      alert(
+        `✅ Class created successfully!\n\nClass Code: ${data.code}\n\nShare this code with your students to join the class.`
+      );
+      await fetchClasses();
+      return true;
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to create class");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateClass = async (classToUpdate: Class): Promise<boolean> => {
+    if (!classToUpdate.name.trim()) {
+      alert("Please enter a class name");
+      return false;
+    }
+    setLoading(true);
+    try {
+      const response = await api(`/classes/${classToUpdate.id}`, {
+        method: "PATCH",
+        auth: true,
+        body: JSON.stringify({
+          name: classToUpdate.name,
+          description: classToUpdate.description
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update class");
+      }
+
+      alert("✅ Class updated successfully!");
+      await fetchClasses();
+      return true;
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update class");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteClass = async (classId: string): Promise<void> => {
+    setLoading(true);
+    try {
+      const response = await api(`/classes/${classId}`, {
+        method: "DELETE",
+        auth: true
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete class");
+      }
+
+      alert("✅ Class deleted successfully!");
+      await fetchClasses();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete class");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Auto-fetch classes on mount
+  useEffect(() => {
+    fetchClasses();
+  }, [fetchClasses]);
+
+  return {
+    classes,
+    loading,
+    error,
+    fetchClasses,
+    createClass,
+    updateClass,
+    deleteClass
+  };
+};
+
+export const useClassDetails = () => {
+  const [selectedClass, setSelectedClass] = useState<Class | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchClassDetails = async (classId: string): Promise<Class | null> => {
+    setLoading(true);
+    try {
+      const response = await api(`/classes/${classId}`, {
+        method: "GET",
+        auth: true
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch class details");
+      }
+      const data = await response.json();
+
+      // Normalize the class data to ensure correct counts
+      const normalized = {
+        ...data,
+        testCount: Array.isArray(data.tests)
+          ? data.tests.length
+          : typeof data.testCount === "number"
+            ? data.testCount
+            : 0
+      };
+
+      setSelectedClass(normalized);
+      return normalized;
+    } catch (err) {
+      alert(
+        err instanceof Error ? err.message : "Failed to fetch class details"
+      );
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const kickStudent = async (kickConfirm: KickConfirm): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const response = await api(`/classes/${kickConfirm.classId}/kick`, {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({ studentId: kickConfirm.studentId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to remove student");
+      }
+
+      alert(`✅ ${kickConfirm.studentName} has been removed from the class`);
+
+      // Refresh class details
+      await fetchClassDetails(kickConfirm.classId);
+      return true;
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to remove student");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const clearSelectedClass = () => {
+    setSelectedClass(null);
+  };
+
+  return {
+    selectedClass,
+    loading,
+    fetchClassDetails,
+    kickStudent,
+    clearSelectedClass
+  };
+};

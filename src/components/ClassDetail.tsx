@@ -88,8 +88,12 @@ export default function ClassDetail(): ReactElement {
 
   // AI question approval state
   const [showApprovalModal, setShowApprovalModal] = useState(false);
-  const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<Question[]>([]);
-  const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(new Set());
+  const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<
+    Question[]
+  >([]);
+  const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(
+    new Set()
+  );
 
   // Create test modal state
   const [showCreateTestModal, setShowCreateTestModal] = useState(false);
@@ -139,7 +143,9 @@ export default function ClassDetail(): ReactElement {
       setClassData(normalized);
     } catch (err) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Failed to fetch class data");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch class data"
+      );
     } finally {
       setLoading(false);
     }
@@ -217,11 +223,12 @@ export default function ClassDetail(): ReactElement {
     }
   };
 
-  const handleViewQuestions = async (testId: number) => {
-    setSelectedTestId(testId);
-    await fetchQuestions(testId);
-    setShowQuestionsModal(true);
-  };
+  // Commented out unused function
+  // const handleViewQuestions = async (testId: number) => {
+  //   setSelectedTestId(testId);
+  //   await fetchQuestions(testId);
+  //   setShowQuestionsModal(true);
+  // };
 
   const handleAddQuestion = async () => {
     if (!selectedTestId) return;
@@ -235,7 +242,10 @@ export default function ClassDetail(): ReactElement {
         alert("Multiple choice questions must have at least 2 options");
         return;
       }
-      if (newQuestion.correctAnswer === undefined || newQuestion.correctAnswer < 0) {
+      if (
+        newQuestion.correctAnswer === undefined ||
+        newQuestion.correctAnswer < 0
+      ) {
         alert("Please select the correct answer");
         return;
       }
@@ -260,7 +270,8 @@ export default function ClassDetail(): ReactElement {
       };
 
       if (newQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
+        payload.options =
+          newQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(newQuestion.correctAnswer);
       }
 
@@ -321,7 +332,11 @@ export default function ClassDetail(): ReactElement {
     if (!text) return null;
     const rawType = (q.type || "MULTIPLE_CHOICE").toUpperCase();
     let type: Question["type"] = "MULTIPLE_CHOICE";
-    if (["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(rawType)) {
+    if (
+      ["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(
+        rawType
+      )
+    ) {
       type = rawType as Question["type"];
     }
     let options = q.options;
@@ -336,7 +351,8 @@ export default function ClassDetail(): ReactElement {
         else if (upper === "TRUE") correctAnswer = 0;
         else if (upper === "FALSE") correctAnswer = 1;
       }
-      if (correctAnswer === undefined && type === "TRUE_FALSE") correctAnswer = 0;
+      if (correctAnswer === undefined && type === "TRUE_FALSE")
+        correctAnswer = 0;
     }
     const maxMarks = Number(q.maxMarks ?? q.marks ?? 1) || 1;
     return {
@@ -356,15 +372,25 @@ export default function ClassDetail(): ReactElement {
     if (!generated.length || !selectedTestId) return;
     try {
       const payload = generated.map((g) => {
-        const base: any = {
+        const base: {
+          testId: number;
+          text: string;
+          type: string;
+          maxMarks: number;
+          options?: string[];
+          correctAnswer?: string | boolean | number;
+          image?: string;
+        } = {
           testId: selectedTestId,
           text: g.text,
           type: g.type,
           maxMarks: g.maxMarks || 1
         };
         if (g.type === "MULTIPLE_CHOICE" || g.type === "TRUE_FALSE") {
-          base.options = g.type === "TRUE_FALSE" ? ["True", "False"] : g.options || [];
-          base.correctAnswer = typeof g.correctAnswer === "number" ? g.correctAnswer : 0;
+          base.options =
+            g.type === "TRUE_FALSE" ? ["True", "False"] : g.options || [];
+          base.correctAnswer =
+            typeof g.correctAnswer === "number" ? g.correctAnswer : 0;
         }
         if (g.image) base.image = g.image;
         return base;
@@ -412,7 +438,9 @@ export default function ClassDetail(): ReactElement {
   };
 
   const handleApproveAndAddQuestions = async () => {
-    const approvedQuestions = pendingApprovalQuestions.filter((q) => approvedQuestionIds.has(q.id));
+    const approvedQuestions = pendingApprovalQuestions.filter((q) =>
+      approvedQuestionIds.has(q.id)
+    );
 
     if (approvedQuestions.length === 0) {
       alert("Please approve at least one question to add.");
@@ -456,13 +484,18 @@ export default function ClassDetail(): ReactElement {
         throw new Error(errorData.message || "Generation failed");
       }
       const data = await res.json();
-      const rawList: AIQuestionRaw[] = Array.isArray(data) ? data : data.questions || [];
+      const rawList: AIQuestionRaw[] = Array.isArray(data)
+        ? data
+        : data.questions || [];
       const normalized: Question[] = rawList
         .map(normalizeAIQuestion)
         .filter((q): q is Question => !!q);
-      if (!normalized.length) throw new Error("No usable questions returned by AI");
+      if (!normalized.length)
+        throw new Error("No usable questions returned by AI");
 
-      appendAiMessage(`✅ Generated ${normalized.length} questions. Review and approve to add.`);
+      appendAiMessage(
+        `✅ Generated ${normalized.length} questions. Review and approve to add.`
+      );
       showApprovalModalForQuestions(normalized);
     } catch (err) {
       appendAiMessage(
@@ -490,11 +523,14 @@ export default function ClassDetail(): ReactElement {
         throw new Error(errorData.message || "PDF processing failed");
       }
       const data = await res.json();
-      const rawList: AIQuestionRaw[] = Array.isArray(data) ? data : data.questions || [];
+      const rawList: AIQuestionRaw[] = Array.isArray(data)
+        ? data
+        : data.questions || [];
       const normalized: Question[] = rawList
         .map(normalizeAIQuestion)
         .filter((q): q is Question => !!q);
-      if (!normalized.length) throw new Error("No questions extracted from PDF");
+      if (!normalized.length)
+        throw new Error("No questions extracted from PDF");
 
       appendAiMessage(
         `✅ Generated ${normalized.length} questions from PDF. Review and approve to add.`
@@ -529,7 +565,8 @@ export default function ClassDetail(): ReactElement {
       };
 
       if (editingQuestion.type === "MULTIPLE_CHOICE") {
-        payload.options = editingQuestion.options?.filter((opt) => opt.trim() !== "") || [];
+        payload.options =
+          editingQuestion.options?.filter((opt) => opt.trim() !== "") || [];
         payload.correctAnswer = Number(editingQuestion.correctAnswer);
       }
 
@@ -585,20 +622,21 @@ export default function ClassDetail(): ReactElement {
     }
   };
 
-  const handleEditTest = async (testId: number) => {
-    try {
-      const res = await api(`/tests/${testId}`, { method: "GET", auth: true });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to fetch test");
-      }
-      const data = await res.json();
-      setEditingTest(data);
-      setShowEditTestModal(true);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error fetching test");
-    }
-  };
+  // Commented out unused function
+  // const handleEditTest = async (testId: number) => {
+  //   try {
+  //     const res = await api(`/tests/${testId}`, { method: "GET", auth: true });
+  //     if (!res.ok) {
+  //       const errorData = await res.json();
+  //       throw new Error(errorData.message || "Failed to fetch test");
+  //     }
+  //     const data = await res.json();
+  //     setEditingTest(data);
+  //     setShowEditTestModal(true);
+  //   } catch (err) {
+  //     alert(err instanceof Error ? err.message : "Error fetching test");
+  //   }
+  // };
 
   const handleUpdateTest = async () => {
     if (!editingTest) return;
@@ -636,33 +674,38 @@ export default function ClassDetail(): ReactElement {
     }
   };
 
-  const handleDeleteTest = async (testId: number) => {
-    if (!confirm("Are you sure you want to delete this test? This action cannot be undone."))
-      return;
+  // Commented out unused function
+  // const handleDeleteTest = async (testId: number) => {
+  //   if (
+  //     !confirm(
+  //       "Are you sure you want to delete this test? This action cannot be undone.",
+  //     )
+  //   )
+  //     return;
 
-    try {
-      const res = await api(`/tests/${testId}`, {
-        method: "DELETE",
-        auth: true
-      });
+  //   try {
+  //     const res = await api(`/tests/${testId}`, {
+  //       method: "DELETE",
+  //       auth: true,
+  //     });
 
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to delete test");
-      }
+  //     if (!res.ok) {
+  //       const errorData = await res.json();
+  //       throw new Error(errorData.message || "Failed to delete test");
+  //     }
 
-      alert("Test deleted successfully!");
-      await fetchTests();
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Error deleting test");
-    }
-  };
+  //     alert("Test deleted successfully!");
+  //     await fetchTests();
+  //   } catch (err) {
+  //     alert(err instanceof Error ? err.message : "Error deleting test");
+  //   }
+  // };
 
   const handleNavigateToTestDetails = (testId: number) => {
     router.push(`/test/${testId}`);
   };
 
-  const handleTestCreated = async (testId: number) => {
+  const handleTestCreated = async () => {
     // Refresh the tests list to show the new test
     await fetchTests();
     // Optionally navigate to the new test
@@ -682,7 +725,9 @@ export default function ClassDetail(): ReactElement {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0"></div>
           </div>
-          <p className="mt-6 text-gray-600 font-semibold text-lg">Loading class details...</p>
+          <p className="mt-6 text-gray-600 font-semibold text-lg">
+            Loading class details...
+          </p>
         </div>
       </div>
     );
@@ -695,8 +740,12 @@ export default function ClassDetail(): ReactElement {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">⚠️</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Error Loading Class</h2>
-          <p className="text-gray-600 mb-8 text-lg">{error || "Class not found"}</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Error Loading Class
+          </h2>
+          <p className="text-gray-600 mb-8 text-lg">
+            {error || "Class not found"}
+          </p>
           <button
             onClick={() => router.push("/teacher")}
             className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
@@ -715,7 +764,9 @@ export default function ClassDetail(): ReactElement {
           onClick={() => router.push("/teacher")}
           className="group flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-bold mb-8 transition-all"
         >
-          <span className="text-xl group-hover:-translate-x-1 transition-transform">←</span>
+          <span className="text-xl group-hover:-translate-x-1 transition-transform">
+            ←
+          </span>
           Back to Teacher Portal
         </button>
 
@@ -725,7 +776,9 @@ export default function ClassDetail(): ReactElement {
           <div className="relative z-10">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-3">{classData.name}</h1>
+                <h1 className="text-4xl font-bold text-gray-900 mb-3">
+                  {classData.name}
+                </h1>
                 <p className="text-gray-600 text-lg mb-4">
                   {classData.description || "No description provided"}
                 </p>
@@ -776,7 +829,9 @@ export default function ClassDetail(): ReactElement {
             {/* Students Tab */}
             {activeTab === "students" && (
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">Enrolled Students</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                  Enrolled Students
+                </h3>
                 {classData.students && classData.students.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {classData.students.map((student, index) => (
@@ -789,8 +844,12 @@ export default function ClassDetail(): ReactElement {
                             {index + 1}
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-bold text-gray-900 text-lg">{student.name}</h4>
-                            <p className="text-sm text-gray-600">{student.email}</p>
+                            <h4 className="font-bold text-gray-900 text-lg">
+                              {student.name}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              {student.email}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -801,10 +860,14 @@ export default function ClassDetail(): ReactElement {
                     <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
                       👥
                     </div>
-                    <p className="text-gray-600 font-bold text-lg">No students enrolled yet</p>
+                    <p className="text-gray-600 font-bold text-lg">
+                      No students enrolled yet
+                    </p>
                     <p className="text-gray-500 mt-2">
                       Share class code:{" "}
-                      <span className="font-bold text-indigo-600">{classData.code}</span>
+                      <span className="font-bold text-indigo-600">
+                        {classData.code}
+                      </span>
                     </p>
                   </div>
                 )}
@@ -815,7 +878,9 @@ export default function ClassDetail(): ReactElement {
             {activeTab === "tests" && (
               <div>
                 <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-                  <h3 className="text-2xl font-bold text-gray-900">Scheduled Tests</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    Scheduled Tests
+                  </h3>
                   <button
                     onClick={() => setShowCreateTestModal(true)}
                     className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl hover:scale-105"
@@ -831,7 +896,8 @@ export default function ClassDetail(): ReactElement {
                       const startDate = new Date(test.startAt);
                       const endDate = new Date(test.endAt);
                       const isUpcoming = startDate > new Date();
-                      const isActive = new Date() >= startDate && new Date() <= endDate;
+                      const isActive =
+                        new Date() >= startDate && new Date() <= endDate;
                       const isCompleted = new Date() > endDate;
 
                       const getStatusColor = () => {
@@ -851,11 +917,24 @@ export default function ClassDetail(): ReactElement {
 
                       const getTimeStatus = () => {
                         if (isActive)
-                          return { text: "LIVE NOW", color: "bg-red-500 text-white animate-pulse" };
+                          return {
+                            text: "LIVE NOW",
+                            color: "bg-red-500 text-white animate-pulse"
+                          };
                         if (isUpcoming)
-                          return { text: "UPCOMING", color: "bg-yellow-500 text-white" };
-                        if (isCompleted) return { text: "ENDED", color: "bg-gray-500 text-white" };
-                        return { text: "DRAFT", color: "bg-gray-400 text-white" };
+                          return {
+                            text: "UPCOMING",
+                            color: "bg-yellow-500 text-white"
+                          };
+                        if (isCompleted)
+                          return {
+                            text: "ENDED",
+                            color: "bg-gray-500 text-white"
+                          };
+                        return {
+                          text: "DRAFT",
+                          color: "bg-gray-400 text-white"
+                        };
                       };
 
                       const timeStatus = getTimeStatus();
@@ -898,7 +977,9 @@ export default function ClassDetail(): ReactElement {
                             {/* Questions Count */}
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">❓</span>
+                                <span className="text-white text-sm font-bold">
+                                  ❓
+                                </span>
                               </div>
                               <div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
@@ -919,7 +1000,9 @@ export default function ClassDetail(): ReactElement {
                             {/* Duration */}
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">⏱️</span>
+                                <span className="text-white text-sm font-bold">
+                                  ⏱️
+                                </span>
                               </div>
                               <div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
@@ -934,7 +1017,9 @@ export default function ClassDetail(): ReactElement {
                             {/* Schedule */}
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                                <span className="text-white text-sm font-bold">📅</span>
+                                <span className="text-white text-sm font-bold">
+                                  📅
+                                </span>
                               </div>
                               <div>
                                 <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">
@@ -975,8 +1060,12 @@ export default function ClassDetail(): ReactElement {
                     <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
                       📝
                     </div>
-                    <p className="text-gray-600 font-bold text-lg">No tests created yet</p>
-                    <p className="text-gray-500 mt-2 mb-6">Create your first test to get started</p>
+                    <p className="text-gray-600 font-bold text-lg">
+                      No tests created yet
+                    </p>
+                    <p className="text-gray-500 mt-2 mb-6">
+                      Create your first test to get started
+                    </p>
                     <button
                       onClick={() => setShowCreateTestModal(true)}
                       className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
@@ -1000,16 +1089,22 @@ export default function ClassDetail(): ReactElement {
             </div>
             <div className="p-8 space-y-6">
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Title
+                </label>
                 <input
                   type="text"
                   value={editingTest.title}
-                  onChange={(e) => setEditingTest({ ...editingTest, title: e.target.value })}
+                  onChange={(e) =>
+                    setEditingTest({ ...editingTest, title: e.target.value })
+                  }
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Description
+                </label>
                 <textarea
                   value={editingTest.description}
                   onChange={(e) =>
@@ -1041,7 +1136,9 @@ export default function ClassDetail(): ReactElement {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Status
+                  </label>
                   <select
                     value={editingTest.status}
                     onChange={(e) =>
@@ -1082,7 +1179,9 @@ export default function ClassDetail(): ReactElement {
                   <input
                     type="datetime-local"
                     value={editingTest.endAt?.slice(0, 16)}
-                    onChange={(e) => setEditingTest({ ...editingTest, endAt: e.target.value })}
+                    onChange={(e) =>
+                      setEditingTest({ ...editingTest, endAt: e.target.value })
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
                   />
                 </div>
@@ -1112,7 +1211,9 @@ export default function ClassDetail(): ReactElement {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
             <div className="px-8 py-6 bg-gradient-to-r from-green-500 to-emerald-600 sticky top-0 z-10">
-              <h3 className="text-2xl font-bold text-white">Add New Question</h3>
+              <h3 className="text-2xl font-bold text-white">
+                Add New Question
+              </h3>
             </div>
             <div className="p-8 space-y-6">
               {/* AI Section Toggle */}
@@ -1124,7 +1225,9 @@ export default function ClassDetail(): ReactElement {
                 >
                   <span className="flex items-center gap-2">
                     <span>🧠</span>
-                    {showAiSection ? "Hide AI Question Generator" : "AI Question Generator"}
+                    {showAiSection
+                      ? "Hide AI Question Generator"
+                      : "AI Question Generator"}
                   </span>
                   <span>{showAiSection ? "▲" : "▼"}</span>
                 </button>
@@ -1152,7 +1255,9 @@ export default function ClassDetail(): ReactElement {
                           min={1}
                           max={25}
                           value={aiDesiredCount}
-                          onChange={(e) => setAiDesiredCount(Number(e.target.value))}
+                          onChange={(e) =>
+                            setAiDesiredCount(Number(e.target.value))
+                          }
                           className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900"
                         />
                       </div>
@@ -1163,17 +1268,23 @@ export default function ClassDetail(): ReactElement {
                           disabled={aiGenerating}
                           className="flex-1 px-5 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow disabled:opacity-50"
                         >
-                          {aiGenerating ? "Generating..." : "Generate from Prompt"}
+                          {aiGenerating
+                            ? "Generating..."
+                            : "Generate from Prompt"}
                         </button>
                         <label className="px-5 py-3.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold rounded-xl shadow cursor-pointer hover:from-blue-700 hover:to-cyan-700 transition-all disabled:opacity-50">
                           <input
                             type="file"
                             accept="application/pdf"
                             className="hidden"
-                            onChange={(e) => handleGenerateFromPdf(e.target.files?.[0] || null)}
+                            onChange={(e) =>
+                              handleGenerateFromPdf(e.target.files?.[0] || null)
+                            }
                             disabled={aiPdfUploading}
                           />
-                          {aiPdfUploading ? "Processing PDF..." : "Generate from PDF"}
+                          {aiPdfUploading
+                            ? "Processing PDF..."
+                            : "Generate from PDF"}
                         </label>
                       </div>
                     </div>
@@ -1187,7 +1298,8 @@ export default function ClassDetail(): ReactElement {
                       </div>
                     )}
                     <p className="text-xs text-gray-500">
-                      AI generated questions are auto-added. Review for accuracy.
+                      AI generated questions are auto-added. Review for
+                      accuracy.
                     </p>
                   </div>
                 )}
@@ -1198,7 +1310,9 @@ export default function ClassDetail(): ReactElement {
                 </label>
                 <textarea
                   value={newQuestion.text}
-                  onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })}
+                  onChange={(e) =>
+                    setNewQuestion({ ...newQuestion, text: e.target.value })
+                  }
                   placeholder="Enter your question here..."
                   rows={3}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 resize-none"
@@ -1225,7 +1339,12 @@ export default function ClassDetail(): ReactElement {
                         setNewQuestion({
                           ...newQuestion,
                           type,
-                          options: ["Option A", "Option B", "Option C", "Option D"],
+                          options: [
+                            "Option A",
+                            "Option B",
+                            "Option C",
+                            "Option D"
+                          ],
                           correctAnswer: 0
                         });
                       } else {
@@ -1271,7 +1390,9 @@ export default function ClassDetail(): ReactElement {
                 <input
                   type="text"
                   value={newQuestion.image || ""}
-                  onChange={(e) => setNewQuestion({ ...newQuestion, image: e.target.value })}
+                  onChange={(e) =>
+                    setNewQuestion({ ...newQuestion, image: e.target.value })
+                  }
                   placeholder="https://example.com/image.jpg"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
                 />
@@ -1312,12 +1433,16 @@ export default function ClassDetail(): ReactElement {
                             }
                             className="w-4 h-4 text-green-600"
                           />
-                          <span className="text-sm font-bold text-gray-700">Correct</span>
+                          <span className="text-sm font-bold text-gray-700">
+                            Correct
+                          </span>
                         </label>
                         {(newQuestion.options?.length || 0) > 2 && (
                           <button
                             onClick={() => {
-                              const opts = newQuestion.options?.filter((_, idx) => idx !== i);
+                              const opts = newQuestion.options?.filter(
+                                (_, idx) => idx !== i
+                              );
                               setNewQuestion({
                                 ...newQuestion,
                                 options: opts,
@@ -1325,8 +1450,8 @@ export default function ClassDetail(): ReactElement {
                                   newQuestion.correctAnswer === i
                                     ? 0
                                     : newQuestion.correctAnswer! > i
-                                    ? newQuestion.correctAnswer! - 1
-                                    : newQuestion.correctAnswer
+                                      ? newQuestion.correctAnswer! - 1
+                                      : newQuestion.correctAnswer
                               });
                             }}
                             className="px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl font-bold border-2 border-red-200"
@@ -1363,26 +1488,35 @@ export default function ClassDetail(): ReactElement {
                         type="radio"
                         name="tfAnswer"
                         checked={newQuestion.correctAnswer === 0}
-                        onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: 0 })}
+                        onChange={() =>
+                          setNewQuestion({ ...newQuestion, correctAnswer: 0 })
+                        }
                         className="w-5 h-5 text-green-600"
                       />
-                      <span className="text-lg font-bold text-gray-900">True</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        True
+                      </span>
                     </label>
                     <label className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-red-50 border-2 border-red-300 rounded-xl cursor-pointer hover:bg-red-100 transition-colors">
                       <input
                         type="radio"
                         name="tfAnswer"
                         checked={newQuestion.correctAnswer === 1}
-                        onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: 1 })}
+                        onChange={() =>
+                          setNewQuestion({ ...newQuestion, correctAnswer: 1 })
+                        }
                         className="w-5 h-5 text-red-600"
                       />
-                      <span className="text-lg font-bold text-gray-900">False</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        False
+                      </span>
                     </label>
                   </div>
                 </div>
               )}
 
-              {(newQuestion.type === "SHORT_ANSWER" || newQuestion.type === "LONG_ANSWER") && (
+              {(newQuestion.type === "SHORT_ANSWER" ||
+                newQuestion.type === "LONG_ANSWER") && (
                 <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
                   <p className="text-sm text-blue-800 font-medium">
                     ℹ️{" "}
@@ -1450,14 +1584,18 @@ export default function ClassDetail(): ReactElement {
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-200"></div>
                     <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-purple-600 absolute top-0"></div>
                   </div>
-                  <p className="mt-6 text-gray-600 font-semibold text-lg">Loading questions...</p>
+                  <p className="mt-6 text-gray-600 font-semibold text-lg">
+                    Loading questions...
+                  </p>
                 </div>
               ) : questions.length === 0 ? (
                 <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-purple-50 rounded-2xl border-2 border-dashed border-gray-300">
                   <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
                     ❓
                   </div>
-                  <p className="text-gray-600 font-bold text-lg">No questions added yet</p>
+                  <p className="text-gray-600 font-bold text-lg">
+                    No questions added yet
+                  </p>
                   <p className="text-gray-500 mt-2 mb-6">
                     Add questions to make this test complete
                   </p>
@@ -1489,10 +1627,13 @@ export default function ClassDetail(): ReactElement {
                                 {q.type.replace(/_/g, " ")}
                               </span>
                               <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-bold rounded-lg">
-                                {q.maxMarks} {q.maxMarks === 1 ? "mark" : "marks"}
+                                {q.maxMarks}{" "}
+                                {q.maxMarks === 1 ? "mark" : "marks"}
                               </span>
                             </div>
-                            <p className="text-gray-900 font-semibold text-lg">{q.text}</p>
+                            <p className="text-gray-900 font-semibold text-lg">
+                              {q.text}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -1506,7 +1647,8 @@ export default function ClassDetail(): ReactElement {
                             height={300}
                             className="max-w-sm h-auto rounded-xl border-2 border-gray-300"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = "none";
+                              (e.target as HTMLImageElement).style.display =
+                                "none";
                             }}
                           />
                         </div>
@@ -1523,10 +1665,14 @@ export default function ClassDetail(): ReactElement {
                                   : "bg-white border-2 border-gray-200 text-gray-700"
                               }`}
                             >
-                              <span className="font-bold mr-2">{String.fromCharCode(65 + i)}.</span>
+                              <span className="font-bold mr-2">
+                                {String.fromCharCode(65 + i)}.
+                              </span>
                               {opt}
                               {q.correctAnswer === i && (
-                                <span className="ml-2 text-green-700 font-bold">✓ Correct</span>
+                                <span className="ml-2 text-green-700 font-bold">
+                                  ✓ Correct
+                                </span>
                               )}
                             </div>
                           ))}
@@ -1674,7 +1820,9 @@ export default function ClassDetail(): ReactElement {
                             }
                             className="w-4 h-4 text-green-600"
                           />
-                          <span className="text-sm font-bold text-gray-700">Correct</span>
+                          <span className="text-sm font-bold text-gray-700">
+                            Correct
+                          </span>
                         </label>
                       </div>
                     ))}
@@ -1701,7 +1849,9 @@ export default function ClassDetail(): ReactElement {
                         }
                         className="w-5 h-5 text-green-600"
                       />
-                      <span className="text-lg font-bold text-gray-900">True</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        True
+                      </span>
                     </label>
                     <label className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-red-50 border-2 border-red-300 rounded-xl cursor-pointer hover:bg-red-100 transition-colors">
                       <input
@@ -1716,7 +1866,9 @@ export default function ClassDetail(): ReactElement {
                         }
                         className="w-5 h-5 text-red-600"
                       />
-                      <span className="text-lg font-bold text-gray-900">False</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        False
+                      </span>
                     </label>
                   </div>
                 </div>
@@ -1751,9 +1903,12 @@ export default function ClassDetail(): ReactElement {
           <div className="bg-white rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="px-8 py-6 bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between">
               <div>
-                <h3 className="text-2xl font-bold text-white">Review AI Generated Questions</h3>
+                <h3 className="text-2xl font-bold text-white">
+                  Review AI Generated Questions
+                </h3>
                 <p className="text-indigo-200 mt-1">
-                  {approvedQuestionIds.size} of {pendingApprovalQuestions.length} questions selected
+                  {approvedQuestionIds.size} of{" "}
+                  {pendingApprovalQuestions.length} questions selected
                 </p>
               </div>
               <button
@@ -1774,7 +1929,9 @@ export default function ClassDetail(): ReactElement {
                   <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
                     🤖
                   </div>
-                  <p className="text-gray-600 font-bold text-lg">No questions to review</p>
+                  <p className="text-gray-600 font-bold text-lg">
+                    No questions to review
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1790,7 +1947,9 @@ export default function ClassDetail(): ReactElement {
                     <div className="flex gap-2">
                       <button
                         onClick={() => {
-                          const allIds = new Set(pendingApprovalQuestions.map((q) => q.id));
+                          const allIds = new Set(
+                            pendingApprovalQuestions.map((q) => q.id)
+                          );
                           setApprovedQuestionIds(allIds);
                         }}
                         className="px-4 py-2 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 transition-colors text-sm"
@@ -1825,7 +1984,9 @@ export default function ClassDetail(): ReactElement {
                                 : "bg-gray-200 text-gray-600 hover:bg-indigo-500 hover:text-white"
                             }`}
                           >
-                            {approvedQuestionIds.has(question.id) ? "✓" : index + 1}
+                            {approvedQuestionIds.has(question.id)
+                              ? "✓"
+                              : index + 1}
                           </div>
                         </div>
 
@@ -1837,16 +1998,17 @@ export default function ClassDetail(): ReactElement {
                                   question.type === "MULTIPLE_CHOICE"
                                     ? "bg-blue-100 text-blue-800"
                                     : question.type === "TRUE_FALSE"
-                                    ? "bg-purple-100 text-purple-800"
-                                    : question.type === "SHORT_ANSWER"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-orange-100 text-orange-800"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : question.type === "SHORT_ANSWER"
+                                        ? "bg-green-100 text-green-800"
+                                        : "bg-orange-100 text-orange-800"
                                 }`}
                               >
                                 {question.type.replace("_", " ")}
                               </span>
                               <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold">
-                                {question.maxMarks} {question.maxMarks === 1 ? "Mark" : "Marks"}
+                                {question.maxMarks}{" "}
+                                {question.maxMarks === 1 ? "Mark" : "Marks"}
                               </span>
                             </div>
                           </div>
@@ -1871,7 +2033,9 @@ export default function ClassDetail(): ReactElement {
                                   </span>
                                   {option}
                                   {question.correctAnswer === optIndex && (
-                                    <span className="ml-2 text-green-600 font-bold">✓ Correct</span>
+                                    <span className="ml-2 text-green-600 font-bold">
+                                      ✓ Correct
+                                    </span>
                                   )}
                                 </div>
                               ))}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Question } from "../types";
+import { Question } from "./types";
 
 interface AddQuestionModalProps {
   showAddQuestionModal: boolean;
@@ -34,7 +34,7 @@ export default function AddQuestionModal({
   setShowAiSection,
   handleGenerateFromPrompt,
   handleGenerateFromPdf,
-  loadingQuestions
+  loadingQuestions,
 }: AddQuestionModalProps) {
   const [newQuestion, setNewQuestion] = useState<Question>({
     id: 0,
@@ -44,7 +44,7 @@ export default function AddQuestionModal({
     options: ["Option A", "Option B", "Option C", "Option D"],
     correctAnswer: 0,
     maxMarks: 1,
-    image: ""
+    image: "",
   });
 
   const handleAddQuestion = async () => {
@@ -58,7 +58,7 @@ export default function AddQuestionModal({
         options: ["Option A", "Option B", "Option C", "Option D"],
         correctAnswer: 0,
         maxMarks: 1,
-        image: ""
+        image: "",
       });
       onClose();
     }
@@ -73,7 +73,7 @@ export default function AddQuestionModal({
       options: ["Option A", "Option B", "Option C", "Option D"],
       correctAnswer: 0,
       maxMarks: 1,
-      image: ""
+      image: "",
     });
     onClose();
   };
@@ -96,7 +96,9 @@ export default function AddQuestionModal({
             >
               <span className="flex items-center gap-2">
                 <span>🧠</span>
-                {showAiSection ? "Hide AI Question Generator" : "AI Question Generator"}
+                {showAiSection
+                  ? "Hide AI Question Generator"
+                  : "AI Question Generator"}
               </span>
               <span>{showAiSection ? "▲" : "▼"}</span>
             </button>
@@ -124,7 +126,9 @@ export default function AddQuestionModal({
                       min="1"
                       max="20"
                       value={aiDesiredCount}
-                      onChange={(e) => setAiDesiredCount(Number(e.target.value))}
+                      onChange={(e) =>
+                        setAiDesiredCount(Number(e.target.value))
+                      }
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900"
                     />
                   </div>
@@ -143,18 +147,24 @@ export default function AddQuestionModal({
                   <input
                     type="file"
                     accept=".pdf"
-                    onChange={(e) => handleGenerateFromPdf(e.target.files?.[0] || null)}
+                    onChange={(e) =>
+                      handleGenerateFromPdf(e.target.files?.[0] || null)
+                    }
                     className="hidden"
                     id="pdf-upload"
                   />
                   <label htmlFor="pdf-upload">
                     <button
                       type="button"
-                      onClick={() => document.getElementById("pdf-upload")?.click()}
+                      onClick={() =>
+                        document.getElementById("pdf-upload")?.click()
+                      }
                       disabled={aiPdfUploading}
                       className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                     >
-                      {aiPdfUploading ? "Processing PDF..." : "Generate from PDF"}
+                      {aiPdfUploading
+                        ? "Processing PDF..."
+                        : "Generate from PDF"}
                     </button>
                   </label>
                 </div>
@@ -172,10 +182,14 @@ export default function AddQuestionModal({
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Question Text *</label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">
+              Question Text *
+            </label>
             <textarea
               value={newQuestion.text}
-              onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, text: e.target.value })
+              }
               placeholder="Enter your question here..."
               rows={3}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 resize-none"
@@ -184,7 +198,9 @@ export default function AddQuestionModal({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Question Type *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Question Type *
+              </label>
               <select
                 value={newQuestion.type}
                 onChange={(e) => {
@@ -196,10 +212,12 @@ export default function AddQuestionModal({
                       type === "MULTIPLE_CHOICE"
                         ? ["Option A", "Option B", "Option C", "Option D"]
                         : type === "TRUE_FALSE"
-                        ? ["True", "False"]
-                        : undefined,
+                          ? ["True", "False"]
+                          : undefined,
                     correctAnswer:
-                      type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE" ? 0 : undefined
+                      type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE"
+                        ? 0
+                        : undefined,
                   });
                 }}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white"
@@ -211,13 +229,18 @@ export default function AddQuestionModal({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Maximum Marks *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Maximum Marks *
+              </label>
               <input
                 type="number"
                 min="1"
                 value={newQuestion.maxMarks}
                 onChange={(e) =>
-                  setNewQuestion({ ...newQuestion, maxMarks: Number(e.target.value) })
+                  setNewQuestion({
+                    ...newQuestion,
+                    maxMarks: Number(e.target.value),
+                  })
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
               />
@@ -231,7 +254,9 @@ export default function AddQuestionModal({
             <input
               type="text"
               value={newQuestion.image || ""}
-              onChange={(e) => setNewQuestion({ ...newQuestion, image: e.target.value })}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, image: e.target.value })
+              }
               placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
             />
@@ -239,7 +264,9 @@ export default function AddQuestionModal({
 
           {newQuestion.type === "MULTIPLE_CHOICE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">
+                Answer Options *
+              </label>
               <div className="space-y-3">
                 {newQuestion.options?.map((option, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -247,7 +274,9 @@ export default function AddQuestionModal({
                       type="radio"
                       name="correctAnswer"
                       checked={newQuestion.correctAnswer === i}
-                      onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
+                      onChange={() =>
+                        setNewQuestion({ ...newQuestion, correctAnswer: i })
+                      }
                       className="w-5 h-5 text-green-600 focus:ring-green-500"
                     />
                     <input
@@ -264,16 +293,19 @@ export default function AddQuestionModal({
                     {(newQuestion.options?.length || 0) > 2 && (
                       <button
                         onClick={() => {
-                          const newOptions = newQuestion.options?.filter((_, idx) => idx !== i);
+                          const newOptions = newQuestion.options?.filter(
+                            (_, idx) => idx !== i,
+                          );
                           setNewQuestion({
                             ...newQuestion,
                             options: newOptions,
                             correctAnswer:
                               newQuestion.correctAnswer === i
                                 ? 0
-                                : newQuestion.correctAnswer && newQuestion.correctAnswer > i
-                                ? newQuestion.correctAnswer - 1
-                                : newQuestion.correctAnswer
+                                : newQuestion.correctAnswer &&
+                                    newQuestion.correctAnswer > i
+                                  ? newQuestion.correctAnswer - 1
+                                  : newQuestion.correctAnswer,
                           });
                         }}
                         className="px-3 py-2 text-red-600 hover:bg-red-100 rounded-lg font-bold"
@@ -292,8 +324,8 @@ export default function AddQuestionModal({
                       ...newQuestion,
                       options: [
                         ...currentOptions,
-                        `Option ${String.fromCharCode(65 + currentOptions.length)}`
-                      ]
+                        `Option ${String.fromCharCode(65 + currentOptions.length)}`,
+                      ],
                     });
                   }
                 }}
@@ -306,14 +338,18 @@ export default function AddQuestionModal({
 
           {newQuestion.type === "TRUE_FALSE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer *</label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">
+                Correct Answer *
+              </label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="radio"
                     name="trueFalseAnswer"
                     checked={newQuestion.correctAnswer === 0}
-                    onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: 0 })}
+                    onChange={() =>
+                      setNewQuestion({ ...newQuestion, correctAnswer: 0 })
+                    }
                     className="w-5 h-5 text-green-600 focus:ring-green-500"
                   />
                   <span className="text-gray-900 font-medium">True</span>
@@ -323,7 +359,9 @@ export default function AddQuestionModal({
                     type="radio"
                     name="trueFalseAnswer"
                     checked={newQuestion.correctAnswer === 1}
-                    onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: 1 })}
+                    onChange={() =>
+                      setNewQuestion({ ...newQuestion, correctAnswer: 1 })
+                    }
                     className="w-5 h-5 text-green-600 focus:ring-green-500"
                   />
                   <span className="text-gray-900 font-medium">False</span>
@@ -332,11 +370,13 @@ export default function AddQuestionModal({
             </div>
           )}
 
-          {(newQuestion.type === "SHORT_ANSWER" || newQuestion.type === "LONG_ANSWER") && (
+          {(newQuestion.type === "SHORT_ANSWER" ||
+            newQuestion.type === "LONG_ANSWER") && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
               <p className="text-sm text-blue-800 font-medium">
-                ℹ️ This question type requires manual grading. Students will provide written answers
-                that you&apos;ll need to evaluate and grade manually.
+                ℹ️ This question type requires manual grading. Students will
+                provide written answers that you&apos;ll need to evaluate and
+                grade manually.
               </p>
             </div>
           )}

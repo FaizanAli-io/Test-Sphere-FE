@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { IKContext, IKUpload } from "imagekitio-react";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 
@@ -37,11 +38,14 @@ export default function UploadPage() {
         {uploadInfo && (
           <div className="mt-4">
             <p>✅ Uploaded: {uploadInfo.name}</p>
-            <img
-              src={uploadInfo.thumbnailUrl || uploadInfo.url}
-              alt="Uploaded file"
-              className="w-64 mt-2 rounded border"
-            />
+            <div className="relative w-64 h-48 mt-2">
+              <Image
+                src={uploadInfo.thumbnailUrl || uploadInfo.url}
+                alt="Uploaded file"
+                fill
+                className="rounded border object-cover"
+              />
+            </div>
           </div>
         )}
       </div>

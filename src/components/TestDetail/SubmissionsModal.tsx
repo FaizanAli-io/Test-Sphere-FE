@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SubmissionItem, SubmissionAnswer } from "../types";
+import { SubmissionItem, SubmissionAnswer } from "./types";
 
 interface SubmissionsModalProps {
   showSubmissionsModal: boolean;
@@ -9,7 +9,7 @@ interface SubmissionsModalProps {
   onUpdateIndividualScore: (
     submissionId: string,
     questionIndex: number,
-    score: number
+    score: number,
   ) => Promise<void>;
   loadingSubmissions: boolean;
 }
@@ -20,10 +20,13 @@ export default function SubmissionsModal({
   onClose,
   onGradeSubmission,
   onUpdateIndividualScore,
-  loadingSubmissions
+  loadingSubmissions,
 }: SubmissionsModalProps) {
-  const [selectedSubmission, setSelectedSubmission] = useState<SubmissionItem | null>(null);
-  const [gradingScores, setGradingScores] = useState<{ [key: string]: number }>({});
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<SubmissionItem | null>(null);
+  const [gradingScores, setGradingScores] = useState<{ [key: string]: number }>(
+    {},
+  );
 
   if (!showSubmissionsModal) return null;
 
@@ -32,16 +35,27 @@ export default function SubmissionsModal({
     setGradingScores({});
   };
 
-  const handleScoreChange = (submissionId: number, questionIndex: number, score: number) => {
+  const handleScoreChange = (
+    submissionId: number,
+    questionIndex: number,
+    score: number,
+  ) => {
     const key = `${submissionId}-${questionIndex}`;
     setGradingScores((prev) => ({ ...prev, [key]: score }));
   };
 
-  const handleUpdateScore = async (submissionId: number, questionIndex: number) => {
+  const handleUpdateScore = async (
+    submissionId: number,
+    questionIndex: number,
+  ) => {
     const key = `${submissionId}-${questionIndex}`;
     const score = gradingScores[key];
     if (score !== undefined) {
-      await onUpdateIndividualScore(submissionId.toString(), questionIndex, score);
+      await onUpdateIndividualScore(
+        submissionId.toString(),
+        questionIndex,
+        score,
+      );
       // Remove from local state after successful update
       setGradingScores((prev) => {
         const newScores = { ...prev };
@@ -51,7 +65,10 @@ export default function SubmissionsModal({
     }
   };
 
-  const handleGradeSubmission = async (submissionId: number, totalMarks: number) => {
+  const handleGradeSubmission = async (
+    submissionId: number,
+    totalMarks: number,
+  ) => {
     await onGradeSubmission(submissionId.toString(), totalMarks);
   };
 
@@ -78,14 +95,21 @@ export default function SubmissionsModal({
     }
   };
 
-  const calculateTotalPossibleMarks = (answers: SubmissionAnswer[] | undefined) => {
+  const calculateTotalPossibleMarks = (
+    answers: SubmissionAnswer[] | undefined,
+  ) => {
     if (!answers) return 0;
     return answers.reduce((total, answer) => total + (answer.maxMarks || 0), 0);
   };
 
-  const calculateCurrentTotalMarks = (answers: SubmissionAnswer[] | undefined) => {
+  const calculateCurrentTotalMarks = (
+    answers: SubmissionAnswer[] | undefined,
+  ) => {
     if (!answers) return 0;
-    return answers.reduce((total, answer) => total + (answer.obtainedMarks || 0), 0);
+    return answers.reduce(
+      (total, answer) => total + (answer.obtainedMarks || 0),
+      0,
+    );
   };
 
   // List View
@@ -97,21 +121,29 @@ export default function SubmissionsModal({
             <h3 className="text-2xl font-bold text-white">
               Test Submissions ({submissions.length})
             </h3>
-            <p className="text-purple-100 mt-1">Review and grade student submissions</p>
+            <p className="text-purple-100 mt-1">
+              Review and grade student submissions
+            </p>
           </div>
 
           <div className="p-6">
             {submissions.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📝</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No Submissions Yet</h3>
-                <p className="text-gray-600">Students haven&apos;t submitted their tests yet.</p>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  No Submissions Yet
+                </h3>
+                <p className="text-gray-600">
+                  Students haven&apos;t submitted their tests yet.
+                </p>
               </div>
             ) : (
               <div className="space-y-4">
                 {submissions.map((submission) => {
                   const status = getSubmissionStatus(submission);
-                  const totalPossible = calculateTotalPossibleMarks(submission.answers);
+                  const totalPossible = calculateTotalPossibleMarks(
+                    submission.answers,
+                  );
 
                   return (
                     <div
@@ -130,7 +162,7 @@ export default function SubmissionsModal({
                         <div className="text-right">
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-medium ${getSubmissionStatusColor(
-                              status
+                              status,
                             )}`}
                           >
                             {status}
@@ -186,7 +218,8 @@ export default function SubmissionsModal({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-2xl font-bold text-white">
-                {selectedSubmission.student?.name || "Unknown Student"}&apos;s Submission
+                {selectedSubmission.student?.name || "Unknown Student"}&apos;s
+                Submission
               </h3>
               <p className="text-purple-100 mt-1">
                 Submitted: {formatDate(selectedSubmission.submittedAt)}
@@ -205,7 +238,9 @@ export default function SubmissionsModal({
           {/* Grading Summary */}
           <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-200">
             <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-bold text-gray-900">Grading Summary</h4>
+              <h4 className="text-lg font-bold text-gray-900">
+                Grading Summary
+              </h4>
               <div className="text-right">
                 <p className="text-2xl font-bold text-purple-600">
                   {currentTotal}/{totalPossible}
@@ -217,7 +252,9 @@ export default function SubmissionsModal({
             {selectedSubmission.totalMarks === null ||
             selectedSubmission.totalMarks === undefined ? (
               <button
-                onClick={() => handleGradeSubmission(selectedSubmission.id, currentTotal)}
+                onClick={() =>
+                  handleGradeSubmission(selectedSubmission.id, currentTotal)
+                }
                 disabled={loadingSubmissions}
                 className="w-full px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
               >
@@ -226,7 +263,8 @@ export default function SubmissionsModal({
             ) : (
               <div className="text-center py-2">
                 <span className="px-4 py-2 bg-green-100 text-green-800 rounded-full font-medium">
-                  Grade Finalized: {selectedSubmission.totalMarks}/{totalPossible}
+                  Grade Finalized: {selectedSubmission.totalMarks}/
+                  {totalPossible}
                 </span>
               </div>
             )}
@@ -238,53 +276,75 @@ export default function SubmissionsModal({
               const key = `${selectedSubmission.id}-${index}`;
               const localScore = gradingScores[key];
               const displayScore =
-                localScore !== undefined ? localScore : answer.obtainedMarks || 0;
+                localScore !== undefined
+                  ? localScore
+                  : answer.obtainedMarks || 0;
 
               return (
-                <div key={index} className="border-2 border-gray-200 rounded-2xl p-6">
+                <div
+                  key={index}
+                  className="border-2 border-gray-200 rounded-2xl p-6"
+                >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h5 className="text-lg font-semibold text-gray-900 mb-2">
                         Question {index + 1}
                       </h5>
-                      <p className="text-gray-700 mb-3">{answer.questionText}</p>
+                      <p className="text-gray-700 mb-3">
+                        {answer.questionText}
+                      </p>
                     </div>
                     <div className="text-right ml-4">
                       <p className="text-sm text-gray-600">Max Marks</p>
-                      <p className="text-lg font-bold text-gray-900">{answer.maxMarks}</p>
+                      <p className="text-lg font-bold text-gray-900">
+                        {answer.maxMarks}
+                      </p>
                     </div>
                   </div>
                   <div className="mb-4">
-                    <h6 className="font-medium text-gray-700 mb-2">Student&apos;s Answer:</h6>
+                    <h6 className="font-medium text-gray-700 mb-2">
+                      Student&apos;s Answer:
+                    </h6>
                     <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-gray-900">{answer.answer || "No answer provided"}</p>
+                      <p className="text-gray-900">
+                        {answer.answer || "No answer provided"}
+                      </p>
                     </div>
                   </div>{" "}
                   <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
                     <div className="flex items-center gap-2">
-                      <label className="text-sm font-medium text-gray-700">Marks:</label>
+                      <label className="text-sm font-medium text-gray-700">
+                        Marks:
+                      </label>
                       <input
                         type="number"
                         min="0"
                         max={answer.maxMarks}
                         value={displayScore}
                         onChange={(e) =>
-                          handleScoreChange(selectedSubmission.id, index, Number(e.target.value))
+                          handleScoreChange(
+                            selectedSubmission.id,
+                            index,
+                            Number(e.target.value),
+                          )
                         }
                         className="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                       />
                       <span className="text-gray-600">/ {answer.maxMarks}</span>
                     </div>
 
-                    {localScore !== undefined && localScore !== (answer.obtainedMarks || 0) && (
-                      <button
-                        onClick={() => handleUpdateScore(selectedSubmission.id, index)}
-                        disabled={loadingSubmissions}
-                        className="px-4 py-2 bg-purple-500 text-white font-medium rounded-lg hover:bg-purple-600 transition-all disabled:opacity-50"
-                      >
-                        {loadingSubmissions ? "Saving..." : "Update"}
-                      </button>
-                    )}
+                    {localScore !== undefined &&
+                      localScore !== (answer.obtainedMarks || 0) && (
+                        <button
+                          onClick={() =>
+                            handleUpdateScore(selectedSubmission.id, index)
+                          }
+                          disabled={loadingSubmissions}
+                          className="px-4 py-2 bg-purple-500 text-white font-medium rounded-lg hover:bg-purple-600 transition-all disabled:opacity-50"
+                        >
+                          {loadingSubmissions ? "Saving..." : "Update"}
+                        </button>
+                      )}
 
                     {answer.obtainedMarks !== null &&
                       answer.obtainedMarks !== undefined &&

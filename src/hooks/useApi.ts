@@ -9,7 +9,8 @@ export interface ExtendedRequestInit extends RequestInit {
 
 export const api = async (path: string, options?: ExtendedRequestInit) => {
   const baseUrl = BASE_API_URL;
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   let headers: Record<string, string> = {
     "Content-Type": "application/json"
@@ -21,7 +22,10 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
         ...headers,
         ...Object.fromEntries(Array.from(options.headers.entries()))
       };
-    } else if (typeof options.headers === "object" && !Array.isArray(options.headers)) {
+    } else if (
+      typeof options.headers === "object" &&
+      !Array.isArray(options.headers)
+    ) {
       headers = {
         ...headers,
         ...(options.headers as Record<string, string>)
@@ -61,7 +65,12 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     body = {};
   }
 
-  if (options?.date && typeof body === "object" && body !== null && !Array.isArray(body)) {
+  if (
+    options?.date &&
+    typeof body === "object" &&
+    body !== null &&
+    !Array.isArray(body)
+  ) {
     (body as Record<string, unknown>).requestDate = new Date().toISOString();
   }
 
@@ -91,7 +100,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     const cloned = res.clone();
     const contentType = cloned.headers.get("content-type");
 
-    let responseData: any;
+    let responseData: unknown;
 
     if (contentType?.includes("application/json")) {
       responseData = await cloned.json().catch(() => "⚠️ Failed to parse JSON");

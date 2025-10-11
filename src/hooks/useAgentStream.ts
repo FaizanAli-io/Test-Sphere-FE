@@ -51,7 +51,7 @@ export function useAgentStream(): UseAgentStreamState {
           body: JSON.stringify({ prompt: msg }),
           signal: controller.signal,
           stream: true,
-          auth: true
+          auth: true,
         });
         if (!res.ok || !res.body) {
           throw new Error(`Request failed: ${res.status}`);
@@ -88,7 +88,7 @@ export function useAgentStream(): UseAgentStreamState {
         abort();
       }
     },
-    [message, isStreaming, abort]
+    [message, isStreaming, abort],
   );
 
   useEffect(() => () => abort(), [abort]);

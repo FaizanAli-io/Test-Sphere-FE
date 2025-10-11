@@ -35,9 +35,9 @@ export function useImageKitUploader() {
           publicKey: data.publicKey,
           urlEndpoint: data.urlEndpoint
         });
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("⚠️ Failed to load ImageKit config:", err);
-        setError(err.message);
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
       } finally {
         setLoading(false);
       }
@@ -59,9 +59,9 @@ export function useImageKitUploader() {
     setUploadInfo(res);
   }, []);
 
-  const handleUploadError = useCallback((err: any) => {
+  const handleUploadError = useCallback((err: unknown) => {
     console.error("❌ Upload error:", err);
-    setError(err?.message || "Upload failed");
+    setError(err instanceof Error ? err.message : "Upload failed");
   }, []);
 
   return {
