@@ -5,6 +5,9 @@ import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import api from "../hooks/useApi";
 import CreateTestModal from "./CreateTestModal";
+import { useNotifications } from "../contexts/NotificationContext";
+import { useConfirmation } from "../hooks/useConfirmation";
+import ConfirmationModal from "./ConfirmationModal";
 
 // Removed unused Student interface
 
@@ -46,6 +49,8 @@ export default function ClassDetail(): ReactElement {
   const router = useRouter();
   const params = useParams();
   const classId = params?.classId as string;
+  const notifications = useNotifications();
+  const confirmation = useConfirmation();
 
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [tests, setTests] = useState<Test[]>([]);
@@ -233,7 +238,7 @@ export default function ClassDetail(): ReactElement {
   const handleAddQuestion = async () => {
     if (!selectedTestId) return;
     if (!newQuestion.text.trim()) {
-      alert("Please enter a question text");
+      notifications.showError("Please enter a question text");
       return;
     }
 
@@ -246,7 +251,7 @@ export default function ClassDetail(): ReactElement {
         newQuestion.correctAnswer === undefined ||
         newQuestion.correctAnswer < 0
       ) {
-        alert("Please select the correct answer");
+        notifications.showError("Please select the correct answer");
         return;
       }
     }
@@ -295,7 +300,7 @@ export default function ClassDetail(): ReactElement {
         throw new Error(errorData.message || "Failed to add question");
       }
 
-      alert("Question added successfully!");
+      notifications.showSuccess("Question added successfully!");
       setShowAddQuestionModal(false);
       setNewQuestion({
         id: 0,
@@ -309,7 +314,9 @@ export default function ClassDetail(): ReactElement {
       });
       await fetchQuestions(selectedTestId);
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error adding question");
+      notifications.showError(
+        err instanceof Error ? err.message : "Error adding question"
+      );
     } finally {
       setLoadingQuestions(false);
     }
@@ -602,7 +609,15 @@ export default function ClassDetail(): ReactElement {
   };
 
   const handleDeleteQuestion = async (questionId: number) => {
-    if (!confirm("Are you sure you want to delete this question?")) return;
+    const confirmed = await confirmation.confirm({
+      title: "Delete Question",
+      message:
+        "Are you sure you want to delete this question? This action cannot be undone.",
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger"
+    });
+    if (!confirmed) return;
 
     try {
       const res = await api(`/tests/questions/${questionId}`, {
@@ -2089,6 +2104,18 @@ export default function ClassDetail(): ReactElement {
         onClose={() => setShowCreateTestModal(false)}
         onTestCreated={handleTestCreated}
         prefilledClassId={classData?.id ? Number(classData.id) : undefined}
+      />
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmation.isOpen}
+        title={confirmation.options.title}
+        message={confirmation.options.message}
+        confirmText={confirmation.options.confirmText}
+        cancelText={confirmation.options.cancelText}
+        type={confirmation.options.type}
+        onConfirm={confirmation.handleConfirm}
+        onCancel={confirmation.handleCancel}
       />
     </div>
   );

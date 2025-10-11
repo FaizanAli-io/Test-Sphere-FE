@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import api from "../hooks/useApi";
+import React, { useState, useEffect } from "react";
+import { useNotifications } from "../contexts/NotificationContext";
 
 interface Class {
   id: string;
-  name: string;
-  description: string;
   code: string;
+  name: string;
   createdBy: string;
-  students?: Array<{ id: number; name: string; email: string }>;
   createdAt?: string;
+  description: string;
+  students?: Array<{ id: number; name: string; email: string }>;
 }
 
 interface TestData {
@@ -20,7 +21,7 @@ interface TestData {
   duration: number;
   startAt: string;
   endAt: string;
-  status: "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
+  status: "DRAFT" | "ACTIVE" | "CLOSED";
 }
 
 interface CreateTestModalProps {
@@ -34,8 +35,9 @@ export default function CreateTestModal({
   isOpen,
   onClose,
   onTestCreated,
-  prefilledClassId,
+  prefilledClassId
 }: CreateTestModalProps) {
+  const notifications = useNotifications();
   const [formData, setFormData] = useState<TestData>({
     classId: prefilledClassId || 0,
     title: "",
@@ -43,7 +45,7 @@ export default function CreateTestModal({
     duration: 60,
     startAt: "",
     endAt: "",
-    status: "DRAFT",
+    status: "DRAFT"
   });
 
   const [loading, setLoading] = useState(false);
@@ -65,7 +67,7 @@ export default function CreateTestModal({
       setClasses(data);
     } catch (err) {
       setClassesError(
-        err instanceof Error ? err.message : "Failed to fetch classes",
+        err instanceof Error ? err.message : "Failed to fetch classes"
       );
     } finally {
       setClassesLoading(false);
@@ -78,7 +80,7 @@ export default function CreateTestModal({
     }
   }, [isOpen]);
 
-  const validateDates = (startAt: string, endAt: string) => {
+  const validateDates = (startAt: string, endAt: string, duration: number) => {
     if (!startAt || !endAt) {
       setDateError(null);
       return;
@@ -86,9 +88,14 @@ export default function CreateTestModal({
 
     const startDate = new Date(startAt);
     const endDate = new Date(endAt);
+    const requiredEndDate = new Date(
+      startDate.getTime() + duration * 60 * 1000
+    );
 
-    if (endDate <= startDate) {
-      setDateError("End date and time must be later than start date and time");
+    if (endDate < requiredEndDate) {
+      setDateError(
+        `End date and time must be at least ${duration} minutes after start date and time`
+      );
     } else {
       setDateError(null);
     }
@@ -96,16 +103,17 @@ export default function CreateTestModal({
 
   const handleChange = <K extends keyof TestData>(
     key: K,
-    value: TestData[K],
+    value: TestData[K]
   ) => {
     const newFormData = { ...formData, [key]: value };
     setFormData(newFormData);
 
-    // Validate dates when start or end date changes
-    if (key === "startAt" || key === "endAt") {
+    // Validate dates when start date, end date, or duration changes
+    if (key === "startAt" || key === "endAt" || key === "duration") {
       validateDates(
         key === "startAt" ? (value as string) : newFormData.startAt,
         key === "endAt" ? (value as string) : newFormData.endAt,
+        key === "duration" ? (value as number) : newFormData.duration
       );
     }
   };
@@ -118,7 +126,7 @@ export default function CreateTestModal({
       duration: 60,
       startAt: "",
       endAt: "",
-      status: "DRAFT",
+      status: "DRAFT"
     });
     setClasses([]);
     setClassesError(null);
@@ -134,32 +142,37 @@ export default function CreateTestModal({
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      alert("Please enter a test title");
+      notifications.showError("Please enter a test title");
       return;
     }
 
     if (!formData.classId || formData.classId <= 0) {
-      alert("Please select a class");
+      notifications.showError("Please select a class");
       return;
     }
 
     if (!formData.startAt || !formData.endAt) {
-      alert("Please set both start and end date/time");
+      notifications.showError("Please set both start and end date/time");
       return;
     }
 
     // Check if there's a date validation error
     if (dateError) {
-      alert(dateError);
+      notifications.showError(dateError);
       return;
     }
 
-    // Validate that end date is not earlier than start date (double-check)
+    // Validate that end date meets the duration requirement (double-check)
     const startDate = new Date(formData.startAt);
     const endDate = new Date(formData.endAt);
+    const requiredEndDate = new Date(
+      startDate.getTime() + formData.duration * 60 * 1000
+    );
 
-    if (endDate <= startDate) {
-      alert("End date and time must be later than start date and time");
+    if (endDate < requiredEndDate) {
+      notifications.showError(
+        `End date and time must be at least ${formData.duration} minutes after start date and time`
+      );
       return;
     }
 
@@ -172,13 +185,13 @@ export default function CreateTestModal({
         duration: Number(formData.duration),
         startAt: formData.startAt,
         endAt: formData.endAt,
-        status: formData.status,
+        status: formData.status
       };
 
       const res = await api("/tests", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -187,7 +200,9 @@ export default function CreateTestModal({
       }
 
       const data = await res.json();
-      alert(`✅ Test created successfully!\n\nTest ID: ${data.id}`);
+      notifications.showSuccess(
+        `Test created successfully! Test ID: ${data.id}`
+      );
 
       if (onTestCreated) {
         onTestCreated(data.id);
@@ -196,7 +211,9 @@ export default function CreateTestModal({
       handleClose();
     } catch (err) {
       console.error("Failed to create test:", err);
-      alert(err instanceof Error ? err.message : "Error creating test");
+      notifications.showError(
+        err instanceof Error ? err.message : "Error creating test"
+      );
     } finally {
       setLoading(false);
     }
@@ -415,9 +432,9 @@ export default function CreateTestModal({
                 {Math.round(
                   (new Date(formData.endAt).getTime() -
                     new Date(formData.startAt).getTime()) /
-                    (1000 * 60),
+                    (1000 * 60)
                 )}{" "}
-                minutes duration)
+                minutes available, {formData.duration} minutes required)
               </div>
             ) : null}
           </div>
@@ -435,12 +452,15 @@ export default function CreateTestModal({
               }
               className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium"
             >
-              <option value="DRAFT">Draft - Not visible to students</option>
               <option value="ACTIVE">
                 Active - Students can take the test
               </option>
-              <option value="COMPLETED">Completed - Test has ended</option>
-              <option value="ARCHIVED">Archived - Test is archived</option>
+              <option value="DRAFT">
+                Draft - Created but not visible to students
+              </option>
+              <option value="CLOSED">
+                Closed - Test has ended and can no longer be attempted
+              </option>
             </select>
           </div>
 

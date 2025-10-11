@@ -1,14 +1,8 @@
-// Main component export
-export { default } from "./TestDetail";
-export { default as TestDetail } from "./TestDetail";
-
-// Types export
+export * from "./hooks";
 export * from "./types";
 
-// Hook exports
-export * from "./hooks";
+export { default } from "./TestDetail";
 
-// Component exports
 export { default as EditTestModal } from "./EditTestModal";
 export { default as AIApprovalModal } from "./AIApprovalModal";
 export { default as AddQuestionModal } from "./AddQuestionModal";

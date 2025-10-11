@@ -9,8 +9,7 @@ interface AddQuestionModalProps {
   setAiPrompt: (prompt: string) => void;
   aiGenerating: boolean;
   aiPdfUploading: boolean;
-  aiDesiredCount: number;
-  setAiDesiredCount: (count: number) => void;
+
   aiMessages: string[];
   showAiSection: boolean;
   setShowAiSection: (show: boolean) => void;
@@ -27,14 +26,13 @@ export default function AddQuestionModal({
   setAiPrompt,
   aiGenerating,
   aiPdfUploading,
-  aiDesiredCount,
-  setAiDesiredCount,
+
   aiMessages,
   showAiSection,
   setShowAiSection,
   handleGenerateFromPrompt,
   handleGenerateFromPdf,
-  loadingQuestions,
+  loadingQuestions
 }: AddQuestionModalProps) {
   const [newQuestion, setNewQuestion] = useState<Question>({
     id: 0,
@@ -44,7 +42,7 @@ export default function AddQuestionModal({
     options: ["Option A", "Option B", "Option C", "Option D"],
     correctAnswer: 0,
     maxMarks: 1,
-    image: "",
+    image: ""
   });
 
   const handleAddQuestion = async () => {
@@ -58,7 +56,7 @@ export default function AddQuestionModal({
         options: ["Option A", "Option B", "Option C", "Option D"],
         correctAnswer: 0,
         maxMarks: 1,
-        image: "",
+        image: ""
       });
       onClose();
     }
@@ -73,7 +71,7 @@ export default function AddQuestionModal({
       options: ["Option A", "Option B", "Option C", "Option D"],
       correctAnswer: 0,
       maxMarks: 1,
-      image: "",
+      image: ""
     });
     onClose();
   };
@@ -116,34 +114,14 @@ export default function AddQuestionModal({
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 resize-none"
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Number of Questions
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={aiDesiredCount}
-                      onChange={(e) =>
-                        setAiDesiredCount(Number(e.target.value))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900"
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <button
-                      onClick={handleGenerateFromPrompt}
-                      disabled={aiGenerating}
-                      className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
-                    >
-                      {aiGenerating ? "Generating..." : "Generate from Prompt"}
-                    </button>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-3">OR</p>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={handleGenerateFromPrompt}
+                    disabled={aiGenerating}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+                  >
+                    {aiGenerating ? "Generating..." : "Generate from Prompt"}
+                  </button>
                   <input
                     type="file"
                     accept=".pdf"
@@ -153,14 +131,14 @@ export default function AddQuestionModal({
                     className="hidden"
                     id="pdf-upload"
                   />
-                  <label htmlFor="pdf-upload">
+                  <label htmlFor="pdf-upload" className="flex-1">
                     <button
                       type="button"
                       onClick={() =>
                         document.getElementById("pdf-upload")?.click()
                       }
                       disabled={aiPdfUploading}
-                      className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+                      className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                     >
                       {aiPdfUploading
                         ? "Processing PDF..."
@@ -217,7 +195,7 @@ export default function AddQuestionModal({
                     correctAnswer:
                       type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE"
                         ? 0
-                        : undefined,
+                        : undefined
                   });
                 }}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white"
@@ -239,7 +217,7 @@ export default function AddQuestionModal({
                 onChange={(e) =>
                   setNewQuestion({
                     ...newQuestion,
-                    maxMarks: Number(e.target.value),
+                    maxMarks: Number(e.target.value)
                   })
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
@@ -294,7 +272,7 @@ export default function AddQuestionModal({
                       <button
                         onClick={() => {
                           const newOptions = newQuestion.options?.filter(
-                            (_, idx) => idx !== i,
+                            (_, idx) => idx !== i
                           );
                           setNewQuestion({
                             ...newQuestion,
@@ -305,7 +283,7 @@ export default function AddQuestionModal({
                                 : newQuestion.correctAnswer &&
                                     newQuestion.correctAnswer > i
                                   ? newQuestion.correctAnswer - 1
-                                  : newQuestion.correctAnswer,
+                                  : newQuestion.correctAnswer
                           });
                         }}
                         className="px-3 py-2 text-red-600 hover:bg-red-100 rounded-lg font-bold"
@@ -324,8 +302,8 @@ export default function AddQuestionModal({
                       ...newQuestion,
                       options: [
                         ...currentOptions,
-                        `Option ${String.fromCharCode(65 + currentOptions.length)}`,
-                      ],
+                        `Option ${String.fromCharCode(65 + currentOptions.length)}`
+                      ]
                     });
                   }
                 }}

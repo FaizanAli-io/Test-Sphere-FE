@@ -3,15 +3,15 @@
 import React, { useState } from "react";
 import { BookOpen } from "lucide-react";
 
-import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 import {
-  useStudentClasses,
   useClassDetails,
+  useNotifications,
   useTestsForClass,
-  useNotifications
+  useStudentClasses
 } from "./hooks";
 import { ClassData } from "./types";
 import { JoinClassModal, ClassDetailsModal, TestsModal } from "./Modals";
+import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 
 export default function StudentPortal() {
   // Hook-based state management

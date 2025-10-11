@@ -214,7 +214,7 @@ export function TestsModal({
                 </div>
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => router.push(`/take-test/${test.id}`)}
+                    onClick={() => router.push(`/give-test/${test.id}`)}
                     className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                   >
                     Take Test

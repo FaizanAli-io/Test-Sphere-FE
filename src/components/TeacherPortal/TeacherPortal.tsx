@@ -5,11 +5,11 @@ import type { ReactElement } from "react";
 import { useRouter } from "next/navigation";
 import { GraduationCap } from "lucide-react";
 
-import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 import { Class, KickConfirm } from "./types";
 import CreateTestModal from "../CreateTestModal";
 import { ConfirmationModal, ClassModal } from "./Modals";
 import { useTeacherPortal, useClassDetails } from "./hooks";
+import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 
 export default function TeacherPortal(): ReactElement {
   const router = useRouter();

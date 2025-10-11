@@ -28,8 +28,8 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
+    const token = localStorage.getItem("token");
 
     if (!token && !publicRoutes.includes(pathname)) {
       router.replace("/");

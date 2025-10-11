@@ -1,6 +1,6 @@
+import Image from "next/image";
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 
 import { Question, Test } from "./types";
 import EditTestModal from "./EditTestModal";
@@ -14,6 +14,9 @@ import {
   useAIQuestions,
   useSubmissions
 } from "./hooks";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { useConfirmation } from "@/hooks/useConfirmation";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 interface TestDetailProps {
   testId?: string;
@@ -23,6 +26,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const params = useParams();
   const router = useRouter();
   const testId = propTestId || (params?.testId as string);
+  const notifications = useNotifications();
+  const confirmation = useConfirmation();
 
   // State management
   const [showEditTestModal, setShowEditTestModal] = useState(false);
@@ -31,10 +36,23 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   // Custom hooks - using the original hook structure
-  const testDetailHook = useTestDetail(testId);
-  const questionsHook = useQuestions(testId);
-  const submissionsHook = useSubmissions(testId);
-  const aiQuestionsHook = useAIQuestions(testId, questionsHook.fetchQuestions);
+  const testDetailHook = useTestDetail(
+    testId,
+    notifications,
+    confirmation.confirm
+  );
+  const questionsHook = useQuestions(
+    testId,
+    notifications,
+    confirmation.confirm
+  );
+  const submissionsHook = useSubmissions(testId, notifications);
+  const aiQuestionsHook = useAIQuestions(
+    testId,
+    questionsHook.fetchQuestions,
+    notifications,
+    () => setShowAddQuestionModal(false)
+  );
 
   // Extract values from hooks
   const test = testDetailHook.testData;
@@ -86,9 +104,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleDeleteQuestion = async (questionId: number) => {
-    if (window.confirm("Are you sure you want to delete this question?")) {
-      await questionsHook.handleDeleteQuestion(questionId);
-    }
+    await questionsHook.handleDeleteQuestion(questionId);
   };
 
   const handleViewSubmissions = () => {
@@ -332,7 +348,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                                 className={`p-3 rounded-lg border ${
                                   question.correctAnswer === optIndex
                                     ? "bg-green-50 border-green-200 text-green-800"
-                                    : "bg-gray-50 border-gray-200"
+                                    : "bg-gray-50 border-gray-200 text-gray-900"
                                 }`}
                               >
                                 <span className="font-medium">
@@ -353,13 +369,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                         <div className="flex gap-4">
                           <div
                             className={`p-3 rounded-lg border ${
-                              question.correctAnswer === 0
+                              question.correctAnswer === 1
                                 ? "bg-green-50 border-green-200 text-green-800"
-                                : "bg-gray-50 border-gray-200"
+                                : "bg-gray-50 border-gray-200 text-gray-900"
                             }`}
                           >
                             True{" "}
-                            {question.correctAnswer === 0 && (
+                            {question.correctAnswer === 1 && (
                               <span className="text-green-600 font-bold">
                                 ✓
                               </span>
@@ -367,13 +383,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                           </div>
                           <div
                             className={`p-3 rounded-lg border ${
-                              question.correctAnswer === 1
+                              question.correctAnswer === 0
                                 ? "bg-green-50 border-green-200 text-green-800"
-                                : "bg-gray-50 border-gray-200"
+                                : "bg-gray-50 border-gray-200 text-gray-900"
                             }`}
                           >
                             False{" "}
-                            {question.correctAnswer === 1 && (
+                            {question.correctAnswer === 0 && (
                               <span className="text-green-600 font-bold">
                                 ✓
                               </span>
@@ -492,8 +508,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         setAiPrompt={aiQuestionsHook.setAiPrompt}
         aiGenerating={aiQuestionsHook.aiGenerating}
         aiPdfUploading={aiQuestionsHook.aiPdfUploading}
-        aiDesiredCount={aiQuestionsHook.aiDesiredCount}
-        setAiDesiredCount={aiQuestionsHook.setAiDesiredCount}
         aiMessages={aiQuestionsHook.aiMessages}
         showAiSection={aiQuestionsHook.showAiSection}
         setShowAiSection={aiQuestionsHook.setShowAiSection}
@@ -517,7 +531,10 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         showAIApprovalModal={aiQuestionsHook.showApprovalModal}
         pendingAIQuestions={aiQuestionsHook.pendingApprovalQuestions}
         onClose={() => aiQuestionsHook.setShowApprovalModal(false)}
-        onApproveAIQuestion={aiQuestionsHook.handleApproveAndAddQuestions}
+        onApproveAIQuestion={async (question) => {
+          await aiQuestionsHook.handleApproveBatchQuestions([question]);
+        }}
+        onApproveMultipleQuestions={aiQuestionsHook.handleApproveBatchQuestions}
         onRejectAIQuestion={(index) => {
           // Remove question from pending list
           const newQuestions = [...aiQuestionsHook.pendingApprovalQuestions];
@@ -534,6 +551,17 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         onGradeSubmission={handleGradeSubmission}
         onUpdateIndividualScore={handleUpdateIndividualScore}
         loadingSubmissions={loadingSubmissions}
+      />
+
+      <ConfirmationModal
+        isOpen={confirmation.isOpen}
+        title={confirmation.options.title}
+        message={confirmation.options.message}
+        confirmText={confirmation.options.confirmText}
+        cancelText={confirmation.options.cancelText}
+        type={confirmation.options.type}
+        onConfirm={confirmation.handleConfirm}
+        onCancel={confirmation.handleCancel}
       />
     </div>
   );

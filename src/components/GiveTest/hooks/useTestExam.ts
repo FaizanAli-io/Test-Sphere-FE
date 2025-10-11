@@ -1,0 +1,233 @@
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import api from "../../../hooks/useApi";
+
+export interface Question {
+  id: number;
+  text: string;
+  type: "TRUE_FALSE" | "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "LONG_ANSWER";
+  options?: string[];
+  maxMarks: number;
+  image?: string;
+}
+
+export interface Test {
+  id: number;
+  title: string;
+  description: string;
+  duration: number;
+  startAt: string;
+  endAt: string;
+  status: string;
+  questions: Question[];
+}
+
+export interface Answer {
+  questionId: number;
+  answer: string;
+}
+
+export const useTestExam = (testId: number | null) => {
+  const router = useRouter();
+
+  const [test, setTest] = useState<Test | null>(null);
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [testStarted, setTestStarted] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+
+  // Fetch test details
+  const fetchTestDetails = useCallback(async () => {
+    if (!testId) {
+      setError(
+        "Missing test id. Open this page as /give-test/[id] or /give-test?testId=123"
+      );
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await api(`/tests/${testId}`, { method: "GET", auth: true });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to fetch test");
+      }
+      const testData = await res.json();
+
+      // Fetch questions
+      const questionsRes = await api(`/tests/${testId}/questions`, {
+        method: "GET",
+        auth: true
+      });
+
+      if (!questionsRes.ok) {
+        const errorData = await questionsRes.json();
+        throw new Error(errorData.message || "Failed to fetch questions");
+      }
+      const questionsData = await questionsRes.json();
+
+      const fullTest = { ...testData, questions: questionsData };
+      setTest(fullTest);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load test");
+    } finally {
+      setLoading(false);
+    }
+  }, [testId]);
+
+  // Start the test
+  const startTest = useCallback(async () => {
+    if (!testId) {
+      setError(
+        "Missing test id. Open this page as /give-test/[id] or /give-test?testId=123"
+      );
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await api("/submissions/start", {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({ testId })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to start test");
+      }
+
+      await res.json();
+
+      setTestStarted(true);
+
+      if (test) {
+        const timeInSeconds = test.duration * 60;
+        setTimeRemaining(timeInSeconds);
+      } else {
+        setTimeRemaining(30 * 60);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error starting test");
+      setError(err instanceof Error ? err.message : "Failed to start test");
+    } finally {
+      setLoading(false);
+    }
+  }, [testId, test]);
+
+  // Handle answer change
+  const updateAnswer = (questionId: number, answer: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+  };
+
+  // Submit test
+  const submitTest = useCallback(async () => {
+    setSubmitting(true);
+
+    try {
+      const answersArray: Answer[] = Object.entries(answers).map(
+        ([questionId, answer]) => ({
+          questionId: Number(questionId),
+          answer: answer
+        })
+      );
+
+      const res = await api("/submissions/submit", {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({ answers: answersArray })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to submit test");
+      }
+
+      await res.json();
+
+      alert("Test submitted successfully!");
+      router.push("/student");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error submitting test");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [answers, router]);
+
+  // Timer effect
+  useEffect(() => {
+    if (!testStarted || timeRemaining <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          submitTest();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [testStarted, timeRemaining, submitTest]);
+
+  useEffect(() => {
+    fetchTestDetails();
+  }, [fetchTestDetails]);
+
+  // Calculate progress
+  const calculateProgress = () => {
+    if (!test) return 0;
+    const answered = Object.keys(answers).length;
+    const total = test.questions.length;
+    return total > 0 ? (answered / total) * 100 : 0;
+  };
+
+  // Format time display
+  const formatTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const answeredCount = Object.keys(answers).length;
+  const totalQuestions = test?.questions.length || 0;
+  const totalMarks =
+    test?.questions.reduce((sum, q) => sum + q.maxMarks, 0) || 0;
+
+  return {
+    // State
+    test,
+    answers,
+    loading,
+    submitting,
+    error,
+    testStarted,
+    timeRemaining,
+
+    // Computed values
+    answeredCount,
+    totalQuestions,
+    totalMarks,
+    progress: calculateProgress(),
+
+    // Actions
+    startTest,
+    updateAnswer,
+    submitTest,
+
+    // Utilities
+    formatTime
+  };
+};

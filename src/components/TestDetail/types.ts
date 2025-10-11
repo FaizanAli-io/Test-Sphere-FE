@@ -20,17 +20,6 @@ export interface Test {
   classId?: number;
 }
 
-export interface AIQuestionRaw {
-  text?: string;
-  question?: string;
-  type?: string;
-  options?: string[];
-  correctAnswer?: number | string;
-  answer?: number | string;
-  maxMarks?: number;
-  marks?: number;
-}
-
 // Backend enums
 export type SubmissionStatus = "IN_PROGRESS" | "SUBMITTED" | "GRADED";
 export type GradingStatus = "AUTOMATIC" | "PENDING" | "GRADED";
