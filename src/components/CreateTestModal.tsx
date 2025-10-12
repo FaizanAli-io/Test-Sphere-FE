@@ -106,6 +106,40 @@ export default function CreateTestModal({
     value: TestData[K]
   ) => {
     const newFormData = { ...formData, [key]: value };
+
+    // Auto-calculate end time when start time or duration changes
+    if (key === "startAt" && value) {
+      const startDate = new Date(value as string);
+      const endDate = new Date(
+        startDate.getTime() + newFormData.duration * 60 * 1000
+      );
+
+      // Format the end date for datetime-local input using local time (YYYY-MM-DDTHH:mm)
+      const year = endDate.getFullYear();
+      const month = String(endDate.getMonth() + 1).padStart(2, "0");
+      const day = String(endDate.getDate()).padStart(2, "0");
+      const hours = String(endDate.getHours()).padStart(2, "0");
+      const minutes = String(endDate.getMinutes()).padStart(2, "0");
+      const endDateString = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+      newFormData.endAt = endDateString;
+    } else if (key === "duration" && newFormData.startAt) {
+      const startDate = new Date(newFormData.startAt);
+      const endDate = new Date(
+        startDate.getTime() + (value as number) * 60 * 1000
+      );
+
+      // Format the end date for datetime-local input using local time (YYYY-MM-DDTHH:mm)
+      const year = endDate.getFullYear();
+      const month = String(endDate.getMonth() + 1).padStart(2, "0");
+      const day = String(endDate.getDate()).padStart(2, "0");
+      const hours = String(endDate.getHours()).padStart(2, "0");
+      const minutes = String(endDate.getMinutes()).padStart(2, "0");
+      const endDateString = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+      newFormData.endAt = endDateString;
+    }
+
     setFormData(newFormData);
 
     // Validate dates when start date, end date, or duration changes

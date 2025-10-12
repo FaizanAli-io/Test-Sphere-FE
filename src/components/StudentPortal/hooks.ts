@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "../../hooks/useApi";
-import { ClassData, Test } from "./types";
+import { ClassData, Test, StudentSubmission } from "./types";
 
 export function useStudentClasses() {
   const [classes, setClasses] = useState<ClassData[]>([]);
@@ -262,6 +262,75 @@ export function useTestsForClass() {
   };
 }
 
+export function useAllTests() {
+  const [allTests, setAllTests] = useState<Test[]>([]);
+  const [allTestsLoading, setAllTestsLoading] = useState<boolean>(false);
+  const [allTestsError, setAllTestsError] = useState<string | null>(null);
+
+  const fetchAllTests = useCallback(async (classes: ClassData[]) => {
+    setAllTestsLoading(true);
+    setAllTestsError(null);
+    try {
+      const allTestsFromClasses: Test[] = [];
+
+      // Fetch tests from each class the student is enrolled in
+      for (const classItem of classes) {
+        try {
+          const response = await api(`/tests/class/${classItem.id}`, {
+            method: "GET",
+            auth: true
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const classTests = Array.isArray(data)
+              ? data
+                  .map((test: any) => ({
+                    id: Number(test.id),
+                    title: test.title || "Untitled Test",
+                    description: test.description || "",
+                    classId: classItem.id,
+                    className: classItem.name,
+                    duration: Number(test.duration) || 0,
+                    startAt: test.startAt,
+                    endAt: test.endAt,
+                    status: test.status || "DRAFT",
+                    createdAt: test.createdAt
+                  }))
+                  .filter((test: Test) => Number.isFinite(test.id))
+              : [];
+
+            allTestsFromClasses.push(...classTests);
+          }
+        } catch (classErr) {
+          console.warn(
+            `Failed to fetch tests for class ${classItem.name}:`,
+            classErr
+          );
+          // Continue with other classes even if one fails
+        }
+      }
+
+      setAllTests(allTestsFromClasses);
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : "An unexpected error occurred";
+      setAllTestsError(errorMessage);
+    } finally {
+      setAllTestsLoading(false);
+    }
+  }, []);
+
+  return {
+    allTests,
+    allTestsLoading,
+    allTestsError,
+    fetchAllTests,
+    setAllTests,
+    setAllTestsError
+  };
+}
+
 export function useNotifications() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -301,5 +370,51 @@ export function useNotifications() {
     showError,
     clearError,
     handleCopyCode
+  };
+}
+
+export function useStudentSubmissions() {
+  const [submissions, setSubmissions] = useState<StudentSubmission[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchSubmissions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api("/submissions/student", {
+        method: "GET",
+        auth: true
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch submissions");
+      }
+
+      const data = await response.json();
+      setSubmissions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch submissions";
+      setError(errorMessage);
+      setSubmissions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch submissions on mount
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
+
+  return {
+    submissions,
+    loading,
+    error,
+    fetchSubmissions,
+    setSubmissions,
+    setError
   };
 }

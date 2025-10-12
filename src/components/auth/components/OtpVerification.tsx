@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Mail, KeyRound } from "lucide-react";
-import api from "../../../hooks/useApi";
-import { extractErrorMessage } from "../../../utils/error";
+
+import api from "@/hooks/useApi";
+import { extractErrorMessage } from "@/utils/error";
 
 interface RouterLike {
   push: (href: string) => void;
@@ -28,7 +29,7 @@ export default function OtpVerification({
   setSuccess,
   setLoading,
   onBackToLogin,
-  router,
+  router
 }: OtpVerificationProps) {
   const [otp, setOtp] = useState("");
   const [resendCooldown, setResendCooldown] = useState(60);
@@ -42,7 +43,7 @@ export default function OtpVerification({
         try {
           const res = await api("/auth/resend-otp", {
             method: "POST",
-            body: JSON.stringify({ email }),
+            body: JSON.stringify({ email })
           });
 
           // We intentionally ignore response body unless needed later
@@ -80,7 +81,7 @@ export default function OtpVerification({
     try {
       const res = await api("/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email, otp })
       });
 
       const data: { message?: string } = await res.json();
@@ -94,7 +95,7 @@ export default function OtpVerification({
       setTimeout(async () => {
         const loginRes = await api("/auth/login", {
           method: "POST",
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify({ email, password })
         });
         const loginData: {
           token?: string;
@@ -126,7 +127,7 @@ export default function OtpVerification({
     try {
       const res = await api("/auth/resend-otp", {
         method: "POST",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email })
       });
 
       const data = await res.json();

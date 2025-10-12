@@ -1,16 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BookOpen } from "lucide-react";
 
 import {
   useClassDetails,
   useNotifications,
   useTestsForClass,
-  useStudentClasses
+  useStudentClasses,
+  useAllTests,
+  useStudentSubmissions
 } from "./hooks";
-import { ClassData } from "./types";
-import { JoinClassModal, ClassDetailsModal, TestsModal } from "./Modals";
+import { ClassData, StudentSubmission } from "./types";
+import {
+  JoinClassModal,
+  ClassDetailsModal,
+  TestsModal,
+  SubmissionsListModal
+} from "./Modals";
+import { StudentSubmissionViewModal } from "./StudentSubmissionViewModal";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 
 export default function StudentPortal() {
@@ -41,6 +49,15 @@ export default function StudentPortal() {
   } = useTestsForClass();
 
   const {
+    allTests,
+    allTestsLoading,
+    allTestsError,
+    fetchAllTests,
+    setAllTests,
+    setAllTestsError
+  } = useAllTests();
+
+  const {
     success,
     error: notificationError,
     copiedCode,
@@ -50,6 +67,13 @@ export default function StudentPortal() {
     handleCopyCode: originalHandleCopyCode
   } = useNotifications();
 
+  const {
+    submissions,
+    loading: submissionsLoading,
+    error: submissionsError,
+    fetchSubmissions
+  } = useStudentSubmissions();
+
   // Local state for modals and form inputs
   const [classCode, setClassCode] = useState("");
   const [joining, setJoining] = useState(false);
@@ -57,6 +81,19 @@ export default function StudentPortal() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showTestsModal, setShowTestsModal] = useState(false);
   const [testsForClass, setTestsForClass] = useState<number | null>(null);
+  const [showSubmissionModal, setShowSubmissionModal] = useState(false);
+  const [selectedSubmission, setSelectedSubmission] =
+    useState<StudentSubmission | null>(null);
+  const [showSubmissionsListModal, setShowSubmissionsListModal] =
+    useState(false);
+  const [submissionsForClass, setSubmissionsForClass] = useState<number | null>(
+    null
+  );
+
+  // Fetch submissions on component mount
+  useEffect(() => {
+    fetchSubmissions();
+  }, [fetchSubmissions]);
 
   // Event handlers
   const handleJoinClass = async () => {
@@ -86,7 +123,10 @@ export default function StudentPortal() {
   };
 
   const handleLeaveClass = async (id: number, name: string) => {
-    if (!confirm(`Are you sure you want to leave "${name}"?`)) return;
+    const confirmed = window.confirm(
+      `Are you sure you want to leave "${name}"?`
+    );
+    if (!confirmed) return;
 
     clearError();
     try {
@@ -110,6 +150,16 @@ export default function StudentPortal() {
     }
   };
 
+  // Helper function to check if student has submission for a test
+  const getSubmissionForTest = (testId: number) => {
+    return submissions.find((sub) => sub.testId === testId);
+  };
+
+  const handleViewSubmission = (submission: StudentSubmission) => {
+    setSelectedSubmission(submission);
+    setShowSubmissionModal(true);
+  };
+
   const openTestsModal = async (cls: ClassData) => {
     setTestsForClass(cls.id);
     setShowTestsModal(true);
@@ -122,13 +172,28 @@ export default function StudentPortal() {
     }
   };
 
+  const openSubmissionsModal = async (cls: ClassData) => {
+    setSubmissionsForClass(cls.id);
+    setShowSubmissionsListModal(true);
+    // Submissions are already fetched via useStudentSubmissions hook
+  };
+
   const handleTakeTest = async () => {
-    const targetClass = selectedClass || classes[0];
-    if (!targetClass) {
-      alert("Please join or select a class first.");
+    if (classes.length === 0) {
+      showError("Please join a class first to see available tests.");
       return;
     }
-    await openTestsModal(targetClass);
+
+    // Show all tests from all classes
+    setTestsForClass(null); // null indicates "all tests" mode
+    setShowTestsModal(true);
+    try {
+      await fetchAllTests(classes);
+    } catch (err: unknown) {
+      showError(
+        err instanceof Error ? err.message : "An unexpected error occurred"
+      );
+    }
   };
 
   const closeTestsModal = () => {
@@ -136,6 +201,8 @@ export default function StudentPortal() {
     setTestsForClass(null);
     setTests([]);
     setTestsError(null);
+    setAllTests([]);
+    setAllTestsError(null);
   };
 
   // Wrapper for copy code to handle type compatibility
@@ -154,7 +221,11 @@ export default function StudentPortal() {
 
   // Determine which error to show
   const displayError =
-    notificationError || classesError || detailsError || testsError;
+    notificationError ||
+    classesError ||
+    detailsError ||
+    testsError ||
+    allTestsError;
 
   // Quick actions configuration
   const quickActions: QuickAction[] = [
@@ -167,20 +238,23 @@ export default function StudentPortal() {
       onClick: () => setShowJoinModal(true)
     },
     {
-      icon: "📝",
-      title: "Take a Test",
-      description: "Start your upcoming or active assignments and tests",
-      actionText: "Start Now",
+      icon: "📊",
+      title: "View Submissions",
+      description: "Review your test submissions and scores",
+      actionText: "View All",
       colorScheme: "orange",
-      onClick: handleTakeTest
+      onClick: () => {
+        setSubmissionsForClass(null); // null means all submissions
+        setShowSubmissionsListModal(true);
+      }
     }
   ];
 
   // Class card actions configuration
   const classCardActions: ClassCardAction[] = [
     {
-      label: "View",
-      onClick: (classData) => handleViewDetails(Number(classData.id)),
+      label: "Scores",
+      onClick: (classData) => openSubmissionsModal(classData as ClassData),
       colorScheme: "green"
     },
     {
@@ -240,9 +314,31 @@ export default function StudentPortal() {
         isOpen={showTestsModal}
         onClose={closeTestsModal}
         testsForClass={testsForClass}
-        tests={tests}
-        testsLoading={testsLoading}
-        error={testsError}
+        tests={testsForClass ? tests : allTests}
+        testsLoading={testsForClass ? testsLoading : allTestsLoading}
+        error={testsForClass ? testsError : allTestsError}
+        submissions={submissions}
+        getSubmissionForTest={getSubmissionForTest}
+        onViewSubmission={handleViewSubmission}
+      />
+
+      <SubmissionsListModal
+        isOpen={showSubmissionsListModal}
+        onClose={() => setShowSubmissionsListModal(false)}
+        submissionsForClass={submissionsForClass}
+        submissions={submissions}
+        loading={submissionsLoading}
+        error={submissionsError}
+        onViewSubmission={handleViewSubmission}
+      />
+
+      <StudentSubmissionViewModal
+        isOpen={showSubmissionModal}
+        onClose={() => {
+          setShowSubmissionModal(false);
+          setSelectedSubmission(null);
+        }}
+        submission={selectedSubmission}
       />
     </BasePortal>
   );

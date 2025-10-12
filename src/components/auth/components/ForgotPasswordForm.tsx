@@ -1,6 +1,7 @@
 import { Mail } from "lucide-react";
-import api from "../../../hooks/useApi";
-import { extractErrorMessage } from "../../../utils/error";
+
+import api from "@/hooks/useApi";
+import { extractErrorMessage } from "@/utils/error";
 
 interface ForgotPasswordFormProps {
   email: string;
@@ -19,7 +20,7 @@ export default function ForgotPasswordForm({
   setError,
   setSuccess,
   setLoading,
-  setOtpSent,
+  setOtpSent
 }: ForgotPasswordFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +30,7 @@ export default function ForgotPasswordForm({
     try {
       const res = await api("/auth/forgot-password", {
         method: "POST",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email })
       });
 
       const data: { message?: string } = await res.json();

@@ -95,7 +95,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleUpdateQuestion = async (question: Question) => {
-    const success = await questionsHook.handleUpdateQuestion(question);
+    const { id, testId, ...updates } = question;
+    const success = await questionsHook.updateQuestion(id, updates);
     if (success) {
       setShowEditQuestionModal(false);
       setEditingQuestion(null);
@@ -108,6 +109,11 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleViewSubmissions = () => {
+    submissionsHook.setShowSubmissionsModal(true);
+  };
+
+  const handleViewIndividualSubmission = (submissionId: number) => {
+    submissionsHook.setPreSelectedSubmissionId(submissionId);
     submissionsHook.setShowSubmissionsModal(true);
   };
 
@@ -128,6 +134,21 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       questionIndex,
       score
     );
+  };
+
+  // AI wrapper functions to match expected signatures
+  const handleGenerateFromPrompt = () => {
+    aiQuestionsHook.generateAIQuestions(aiQuestionsHook.aiPrompt);
+  };
+
+  const handleGenerateFromPdf = (file: File | null) => {
+    if (file) {
+      aiQuestionsHook.uploadPDFForQuestions(file);
+    }
+  };
+
+  const handleApproveMultipleQuestions = async (questions: Question[]) => {
+    await aiQuestionsHook.approveQuestions(questions);
   };
 
   // Hooks automatically fetch data when testId changes
@@ -453,7 +474,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               {submissions.slice(0, 6).map((submission) => (
                 <div
                   key={submission.id}
-                  className="border-2 border-gray-200 rounded-xl p-4 hover:border-purple-300 transition-all"
+                  className="border-2 border-gray-200 rounded-xl p-4 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer"
+                  onClick={() => handleViewIndividualSubmission(submission.id)}
                 >
                   <h4 className="font-semibold text-gray-900 mb-2">
                     {submission.student?.name || "Unknown Student"}
@@ -511,8 +533,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         aiMessages={aiQuestionsHook.aiMessages}
         showAiSection={aiQuestionsHook.showAiSection}
         setShowAiSection={aiQuestionsHook.setShowAiSection}
-        handleGenerateFromPrompt={aiQuestionsHook.handleGenerateFromPrompt}
-        handleGenerateFromPdf={aiQuestionsHook.handleGenerateFromPdf}
+        handleGenerateFromPrompt={handleGenerateFromPrompt}
+        handleGenerateFromPdf={handleGenerateFromPdf}
         loadingQuestions={loadingQuestions}
       />
 
@@ -532,9 +554,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         pendingAIQuestions={aiQuestionsHook.pendingApprovalQuestions}
         onClose={() => aiQuestionsHook.setShowApprovalModal(false)}
         onApproveAIQuestion={async (question) => {
-          await aiQuestionsHook.handleApproveBatchQuestions([question]);
+          await handleApproveMultipleQuestions([question]);
         }}
-        onApproveMultipleQuestions={aiQuestionsHook.handleApproveBatchQuestions}
+        onApproveMultipleQuestions={handleApproveMultipleQuestions}
         onRejectAIQuestion={(index) => {
           // Remove question from pending list
           const newQuestions = [...aiQuestionsHook.pendingApprovalQuestions];
@@ -547,10 +569,15 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       <SubmissionsModal
         showSubmissionsModal={submissionsHook.showSubmissionsModal}
         submissions={submissions}
-        onClose={() => submissionsHook.setShowSubmissionsModal(false)}
+        onClose={() => {
+          submissionsHook.setShowSubmissionsModal(false);
+          submissionsHook.setPreSelectedSubmissionId(undefined);
+        }}
         onGradeSubmission={handleGradeSubmission}
         onUpdateIndividualScore={handleUpdateIndividualScore}
         loadingSubmissions={loadingSubmissions}
+        preSelectedSubmissionId={submissionsHook.preSelectedSubmissionId}
+        fetchSubmissionDetails={submissionsHook.fetchSubmissionDetails}
       />
 
       <ConfirmationModal

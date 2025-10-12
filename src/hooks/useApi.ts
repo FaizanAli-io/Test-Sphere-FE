@@ -1,5 +1,6 @@
-export const BASE_API_URL = "http://localhost:3000";
-// export const BASE_API_URL = "https://test-sphere-be.onrender.com";
+export const BASE_API_URL = !process.env.NEXT_PUBLIC_DEV_MODE
+  ? "https://test-sphere-be.onrender.com"
+  : "http://localhost:3000";
 
 export interface ExtendedRequestInit extends RequestInit {
   auth?: boolean;

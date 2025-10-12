@@ -12,11 +12,11 @@ export default function EditTestModal({
   showEditTestModal,
   editingTest,
   onClose,
-  onUpdate,
+  onUpdate
 }: EditTestModalProps) {
   const [updatingTest, setUpdatingTest] = useState(false);
   const [localEditingTest, setLocalEditingTest] = useState<Test | null>(
-    editingTest,
+    editingTest
   );
 
   const handleUpdateTest = async () => {
@@ -52,7 +52,7 @@ export default function EditTestModal({
               value={localEditingTest?.title || ""}
               onChange={(e) =>
                 setLocalEditingTest((prev) =>
-                  prev ? { ...prev, title: e.target.value } : null,
+                  prev ? { ...prev, title: e.target.value } : null
                 )
               }
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
@@ -66,7 +66,7 @@ export default function EditTestModal({
               value={localEditingTest?.description || ""}
               onChange={(e) =>
                 setLocalEditingTest((prev) =>
-                  prev ? { ...prev, description: e.target.value } : null,
+                  prev ? { ...prev, description: e.target.value } : null
                 )
               }
               rows={3}
@@ -84,7 +84,7 @@ export default function EditTestModal({
                 value={localEditingTest?.duration || 0}
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
-                    prev ? { ...prev, duration: Number(e.target.value) } : null,
+                    prev ? { ...prev, duration: Number(e.target.value) } : null
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
@@ -100,15 +100,14 @@ export default function EditTestModal({
                   setLocalEditingTest((prev) =>
                     prev
                       ? { ...prev, status: e.target.value as Test["status"] }
-                      : null,
+                      : null
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900 bg-white"
               >
-                <option value="DRAFT">Draft</option>
                 <option value="ACTIVE">Active</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="ARCHIVED">Archived</option>
+                <option value="CLOSED">Closed</option>
+                <option value="DRAFT">Draft</option>
               </select>
             </div>
           </div>
@@ -122,7 +121,7 @@ export default function EditTestModal({
                 value={localEditingTest?.startAt?.slice(0, 16) || ""}
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
-                    prev ? { ...prev, startAt: e.target.value } : null,
+                    prev ? { ...prev, startAt: e.target.value } : null
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
@@ -137,7 +136,7 @@ export default function EditTestModal({
                 value={localEditingTest?.endAt?.slice(0, 16) || ""}
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
-                    prev ? { ...prev, endAt: e.target.value } : null,
+                    prev ? { ...prev, endAt: e.target.value } : null
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"

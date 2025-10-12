@@ -1,7 +1,7 @@
+import api from "@/hooks/useApi";
 import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "../../../utils/firebase";
-import api from "../../../hooks/useApi";
-import { extractErrorMessage } from "../../../utils/error";
+import { extractErrorMessage } from "@/utils/error";
+import { auth, googleProvider } from "@/utils/firebase";
 
 interface GoogleSignInProps {
   mode: "login" | "signup";
@@ -18,7 +18,7 @@ export default function GoogleSignIn({
   setError,
   setSuccess,
   setLoading,
-  router,
+  router
 }: GoogleSignInProps) {
   const handleGoogleSignIn = async () => {
     setError("");
@@ -40,33 +40,33 @@ export default function GoogleSignIn({
           uniqueIdentifier: `${user.email
             ?.split("@")[0]
             .slice(0, 10)}-${Math.floor(Math.random() * 10000)}`.slice(0, 20),
-          profileImage: user.photoURL || undefined,
+          profileImage: user.photoURL || undefined
         };
 
         console.log(
           "🚀 Google Signup Request:",
-          JSON.stringify(signupPayload, null, 2),
+          JSON.stringify(signupPayload, null, 2)
         );
 
         res = await api("/auth/signup", {
           method: "POST",
-          body: JSON.stringify(signupPayload),
+          body: JSON.stringify(signupPayload)
         });
       } else {
         // Google login payload - NO PASSWORD
         const loginPayload = {
           email: user.email,
-          firebaseId: user.uid,
+          firebaseId: user.uid
         };
 
         console.log(
           "🚀 Google Login Request:",
-          JSON.stringify(loginPayload, null, 2),
+          JSON.stringify(loginPayload, null, 2)
         );
 
         res = await api("/auth/login", {
           method: "POST",
-          body: JSON.stringify(loginPayload),
+          body: JSON.stringify(loginPayload)
         });
       }
 
@@ -78,7 +78,7 @@ export default function GoogleSignIn({
 
       if (!res.ok) {
         throw new Error(
-          data.message || `${mode === "signup" ? "Signup" : "Login"} failed`,
+          data.message || `${mode === "signup" ? "Signup" : "Login"} failed`
         );
       }
 

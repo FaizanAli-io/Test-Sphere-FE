@@ -1,5 +1,6 @@
 export * from "./hooks";
 export * from "./types";
+export * from "./utils";
 
 export { default } from "./TestDetail";
 

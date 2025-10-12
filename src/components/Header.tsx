@@ -98,9 +98,7 @@ export default function Header() {
           {/* TestSphere logo (left) */}
           <div className="flex items-center">
             <button
-              onClick={() =>
-                router.push(user?.role === "teacher" ? "/teacher" : "/student")
-              }
+              onClick={() => router.push("/" + user?.role.toLowerCase())}
               className="flex items-center gap-2 group"
               aria-label="Go to Dashboard"
             >

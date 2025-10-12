@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import api from "../../../hooks/useApi";
+import api from "@/hooks/useApi";
 
 export interface Question {
   id: number;

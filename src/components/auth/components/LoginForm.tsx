@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import api from "../../../hooks/useApi";
+
+import api from "@/hooks/useApi";
 import GoogleSignIn from "./GoogleSignIn";
-import { extractErrorMessage } from "../../../utils/error";
+import { extractErrorMessage } from "@/utils/error";
 
 interface RouterLike {
   push: (href: string) => void;

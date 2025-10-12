@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Lock, KeyRound, Eye, EyeOff } from "lucide-react";
-import api from "../../../hooks/useApi";
-import { extractErrorMessage } from "../../../utils/error";
+
+import api from "@/hooks/useApi";
+import { extractErrorMessage } from "@/utils/error";
 
 interface ResetPasswordFormProps {
   email: string;
@@ -18,7 +19,7 @@ export default function ResetPasswordForm({
   setError,
   setSuccess,
   setLoading,
-  onResetComplete,
+  onResetComplete
 }: ResetPasswordFormProps) {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -44,7 +45,7 @@ export default function ResetPasswordForm({
     try {
       const res = await api("/auth/reset-password", {
         method: "POST",
-        body: JSON.stringify({ email, otp, newPassword }),
+        body: JSON.stringify({ email, otp, newPassword })
       });
 
       const data: { message?: string } = await res.json();
@@ -72,7 +73,7 @@ export default function ResetPasswordForm({
     try {
       const res = await api("/auth/forgot-password", {
         method: "POST",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email })
       });
 
       const data = await res.json();
