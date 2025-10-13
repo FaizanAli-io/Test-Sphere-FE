@@ -9,14 +9,14 @@ import {
   useTestsForClass,
   useStudentClasses,
   useAllTests,
-  useStudentSubmissions
+  useStudentSubmissions,
 } from "./hooks";
 import { ClassData, StudentSubmission } from "./types";
 import {
   JoinClassModal,
   ClassDetailsModal,
   TestsModal,
-  SubmissionsListModal
+  SubmissionsListModal,
 } from "./Modals";
 import { StudentSubmissionViewModal } from "./StudentSubmissionViewModal";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
@@ -29,14 +29,14 @@ export default function StudentPortal() {
     error: classesError,
     fetchClasses,
     joinClass,
-    leaveClass
+    leaveClass,
   } = useStudentClasses();
 
   const {
     selectedClass,
     loadingDetails,
     error: detailsError,
-    fetchClassDetails
+    fetchClassDetails: _fetchClassDetails, // eslint-disable-line @typescript-eslint/no-unused-vars
   } = useClassDetails();
 
   const {
@@ -45,16 +45,16 @@ export default function StudentPortal() {
     error: testsError,
     fetchTestsForClass,
     setTests,
-    setError: setTestsError
+    setError: setTestsError,
   } = useTestsForClass();
 
   const {
     allTests,
     allTestsLoading,
     allTestsError,
-    fetchAllTests,
+    fetchAllTests: _fetchAllTests, // eslint-disable-line @typescript-eslint/no-unused-vars
     setAllTests,
-    setAllTestsError
+    setAllTestsError,
   } = useAllTests();
 
   const {
@@ -64,14 +64,14 @@ export default function StudentPortal() {
     showSuccess,
     showError,
     clearError,
-    handleCopyCode: originalHandleCopyCode
+    handleCopyCode: originalHandleCopyCode,
   } = useNotifications();
 
   const {
     submissions,
     loading: submissionsLoading,
     error: submissionsError,
-    fetchSubmissions
+    fetchSubmissions,
   } = useStudentSubmissions();
 
   // Local state for modals and form inputs
@@ -139,17 +139,6 @@ export default function StudentPortal() {
     }
   };
 
-  const handleViewDetails = async (id: number) => {
-    try {
-      await fetchClassDetails(id);
-      setShowDetailsModal(true);
-    } catch (err: unknown) {
-      showError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
-    }
-  };
-
   // Helper function to check if student has submission for a test
   const getSubmissionForTest = (testId: number) => {
     return submissions.find((sub) => sub.testId === testId);
@@ -178,24 +167,6 @@ export default function StudentPortal() {
     // Submissions are already fetched via useStudentSubmissions hook
   };
 
-  const handleTakeTest = async () => {
-    if (classes.length === 0) {
-      showError("Please join a class first to see available tests.");
-      return;
-    }
-
-    // Show all tests from all classes
-    setTestsForClass(null); // null indicates "all tests" mode
-    setShowTestsModal(true);
-    try {
-      await fetchAllTests(classes);
-    } catch (err: unknown) {
-      showError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
-    }
-  };
-
   const closeTestsModal = () => {
     setShowTestsModal(false);
     setTestsForClass(null);
@@ -216,7 +187,7 @@ export default function StudentPortal() {
     id: cls.id.toString(),
     // Students don't have access to student count, so we hide it by setting to undefined
     studentCount: undefined,
-    testCount: cls.testCount ?? cls.tests?.length ?? 0
+    testCount: cls.testCount ?? cls.tests?.length ?? 0,
   }));
 
   // Determine which error to show
@@ -235,7 +206,7 @@ export default function StudentPortal() {
       description: "Enter a class code provided by your teacher to join",
       actionText: "Join Now",
       colorScheme: "indigo",
-      onClick: () => setShowJoinModal(true)
+      onClick: () => setShowJoinModal(true),
     },
     {
       icon: "📊",
@@ -246,8 +217,8 @@ export default function StudentPortal() {
       onClick: () => {
         setSubmissionsForClass(null); // null means all submissions
         setShowSubmissionsListModal(true);
-      }
-    }
+      },
+    },
   ];
 
   // Class card actions configuration
@@ -255,19 +226,19 @@ export default function StudentPortal() {
     {
       label: "Scores",
       onClick: (classData) => openSubmissionsModal(classData as ClassData),
-      colorScheme: "green"
+      colorScheme: "green",
     },
     {
       label: "Tests",
       onClick: (classData) => openTestsModal(classData as ClassData),
-      colorScheme: "blue"
+      colorScheme: "blue",
     },
     {
       label: "Leave",
       onClick: (classData) =>
         handleLeaveClass(Number(classData.id), classData.name),
-      colorScheme: "red"
-    }
+      colorScheme: "red",
+    },
   ];
 
   return (

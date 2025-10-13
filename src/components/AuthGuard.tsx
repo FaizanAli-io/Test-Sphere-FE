@@ -31,7 +31,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     const role = localStorage.getItem("role");
     const token = localStorage.getItem("token");
 
-    if (!token && !publicRoutes.includes(pathname)) {
+    if (!token && pathname && !publicRoutes.includes(pathname)) {
       router.replace("/");
       return;
     }
@@ -40,13 +40,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       try {
         const userRole = role.toUpperCase();
 
-        if (matchesRoute(pathname, studentRoutes) && userRole !== "STUDENT") {
+        if (
+          pathname &&
+          matchesRoute(pathname, studentRoutes) &&
+          userRole !== "STUDENT"
+        ) {
           router.replace("/teacher");
           return;
         }
 
         const teacherRoutesWithClass = [...teacherRoutes, "/class/[classId]"];
         if (
+          pathname &&
           matchesRoute(pathname, teacherRoutesWithClass) &&
           userRole !== "TEACHER"
         ) {
@@ -72,7 +77,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     publicRoutes,
     studentRoutes,
     teacherRoutes,
-    matchesRoute
+    matchesRoute,
   ]);
 
   if (loading) {

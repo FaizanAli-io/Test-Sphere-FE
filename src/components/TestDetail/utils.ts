@@ -11,7 +11,7 @@ export const formatDate = (dateString: string | undefined): string => {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit"
+    second: "2-digit",
   });
 };
 
@@ -24,7 +24,7 @@ export const calculateTotalPossibleMarks = (
   if (!answers) return 0;
   return answers.reduce((total, answer) => {
     // Check both answer.maxMarks and answer.question.maxMarks
-    const maxMarks = answer.maxMarks || (answer as any).question?.maxMarks || 0;
+    const maxMarks = answer.maxMarks || answer.question?.maxMarks || 0;
     return total + maxMarks;
   }, 0);
 };

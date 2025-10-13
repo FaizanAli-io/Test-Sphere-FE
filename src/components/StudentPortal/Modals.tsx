@@ -5,7 +5,7 @@ import {
   Test,
   StudentSubmission,
   calculateSubmissionScore,
-  calculateSubmissionMaxScore
+  calculateSubmissionMaxScore,
 } from "./types";
 
 interface JoinClassModalProps {
@@ -25,7 +25,7 @@ export function JoinClassModal({
   setClassCode,
   onJoinClass,
   joining,
-  error
+  error,
 }: JoinClassModalProps) {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !joining) {
@@ -88,7 +88,7 @@ export function ClassDetailsModal({
   isOpen,
   onClose,
   selectedClass,
-  loadingDetails
+  loadingDetails,
 }: ClassDetailsModalProps) {
   if (!isOpen || !selectedClass) return null;
 
@@ -158,9 +158,8 @@ export function TestsModal({
   tests,
   testsLoading,
   error,
-  submissions,
   getSubmissionForTest,
-  onViewSubmission
+  onViewSubmission,
 }: TestsModalProps) {
   const router = useRouter();
 
@@ -285,7 +284,7 @@ export function SubmissionsListModal({
   submissions,
   loading,
   error,
-  onViewSubmission
+  onViewSubmission,
 }: SubmissionsListModalProps) {
   if (!isOpen) return null;
 
@@ -323,7 +322,7 @@ export function SubmissionsListModal({
       month: "short",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   };
 

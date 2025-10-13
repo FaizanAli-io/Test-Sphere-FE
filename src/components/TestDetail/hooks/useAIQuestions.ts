@@ -24,59 +24,68 @@ export const useAIQuestions = (
     new Set()
   );
 
-  const normalizeAIQuestion = (q: any): Question | null => {
-    const text = (q.text || q.question || "").trim();
-    if (!text) return null;
+  const normalizeAIQuestion = useCallback(
+    (q: Record<string, unknown>): Question | null => {
+      const text = String(q.text || q.question || "").trim();
+      if (!text) return null;
 
-    const rawType = (q.type || "MULTIPLE_CHOICE").toUpperCase();
-    let type: Question["type"] = "MULTIPLE_CHOICE";
+      const rawType = String(q.type || "MULTIPLE_CHOICE").toUpperCase();
+      let type: Question["type"] = "MULTIPLE_CHOICE";
 
-    if (
-      ["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(
-        rawType
-      )
-    ) {
-      type = rawType as Question["type"];
-    }
-
-    const maxMarks = Math.max(
-      1,
-      Number(q.maxMarks || q.marks || q.points || 1)
-    );
-
-    let options: string[] | undefined;
-    let correctAnswer: number | undefined;
-
-    if (type === "MULTIPLE_CHOICE") {
-      options = Array.isArray(q.options) ? q.options.filter(Boolean) : [];
-      if (!options || options.length < 2) {
-        options = ["Option A", "Option B", "Option C", "Option D"];
+      if (
+        [
+          "TRUE_FALSE",
+          "MULTIPLE_CHOICE",
+          "SHORT_ANSWER",
+          "LONG_ANSWER",
+        ].includes(rawType)
+      ) {
+        type = rawType as Question["type"];
       }
-      correctAnswer = Math.max(
-        0,
-        Math.min(options.length - 1, Number(q.correctAnswer || q.correct || 0))
-      );
-    } else if (type === "TRUE_FALSE") {
-      options = ["True", "False"];
-      correctAnswer =
-        q.correctAnswer === "False" ||
-        q.correctAnswer === false ||
-        q.correctAnswer === 1
-          ? 1
-          : 0;
-    }
 
-    return {
-      id: Math.random(), // Temporary ID for approval process
-      testId: Number(testId),
-      text,
-      type,
-      options,
-      correctAnswer,
-      maxMarks,
-      image: q.image
-    };
-  };
+      const maxMarks = Math.max(
+        1,
+        Number(q.maxMarks || q.marks || q.points || 1)
+      );
+
+      let options: string[] | undefined;
+      let correctAnswer: number | undefined;
+
+      if (type === "MULTIPLE_CHOICE") {
+        options = Array.isArray(q.options) ? q.options.filter(Boolean) : [];
+        if (!options || options.length < 2) {
+          options = ["Option A", "Option B", "Option C", "Option D"];
+        }
+        correctAnswer = Math.max(
+          0,
+          Math.min(
+            options.length - 1,
+            Number(q.correctAnswer || q.correct || 0)
+          )
+        );
+      } else if (type === "TRUE_FALSE") {
+        options = ["True", "False"];
+        correctAnswer =
+          q.correctAnswer === "False" ||
+          q.correctAnswer === false ||
+          q.correctAnswer === 1
+            ? 1
+            : 0;
+      }
+
+      return {
+        id: Math.random(), // Temporary ID for approval process
+        testId: Number(testId),
+        text,
+        type,
+        options,
+        correctAnswer,
+        maxMarks,
+        image: typeof q.image === "string" ? q.image : undefined,
+      };
+    },
+    [testId]
+  );
 
   const generateAIQuestions = useCallback(
     async (prompt: string) => {
@@ -95,13 +104,13 @@ export const useAIQuestions = (
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             testId,
             prompt: prompt.trim(),
-            stream: true
-          })
+            stream: true,
+          }),
         });
 
         if (!response.ok) {
@@ -165,7 +174,7 @@ export const useAIQuestions = (
         setAiGenerating(false);
       }
     },
-    [testId, notifications, closeModal]
+    [testId, notifications, closeModal, normalizeAIQuestion]
   );
 
   const uploadPDFForQuestions = useCallback(
@@ -180,9 +189,9 @@ export const useAIQuestions = (
         const response = await fetch("/api/ai/extract-questions-from-pdf", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: formData
+          body: formData,
         });
 
         if (!response.ok) {
@@ -217,7 +226,7 @@ export const useAIQuestions = (
         setAiPdfUploading(false);
       }
     },
-    [testId, notifications, closeModal]
+    [testId, notifications, closeModal, normalizeAIQuestion]
   );
 
   const approveQuestions = useCallback(
@@ -232,7 +241,7 @@ export const useAIQuestions = (
           maxMarks: q.maxMarks,
           options: q.options,
           correctAnswer: q.correctAnswer,
-          image: q.image
+          image: q.image,
         }));
 
         const promises = questionsToCreate.map((question) =>
@@ -240,9 +249,9 @@ export const useAIQuestions = (
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify(question)
+            body: JSON.stringify(question),
           })
         );
 
@@ -312,6 +321,6 @@ export const useAIQuestions = (
     // Backward compatibility aliases
     handleGenerateFromPrompt: generateAIQuestions,
     handleGenerateFromPdf: uploadPDFForQuestions,
-    handleApproveBatchQuestions: approveQuestions
+    handleApproveBatchQuestions: approveQuestions,
   };
 };

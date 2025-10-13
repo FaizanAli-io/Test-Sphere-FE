@@ -13,7 +13,7 @@ export function useStudentClasses() {
     try {
       const response = await api("/classes", {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -46,7 +46,7 @@ export function useStudentClasses() {
                     : typeof value.testCount === "number"
                       ? value.testCount
                       : 0,
-                  createdAt: value.createdAt as string | undefined
+                  createdAt: value.createdAt as string | undefined,
                 } as ClassData;
               }
               // Case 2: nested under 'class'
@@ -69,7 +69,7 @@ export function useStudentClasses() {
                   : typeof cls.testCount === "number"
                     ? cls.testCount
                     : 0,
-                createdAt: cls.createdAt as string | undefined
+                createdAt: cls.createdAt as string | undefined,
               } as ClassData;
             })
             .filter(Boolean) as ClassData[])
@@ -89,7 +89,7 @@ export function useStudentClasses() {
     const response = await api("/classes/join", {
       method: "POST",
       auth: true,
-      body: JSON.stringify({ code: classCode.trim().toUpperCase() })
+      body: JSON.stringify({ code: classCode.trim().toUpperCase() }),
     });
 
     if (!response.ok) {
@@ -104,7 +104,7 @@ export function useStudentClasses() {
   const leaveClass = useCallback(async (id: number) => {
     const response = await api(`/classes/${id}/leave`, {
       method: "POST",
-      auth: true
+      auth: true,
     });
 
     if (!response.ok) {
@@ -127,7 +127,7 @@ export function useStudentClasses() {
     fetchClasses,
     joinClass,
     leaveClass,
-    setError
+    setError,
   };
 }
 
@@ -142,7 +142,7 @@ export function useClassDetails() {
     try {
       const response = await api(`/classes/${id}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -168,7 +168,7 @@ export function useClassDetails() {
           : typeof data.testCount === "number"
             ? data.testCount
             : 0,
-        createdAt: data.createdAt
+        createdAt: data.createdAt,
       };
       setSelectedClass(normalized);
       return normalized;
@@ -188,7 +188,7 @@ export function useClassDetails() {
     error,
     fetchClassDetails,
     setSelectedClass,
-    setError
+    setError,
   };
 }
 
@@ -203,7 +203,7 @@ export function useTestsForClass() {
     try {
       const response = await api(`/tests/class/${id}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!response.ok) {
         const data = await response.json();
@@ -234,7 +234,7 @@ export function useTestsForClass() {
                   typeof obj.duration === "number" ? obj.duration : undefined,
                 startAt: obj.startAt,
                 endAt: obj.endAt,
-                status: obj.status
+                status: obj.status,
               } as Test;
             })
             .filter((v): v is Test => v !== null)
@@ -258,7 +258,7 @@ export function useTestsForClass() {
     error,
     fetchTestsForClass,
     setTests,
-    setError
+    setError,
   };
 }
 
@@ -278,25 +278,37 @@ export function useAllTests() {
         try {
           const response = await api(`/tests/class/${classItem.id}`, {
             method: "GET",
-            auth: true
+            auth: true,
           });
 
           if (response.ok) {
             const data = await response.json();
             const classTests = Array.isArray(data)
               ? data
-                  .map((test: any) => ({
-                    id: Number(test.id),
-                    title: test.title || "Untitled Test",
-                    description: test.description || "",
-                    classId: classItem.id,
-                    className: classItem.name,
-                    duration: Number(test.duration) || 0,
-                    startAt: test.startAt,
-                    endAt: test.endAt,
-                    status: test.status || "DRAFT",
-                    createdAt: test.createdAt
-                  }))
+                  .map(
+                    (test: Record<string, unknown>): Test => ({
+                      id: Number(test.id),
+                      title:
+                        typeof test.title === "string"
+                          ? test.title
+                          : "Untitled Test",
+                      description:
+                        typeof test.description === "string"
+                          ? test.description
+                          : "",
+                      classId: classItem.id,
+                      className: classItem.name,
+                      duration: Number(test.duration) || 0,
+                      startAt:
+                        typeof test.startAt === "string"
+                          ? test.startAt
+                          : undefined,
+                      endAt:
+                        typeof test.endAt === "string" ? test.endAt : undefined,
+                      status:
+                        typeof test.status === "string" ? test.status : "DRAFT",
+                    })
+                  )
                   .filter((test: Test) => Number.isFinite(test.id))
               : [];
 
@@ -327,7 +339,7 @@ export function useAllTests() {
     allTestsError,
     fetchAllTests,
     setAllTests,
-    setAllTestsError
+    setAllTestsError,
   };
 }
 
@@ -369,7 +381,7 @@ export function useNotifications() {
     showSuccess,
     showError,
     clearError,
-    handleCopyCode
+    handleCopyCode,
   };
 }
 
@@ -384,7 +396,7 @@ export function useStudentSubmissions() {
     try {
       const response = await api("/submissions/student", {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -415,6 +427,6 @@ export function useStudentSubmissions() {
     error,
     fetchSubmissions,
     setSubmissions,
-    setError
+    setError,
   };
 }

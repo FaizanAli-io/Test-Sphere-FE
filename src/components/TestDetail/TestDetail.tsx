@@ -12,7 +12,7 @@ import {
   useQuestions,
   useTestDetail,
   useAIQuestions,
-  useSubmissions
+  useSubmissions,
 } from "./hooks";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useConfirmation } from "@/hooks/useConfirmation";
@@ -95,7 +95,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleUpdateQuestion = async (question: Question) => {
-    const { id, testId, ...updates } = question;
+    const { id, ...updates } = question;
     const success = await questionsHook.updateQuestion(id, updates);
     if (success) {
       setShowEditQuestionModal(false);
@@ -197,7 +197,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       month: "long",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit"
+      minute: "2-digit",
     });
   };
 

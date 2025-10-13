@@ -8,7 +8,7 @@ import {
   calculateCurrentTotalMarks,
   calculateTimeTaken,
   formatAnswerText,
-  getCorrectAnswerText
+  getCorrectAnswerText,
 } from "../TestDetail/utils";
 
 interface SubmissionDetailProps {
@@ -16,7 +16,7 @@ interface SubmissionDetailProps {
   onBack: () => void;
   onClose: () => void;
   loadingSubmissionDetails: boolean;
-  fetchSubmissionDetails: (submissionId: number) => Promise<any>;
+  fetchSubmissionDetails: (submissionId: number) => Promise<SubmissionItem>;
 }
 
 export default function SubmissionDetail({
@@ -24,7 +24,7 @@ export default function SubmissionDetail({
   onBack,
   onClose,
   loadingSubmissionDetails,
-  fetchSubmissionDetails
+  fetchSubmissionDetails,
 }: SubmissionDetailProps) {
   const [gradingScores, setGradingScores] = useState<Record<string, number>>(
     {}
@@ -52,7 +52,7 @@ export default function SubmissionDetail({
       // Build the answers payload for the API
       const answers = Object.entries(gradingScores).map(
         ([key, obtainedMarks]) => {
-          const [submissionId, questionIndex] = key.split("-");
+          const [, questionIndex] = key.split("-");
           const questionIdx = parseInt(questionIndex);
 
           // Get the answerId from the submission's answers array
@@ -65,7 +65,7 @@ export default function SubmissionDetail({
 
           return {
             answerId: answer.id,
-            obtainedMarks
+            obtainedMarks,
           };
         }
       );
@@ -74,7 +74,7 @@ export default function SubmissionDetail({
       const response = await api(`/submissions/${submission.id}/grade`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ answers })
+        body: JSON.stringify({ answers }),
       });
 
       if (!response.ok) {
@@ -156,7 +156,7 @@ export default function SubmissionDetail({
           </div>
 
           {/* Test Information */}
-          {(submission as any).test && (
+          {submission.test && (
             <div className="bg-gradient-to-r from-blue-100 to-cyan-100 rounded-2xl p-8 border-2 border-blue-300 mb-6 shadow-lg">
               <h4 className="text-xl font-bold text-gray-900 mb-4">
                 📋 Test Information
@@ -165,33 +165,33 @@ export default function SubmissionDetail({
                 <div className="bg-white/70 rounded-lg p-3">
                   <span className="font-bold text-gray-900">Title:</span>{" "}
                   <span className="text-gray-800 font-medium">
-                    {(submission as any).test.title}
+                    {submission.test.title}
                   </span>
                 </div>
                 <div className="bg-white/70 rounded-lg p-3">
                   <span className="font-bold text-gray-900">Duration:</span>{" "}
                   <span className="text-gray-800 font-medium">
-                    {(submission as any).test.duration} minutes
+                    {submission.test.duration} minutes
                   </span>
                 </div>
                 <div className="bg-white/70 rounded-lg p-3">
                   <span className="font-bold text-gray-900">Class:</span>{" "}
                   <span className="text-gray-800 font-medium">
-                    {(submission as any).test.class?.name}
+                    {submission.test.class?.name}
                   </span>
                 </div>
                 <div className="bg-white/70 rounded-lg p-3">
                   <span className="font-bold text-gray-900">Status:</span>{" "}
                   <span className="text-gray-800 font-medium">
-                    {(submission as any).test.status}
+                    {submission.test.status}
                   </span>
                 </div>
               </div>
-              {(submission as any).test.description && (
+              {submission.test.description && (
                 <div className="bg-white/70 rounded-lg p-4 mt-4">
                   <span className="font-bold text-gray-900">Description:</span>{" "}
                   <span className="text-gray-800 font-medium">
-                    {(submission as any).test.description}
+                    {submission.test.description}
                   </span>
                 </div>
               )}
@@ -207,31 +207,30 @@ export default function SubmissionDetail({
               <div className="bg-white/70 rounded-lg p-3 flex justify-between">
                 <span className="font-bold text-gray-900">Started:</span>
                 <span className="text-gray-800 font-medium">
-                  {formatDate((submission as any).startedAt)}
+                  {formatDate(submission.startedAt)}
                 </span>
               </div>
               <div className="bg-white/70 rounded-lg p-3 flex justify-between">
                 <span className="font-bold text-gray-900">Submitted:</span>
                 <span className="text-gray-800 font-medium">
-                  {formatDate((submission as any).submittedAt)}
+                  {formatDate(submission.submittedAt)}
                 </span>
               </div>
-              {(submission as any).gradedAt && (
+              {submission.gradedAt && (
                 <div className="bg-white/70 rounded-lg p-3 flex justify-between">
                   <span className="font-bold text-gray-900">Graded:</span>
                   <span className="text-gray-800 font-medium">
-                    {formatDate((submission as any).gradedAt)}
+                    {formatDate(submission.gradedAt)}
                   </span>
                 </div>
               )}
               <div className="bg-white/70 rounded-lg p-3 flex justify-between">
                 <span className="font-bold text-gray-900">Time Taken:</span>
                 <span className="text-gray-800 font-medium">
-                  {(submission as any).startedAt &&
-                  (submission as any).submittedAt
+                  {submission.startedAt && submission.submittedAt
                     ? `${calculateTimeTaken(
-                        (submission as any).startedAt,
-                        (submission as any).submittedAt
+                        submission.startedAt,
+                        submission.submittedAt
                       )} minutes`
                     : "Not available"}
                 </span>
@@ -250,13 +249,12 @@ export default function SubmissionDetail({
                   : answer.obtainedMarks || 0;
 
               // Get question details from the answer object
-              const question = (answer as any).question;
+              const question = answer.question;
               const studentAnswerText = answer.answer;
               // Get maxMarks from either answer.maxMarks or question.maxMarks
               const maxMarks = answer.maxMarks || question?.maxMarks || 0;
               const isCorrect = answer.obtainedMarks === maxMarks;
-              const isAutoGraded =
-                (answer as any).gradingStatus === "AUTOMATIC";
+              const isAutoGraded = answer.gradingStatus === "AUTOMATIC";
 
               // Use utility functions for formatting
               const formattedStudentAnswer = formatAnswerText(
@@ -324,7 +322,7 @@ export default function SubmissionDetail({
                   {/* Student's Answer */}
                   <div className="mb-4">
                     <h6 className="font-medium text-gray-700 mb-2">
-                      Student's Answer:
+                      Student&apos;s Answer:
                     </h6>
                     <div
                       className={`p-4 rounded-lg border-2 ${

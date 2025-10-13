@@ -16,18 +16,15 @@ interface SubmissionsModalProps {
   ) => Promise<void>;
   loadingSubmissions: boolean;
   preSelectedSubmissionId?: number;
-  fetchSubmissionDetails: (submissionId: number) => Promise<any>;
+  fetchSubmissionDetails: (submissionId: number) => Promise<SubmissionItem>;
 }
 
 export default function SubmissionsModal({
   showSubmissionsModal,
   submissions,
   onClose,
-  onGradeSubmission,
-  onUpdateIndividualScore,
-  loadingSubmissions,
   preSelectedSubmissionId,
-  fetchSubmissionDetails
+  fetchSubmissionDetails,
 }: SubmissionsModalProps) {
   const [selectedSubmission, setSelectedSubmission] =
     useState<SubmissionItem | null>(null);
@@ -51,8 +48,7 @@ export default function SubmissionsModal({
 
         // Only fetch detailed data if not already available
         const hasDetailedData =
-          (submission as any).test ||
-          submission.answers?.some((a) => (a as any).question);
+          submission.test || submission.answers?.some((a) => a.question);
 
         if (!hasDetailedData) {
           setLoadingSubmissionDetails(true);
@@ -75,7 +71,7 @@ export default function SubmissionsModal({
     submissions,
     selectedSubmission,
     hasNavigatedBack,
-    fetchSubmissionDetails
+    fetchSubmissionDetails,
   ]);
 
   // Reset states when modal closes
@@ -95,8 +91,7 @@ export default function SubmissionsModal({
 
     // Only show loading if we need to fetch detailed data
     const hasDetailedData =
-      (submission as any).test ||
-      submission.answers?.some((a) => (a as any).question);
+      submission.test || submission.answers?.some((a) => a.question);
 
     if (!hasDetailedData) {
       setLoadingSubmissionDetails(true);

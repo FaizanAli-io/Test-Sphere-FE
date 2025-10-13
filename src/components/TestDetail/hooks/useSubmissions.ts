@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from "react";
 import api from "../../../hooks/useApi";
 import {
   SubmissionItem,
-  SubmissionAnswer,
   GradingStatus,
   SubmissionStatus,
   GradeSubmissionPayload,
-  NotificationFunctions
+  NotificationFunctions,
+  QuestionType,
 } from "../types";
 
 /**
@@ -33,7 +33,7 @@ export const useSubmissions = (
     try {
       const response = await api(`/submissions/test/${testId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -45,34 +45,83 @@ export const useSubmissions = (
 
       // Normalize the data structure to handle various API response formats
       const normalized: SubmissionItem[] = Array.isArray(data)
-        ? data.map((s: any) => ({
-            id: Number(s.id ?? s.submissionId ?? s.submission?.id),
-            student: s.student ?? s.user ?? s.learner ?? undefined,
-            totalMarks: s.totalMarks ?? s.maxMarks ?? undefined,
-            obtainedMarks: s.obtainedMarks ?? s.score ?? null,
-            answers: Array.isArray(s.answers)
-              ? s.answers.map((ans: any) => ({
-                  id: Number(ans.id ?? ans.answerId),
-                  questionId: ans.questionId,
-                  questionText: ans.questionText ?? ans.question?.text,
-                  questionType: ans.questionType ?? ans.question?.type,
-                  maxMarks: ans.maxMarks ?? ans.question?.maxMarks,
-                  answer: ans.answer ?? ans.text,
-                  obtainedMarks: ans.obtainedMarks ?? ans.score ?? null,
-                  isAutoEvaluated:
-                    ans.isAutoEvaluated ?? ans.autoGraded ?? false,
-                  gradingStatus: (ans.gradingStatus ??
-                    ans.status ??
-                    "PENDING") as GradingStatus
-                }))
-              : [],
-            status: (s.status ??
-              s.submissionStatus ??
-              "SUBMITTED") as SubmissionStatus,
-            submittedAt: s.submittedAt,
-            gradedAt: s.gradedAt,
-            startedAt: s.startedAt
-          }))
+        ? data.map((s: Record<string, unknown>) => {
+            const submissionRecord = s as Record<string, unknown> & {
+              submission?: Record<string, unknown>;
+              answers?: unknown[];
+            };
+            return {
+              id: Number(
+                submissionRecord.id ??
+                  submissionRecord.submissionId ??
+                  submissionRecord.submission?.id
+              ),
+              student:
+                submissionRecord.student &&
+                typeof submissionRecord.student === "object"
+                  ? {
+                      id: Number(
+                        (submissionRecord.student as Record<string, unknown>).id
+                      ),
+                      name: String(
+                        (submissionRecord.student as Record<string, unknown>)
+                          .name || ""
+                      ),
+                      email: String(
+                        (submissionRecord.student as Record<string, unknown>)
+                          .email || ""
+                      ),
+                    }
+                  : undefined,
+              totalMarks:
+                typeof submissionRecord.totalMarks === "number"
+                  ? submissionRecord.totalMarks
+                  : typeof submissionRecord.maxMarks === "number"
+                    ? submissionRecord.maxMarks
+                    : undefined,
+              obtainedMarks:
+                typeof submissionRecord.obtainedMarks === "number"
+                  ? submissionRecord.obtainedMarks
+                  : typeof submissionRecord.score === "number"
+                    ? submissionRecord.score
+                    : null,
+              answers: Array.isArray(submissionRecord.answers)
+                ? submissionRecord.answers.map((ans: unknown) => {
+                    const answer = ans as Record<string, unknown> & {
+                      question?: Record<string, unknown>;
+                    };
+                    return {
+                      id: Number(answer.id ?? answer.answerId),
+                      questionId: answer.questionId as number | undefined,
+                      questionText: (answer.questionText ??
+                        answer.question?.text) as string | undefined,
+                      questionType: (answer.questionType ??
+                        answer.question?.type) as QuestionType | undefined,
+                      maxMarks: (answer.maxMarks ??
+                        answer.question?.maxMarks) as number | undefined,
+                      answer: (answer.answer ?? answer.text) as
+                        | string
+                        | undefined,
+                      obtainedMarks: (answer.obtainedMarks ??
+                        answer.score ??
+                        null) as number | null,
+                      isAutoEvaluated: (answer.isAutoEvaluated ??
+                        answer.autoGraded ??
+                        false) as boolean | undefined,
+                      gradingStatus: (answer.gradingStatus ??
+                        answer.status ??
+                        "PENDING") as GradingStatus | undefined,
+                    };
+                  })
+                : [],
+              status: (submissionRecord.status ??
+                submissionRecord.submissionStatus ??
+                "SUBMITTED") as SubmissionStatus,
+              submittedAt: submissionRecord.submittedAt as string,
+              gradedAt: submissionRecord.gradedAt as string,
+              startedAt: submissionRecord.startedAt as string,
+            };
+          })
         : [];
 
       setSubmissions(normalized.filter((s) => Number.isFinite(s.id)));
@@ -92,7 +141,7 @@ export const useSubmissions = (
       try {
         const response = await api(`/submissions/${submissionId}`, {
           method: "GET",
-          auth: true
+          auth: true,
         });
 
         if (!response.ok) {
@@ -133,7 +182,7 @@ export const useSubmissions = (
         const response = await api(`/submissions/${submissionId}/grade`, {
           method: "POST",
           auth: true,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -150,7 +199,7 @@ export const useSubmissions = (
               ? {
                   ...submission,
                   ...result,
-                  status: "GRADED" as SubmissionStatus
+                  status: "GRADED" as SubmissionStatus,
                 }
               : submission
           )
@@ -183,7 +232,7 @@ export const useSubmissions = (
       );
       setGradeDraft((prev) => ({
         ...prev,
-        [submissionId]: { ...(prev[submissionId] || {}), [answerId]: safe }
+        [submissionId]: { ...(prev[submissionId] || {}), [answerId]: safe },
       }));
     },
     []
@@ -195,7 +244,7 @@ export const useSubmissions = (
       const answersPayload = Object.entries(draft).map(
         ([answerId, obtainedMarks]) => ({
           answerId: Number(answerId),
-          obtainedMarks
+          obtainedMarks,
         })
       );
 
@@ -211,7 +260,7 @@ export const useSubmissions = (
         const response = await api(`/submissions/${submission.id}/grade`, {
           method: "POST",
           auth: true,
-          body: JSON.stringify({ answers: answersPayload })
+          body: JSON.stringify({ answers: answersPayload }),
         });
 
         if (!response.ok) {
@@ -231,7 +280,7 @@ export const useSubmissions = (
                   return {
                     ...answer,
                     obtainedMarks: gradeUpdate.obtainedMarks,
-                    gradingStatus: "GRADED" as GradingStatus
+                    gradingStatus: "GRADED" as GradingStatus,
                   };
                 }
                 return answer;
@@ -249,7 +298,7 @@ export const useSubmissions = (
                 answers: updatedAnswers,
                 obtainedMarks: totalObtained,
                 status: "GRADED" as SubmissionStatus,
-                gradedAt: new Date().toISOString()
+                gradedAt: new Date().toISOString(),
               };
             }
             return s;
@@ -296,6 +345,6 @@ export const useSubmissions = (
     setSubmissions,
     gradeDraft,
     updateDraftMark,
-    submitGrades
+    submitGrades,
   };
 };
