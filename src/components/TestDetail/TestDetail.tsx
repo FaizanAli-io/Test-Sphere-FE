@@ -67,7 +67,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     setShowEditTestModal(true);
   };
 
-  const handleUpdateTest = async (updatedTest: Test) => {
+  const handleUpdateTest = async (updatedTest: Partial<Test>) => {
     await testDetailHook.handleUpdateTest(updatedTest);
     setShowEditTestModal(false);
     return true;
@@ -95,7 +95,33 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleUpdateQuestion = async (question: Question) => {
-    const { id, ...updates } = question;
+    const { id } = question;
+
+    // Only send the fields that can be updated according to API documentation
+    const updates: any = {
+      text: question.text,
+      type: question.type,
+      maxMarks: question.maxMarks,
+    };
+
+    // Only include options for MULTIPLE_CHOICE questions
+    if (question.type === "MULTIPLE_CHOICE" && question.options) {
+      updates.options = question.options;
+    }
+
+    // Only include correctAnswer for MULTIPLE_CHOICE and TRUE_FALSE questions
+    if (
+      (question.type === "MULTIPLE_CHOICE" || question.type === "TRUE_FALSE") &&
+      typeof question.correctAnswer === "number"
+    ) {
+      updates.correctAnswer = question.correctAnswer;
+    }
+
+    // Include image if provided
+    if (question.image) {
+      updates.image = question.image;
+    }
+
     const success = await questionsHook.updateQuestion(id, updates);
     if (success) {
       setShowEditQuestionModal(false);
@@ -479,6 +505,11 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                 >
                   <h4 className="font-semibold text-gray-900 mb-2">
                     {submission.student?.name || "Unknown Student"}
+                    {submission.student?.id && (
+                      <span className="text-sm font-normal text-gray-600 ml-2">
+                        (ID: {submission.student.id})
+                      </span>
+                    )}
                   </h4>
                   <p className="text-sm text-gray-600 mb-2">
                     {submission.answers?.length || 0} questions answered

@@ -2,7 +2,7 @@ import React from "react";
 import {
   StudentSubmission,
   calculateSubmissionScore,
-  calculateSubmissionMaxScore
+  calculateSubmissionMaxScore,
 } from "./types";
 
 // Local utility functions for StudentSubmission
@@ -14,7 +14,7 @@ const formatDate = (dateString: string | undefined): string => {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit"
+    second: "2-digit",
   });
 };
 
@@ -63,7 +63,7 @@ interface StudentSubmissionViewModalProps {
 export function StudentSubmissionViewModal({
   isOpen,
   onClose,
-  submission
+  submission,
 }: StudentSubmissionViewModalProps) {
   if (!isOpen || !submission) return null;
 
@@ -227,6 +227,16 @@ export function StudentSubmissionViewModal({
               // Get maxMarks from question.maxMarks
               const maxMarks = question?.maxMarks || 0;
               const isCorrect = answer.obtainedMarks === maxMarks;
+              const isPending =
+                answer.gradingStatus === "PENDING" ||
+                (answer.obtainedMarks === null &&
+                  (question?.type === "SHORT_ANSWER" ||
+                    question?.type === "LONG_ANSWER"));
+              const isSubjectiveGraded =
+                (question?.type === "SHORT_ANSWER" ||
+                  question?.type === "LONG_ANSWER") &&
+                answer.obtainedMarks !== null &&
+                answer.gradingStatus === "GRADED";
 
               // Use utility functions for formatting
               const formattedStudentAnswer = formatAnswerText(
@@ -244,7 +254,15 @@ export function StudentSubmissionViewModal({
               return (
                 <div
                   key={index}
-                  className={`border-2 rounded-2xl p-6 ${isCorrect ? "border-green-200 bg-green-50" : "border-red-200 bg-red-50"}`}
+                  className={`border-2 rounded-2xl p-6 ${
+                    isPending
+                      ? "border-yellow-200 bg-yellow-50"
+                      : isSubjectiveGraded
+                        ? "border-blue-200 bg-blue-50"
+                        : isCorrect
+                          ? "border-green-200 bg-green-50"
+                          : "border-red-200 bg-red-50"
+                  }`}
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -273,12 +291,22 @@ export function StudentSubmissionViewModal({
                     <div className="text-right ml-4">
                       <div
                         className={`px-3 py-1 rounded-full text-sm font-bold ${
-                          isCorrect
-                            ? "bg-green-200 text-green-800"
-                            : "bg-red-200 text-red-800"
+                          isPending
+                            ? "bg-yellow-200 text-yellow-800"
+                            : isSubjectiveGraded
+                              ? "bg-blue-200 text-blue-800"
+                              : isCorrect
+                                ? "bg-green-200 text-green-800"
+                                : "bg-red-200 text-red-800"
                         }`}
                       >
-                        {isCorrect ? "✓ Correct" : "✗ Incorrect"}
+                        {isPending
+                          ? "⏳ Pending"
+                          : isSubjectiveGraded
+                            ? "📝 Graded"
+                            : isCorrect
+                              ? "✓ Correct"
+                              : "✗ Incorrect"}
                       </div>
                       <p className="text-lg font-bold text-gray-900 mt-2">
                         {answer.obtainedMarks !== null
@@ -296,9 +324,13 @@ export function StudentSubmissionViewModal({
                     </h6>
                     <div
                       className={`p-4 rounded-lg border-2 ${
-                        isCorrect
-                          ? "bg-green-100 border-green-300"
-                          : "bg-red-100 border-red-300"
+                        isPending
+                          ? "bg-yellow-100 border-yellow-300"
+                          : isSubjectiveGraded
+                            ? "bg-blue-100 border-blue-300"
+                            : isCorrect
+                              ? "bg-green-100 border-green-300"
+                              : "bg-red-100 border-red-300"
                       }`}
                     >
                       <p className="text-gray-900 font-medium">

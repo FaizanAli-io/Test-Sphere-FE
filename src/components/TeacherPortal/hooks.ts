@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../../hooks/useApi";
 import { Class, NewClass, KickConfirm } from "./types";
+import { useNotifications } from "../../contexts/NotificationContext";
 
 export const useTeacherPortal = () => {
   const [classes, setClasses] = useState<Class[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const notifications = useNotifications();
 
   const fetchClasses = useCallback(async () => {
     setLoading(true);
@@ -28,7 +30,7 @@ export const useTeacherPortal = () => {
                   ? cls.tests.length
                   : typeof cls.testCount === "number"
                     ? cls.testCount
-                    : 0
+                    : 0,
               }) as Class
           )
         : [];
@@ -43,7 +45,7 @@ export const useTeacherPortal = () => {
 
   const createClass = async (newClass: NewClass): Promise<boolean> => {
     if (!newClass.name.trim()) {
-      alert("Please enter a class name");
+      notifications.showError("Please enter a class name");
       return false;
     }
     setLoading(true);
@@ -51,7 +53,7 @@ export const useTeacherPortal = () => {
       const response = await api("/classes", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(newClass)
+        body: JSON.stringify(newClass),
       });
 
       if (!response.ok) {
@@ -60,13 +62,15 @@ export const useTeacherPortal = () => {
       }
 
       const data = await response.json();
-      alert(
-        `✅ Class created successfully!\n\nClass Code: ${data.code}\n\nShare this code with your students to join the class.`
+      notifications.showSuccess(
+        `Class created successfully! Class Code: ${data.code} - Share this code with your students to join the class.`
       );
       await fetchClasses();
       return true;
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to create class");
+      notifications.showError(
+        err instanceof Error ? err.message : "Failed to create class"
+      );
       return false;
     } finally {
       setLoading(false);
@@ -75,7 +79,7 @@ export const useTeacherPortal = () => {
 
   const updateClass = async (classToUpdate: Class): Promise<boolean> => {
     if (!classToUpdate.name.trim()) {
-      alert("Please enter a class name");
+      notifications.showError("Please enter a class name");
       return false;
     }
     setLoading(true);
@@ -85,8 +89,8 @@ export const useTeacherPortal = () => {
         auth: true,
         body: JSON.stringify({
           name: classToUpdate.name,
-          description: classToUpdate.description
-        })
+          description: classToUpdate.description,
+        }),
       });
 
       if (!response.ok) {
@@ -94,11 +98,13 @@ export const useTeacherPortal = () => {
         throw new Error(errorData.message || "Failed to update class");
       }
 
-      alert("✅ Class updated successfully!");
+      notifications.showSuccess("Class updated successfully!");
       await fetchClasses();
       return true;
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update class");
+      notifications.showError(
+        err instanceof Error ? err.message : "Failed to update class"
+      );
       return false;
     } finally {
       setLoading(false);
@@ -110,7 +116,7 @@ export const useTeacherPortal = () => {
     try {
       const response = await api(`/classes/${classId}`, {
         method: "DELETE",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -118,10 +124,12 @@ export const useTeacherPortal = () => {
         throw new Error(errorData.message || "Failed to delete class");
       }
 
-      alert("✅ Class deleted successfully!");
+      notifications.showSuccess("Class deleted successfully!");
       await fetchClasses();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete class");
+      notifications.showError(
+        err instanceof Error ? err.message : "Failed to delete class"
+      );
     } finally {
       setLoading(false);
     }
@@ -139,20 +147,21 @@ export const useTeacherPortal = () => {
     fetchClasses,
     createClass,
     updateClass,
-    deleteClass
+    deleteClass,
   };
 };
 
 export const useClassDetails = () => {
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [loading, setLoading] = useState(false);
+  const notifications = useNotifications();
 
   const fetchClassDetails = async (classId: string): Promise<Class | null> => {
     setLoading(true);
     try {
       const response = await api(`/classes/${classId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -167,13 +176,13 @@ export const useClassDetails = () => {
           ? data.tests.length
           : typeof data.testCount === "number"
             ? data.testCount
-            : 0
+            : 0,
       };
 
       setSelectedClass(normalized);
       return normalized;
     } catch (err) {
-      alert(
+      notifications.showError(
         err instanceof Error ? err.message : "Failed to fetch class details"
       );
       return null;
@@ -188,7 +197,7 @@ export const useClassDetails = () => {
       const response = await api(`/classes/${kickConfirm.classId}/kick`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ studentId: kickConfirm.studentId })
+        body: JSON.stringify({ studentId: kickConfirm.studentId }),
       });
 
       if (!response.ok) {
@@ -196,13 +205,17 @@ export const useClassDetails = () => {
         throw new Error(errorData.message || "Failed to remove student");
       }
 
-      alert(`✅ ${kickConfirm.studentName} has been removed from the class`);
+      notifications.showSuccess(
+        `${kickConfirm.studentName} has been removed from the class`
+      );
 
       // Refresh class details
       await fetchClassDetails(kickConfirm.classId);
       return true;
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to remove student");
+      notifications.showError(
+        err instanceof Error ? err.message : "Failed to remove student"
+      );
       return false;
     } finally {
       setLoading(false);
@@ -218,6 +231,6 @@ export const useClassDetails = () => {
     loading,
     fetchClassDetails,
     kickStudent,
-    clearSelectedClass
+    clearSelectedClass,
   };
 };

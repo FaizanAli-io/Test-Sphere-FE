@@ -4,7 +4,7 @@ import {
   formatDate,
   calculateTotalPossibleMarks,
   getSubmissionStatus,
-  getSubmissionStatusColor
+  getSubmissionStatusColor,
 } from "../TestDetail/utils";
 
 interface SubmissionsListProps {
@@ -16,7 +16,7 @@ interface SubmissionsListProps {
 export default function SubmissionsList({
   submissions,
   onClose,
-  onSelectSubmission
+  onSelectSubmission,
 }: SubmissionsListProps) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
@@ -59,6 +59,11 @@ export default function SubmissionsList({
                       <div>
                         <h4 className="text-lg font-bold text-gray-900 mb-1">
                           {submission.student?.name || "Unknown Student"}
+                          {submission.student?.id && (
+                            <span className="text-sm font-normal text-gray-600 ml-2">
+                              (ID: {submission.student.id})
+                            </span>
+                          )}
                         </h4>
                         <p className="text-gray-600 text-sm">
                           Submitted: {formatDate(submission.submittedAt)}

@@ -57,19 +57,28 @@ export const useSubmissions = (
                   submissionRecord.submission?.id
               ),
               student:
-                submissionRecord.student &&
-                typeof submissionRecord.student === "object"
+                // Backend returns user data, normalize to student
+                (submissionRecord.student || submissionRecord.user) &&
+                typeof (submissionRecord.student || submissionRecord.user) ===
+                  "object"
                   ? {
                       id: Number(
-                        (submissionRecord.student as Record<string, unknown>).id
+                        (
+                          (submissionRecord.student ||
+                            submissionRecord.user) as Record<string, unknown>
+                        ).id
                       ),
                       name: String(
-                        (submissionRecord.student as Record<string, unknown>)
-                          .name || ""
+                        (
+                          (submissionRecord.student ||
+                            submissionRecord.user) as Record<string, unknown>
+                        ).name || ""
                       ),
                       email: String(
-                        (submissionRecord.student as Record<string, unknown>)
-                          .email || ""
+                        (
+                          (submissionRecord.student ||
+                            submissionRecord.user) as Record<string, unknown>
+                        ).email || ""
                       ),
                     }
                   : undefined,

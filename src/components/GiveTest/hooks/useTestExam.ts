@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/hooks/useApi";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 export interface Question {
   id: number;
@@ -29,6 +30,7 @@ export interface Answer {
 
 export const useTestExam = (testId: number | null) => {
   const router = useRouter();
+  const notifications = useNotifications();
 
   const [test, setTest] = useState<Test | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -63,7 +65,7 @@ export const useTestExam = (testId: number | null) => {
       // Fetch questions
       const questionsRes = await api(`/tests/${testId}/questions`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!questionsRes.ok) {
@@ -96,7 +98,7 @@ export const useTestExam = (testId: number | null) => {
       const res = await api("/submissions/start", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ testId })
+        body: JSON.stringify({ testId }),
       });
 
       if (!res.ok) {
@@ -115,7 +117,9 @@ export const useTestExam = (testId: number | null) => {
         setTimeRemaining(30 * 60);
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error starting test");
+      notifications.showError(
+        err instanceof Error ? err.message : "Error starting test"
+      );
       setError(err instanceof Error ? err.message : "Failed to start test");
     } finally {
       setLoading(false);
@@ -135,14 +139,14 @@ export const useTestExam = (testId: number | null) => {
       const answersArray: Answer[] = Object.entries(answers).map(
         ([questionId, answer]) => ({
           questionId: Number(questionId),
-          answer: answer
+          answer: answer,
         })
       );
 
       const res = await api("/submissions/submit", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ answers: answersArray })
+        body: JSON.stringify({ answers: answersArray }),
       });
 
       if (!res.ok) {
@@ -152,10 +156,12 @@ export const useTestExam = (testId: number | null) => {
 
       await res.json();
 
-      alert("Test submitted successfully!");
+      notifications.showSuccess("Test submitted successfully!");
       router.push("/student");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Error submitting test");
+      notifications.showError(
+        err instanceof Error ? err.message : "Error submitting test"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -228,6 +234,6 @@ export const useTestExam = (testId: number | null) => {
     submitTest,
 
     // Utilities
-    formatTime
+    formatTime,
   };
 };

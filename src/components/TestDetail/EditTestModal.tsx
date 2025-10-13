@@ -5,7 +5,7 @@ interface EditTestModalProps {
   showEditTestModal: boolean;
   editingTest: Test | null;
   onClose: () => void;
-  onUpdate: (test: Test) => Promise<boolean>;
+  onUpdate: (test: Partial<Test>) => Promise<boolean>;
 }
 
 export default function EditTestModal({
@@ -24,7 +24,17 @@ export default function EditTestModal({
 
     setUpdatingTest(true);
     try {
-      const success = await onUpdate(localEditingTest);
+      // Only send the updatable fields, not the full object
+      const updatePayload: Partial<Test> = {
+        title: localEditingTest.title,
+        description: localEditingTest.description,
+        duration: localEditingTest.duration,
+        status: localEditingTest.status,
+        startAt: localEditingTest.startAt,
+        endAt: localEditingTest.endAt
+      };
+      
+      const success = await onUpdate(updatePayload);
       if (success) {
         onClose();
         setLocalEditingTest(null);

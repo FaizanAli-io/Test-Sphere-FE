@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import api from "./useApi";
 
 interface ImageKitConfig {
   publicKey: string;
@@ -28,12 +29,15 @@ export function useImageKitUploader() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await fetch("http://localhost:3000/upload/signature");
+        const res = await api("/upload/signature", {
+          method: "GET",
+          auth: true,
+        });
         if (!res.ok) throw new Error("Failed to load ImageKit config");
         const data = await res.json();
         setConfig({
           publicKey: data.publicKey,
-          urlEndpoint: data.urlEndpoint
+          urlEndpoint: data.urlEndpoint,
         });
       } catch (err: unknown) {
         console.error("⚠️ Failed to load ImageKit config:", err);
@@ -47,7 +51,10 @@ export function useImageKitUploader() {
 
   // 🔑 Authenticator function for IKContext
   const authenticator = useCallback(async () => {
-    const res = await fetch("http://localhost:3000/upload/signature");
+    const res = await api("/upload/signature", {
+      method: "GET",
+      auth: true,
+    });
     if (!res.ok) throw new Error("Failed to get signature");
     const { signature, expire, token } = await res.json();
     return { signature, expire, token };
@@ -71,6 +78,6 @@ export function useImageKitUploader() {
     error,
     loading,
     handleUploadSuccess,
-    handleUploadError
+    handleUploadError,
   };
 }

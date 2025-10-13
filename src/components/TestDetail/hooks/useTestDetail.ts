@@ -22,7 +22,7 @@ export const useTestDetail = (
     try {
       const testRes = await api(`/tests/${testId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!testRes.ok) {
@@ -36,7 +36,7 @@ export const useTestDetail = (
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch test details";
       setError(errorMessage);
-      notifications?.showError(errorMessage);
+      notifications?.showError?.(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,9 +48,9 @@ export const useTestDetail = (
 
       try {
         const response = await api(`/tests/${testId}`, {
-          method: "PUT",
+          method: "PATCH",
           auth: true,
-          body: JSON.stringify(updates)
+          body: JSON.stringify(updates),
         });
 
         if (!response.ok) {
@@ -60,12 +60,12 @@ export const useTestDetail = (
 
         const updatedTest = await response.json();
         setTestData(updatedTest);
-        notifications?.showSuccess("Test updated successfully");
+        notifications?.showSuccess?.("Test updated successfully");
         return true;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update test";
-        notifications?.showError(errorMessage);
+        notifications?.showError?.(errorMessage);
         return false;
       }
     },
@@ -80,7 +80,7 @@ export const useTestDetail = (
       message:
         "Are you sure you want to delete this test? This action cannot be undone.",
       confirmText: "Delete",
-      type: "danger"
+      type: "danger",
     });
 
     if (!confirmed) return false;
@@ -88,7 +88,7 @@ export const useTestDetail = (
     try {
       const response = await api(`/tests/${testId}`, {
         method: "DELETE",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -96,12 +96,12 @@ export const useTestDetail = (
         throw new Error(errorData.message || "Failed to delete test");
       }
 
-      notifications?.showSuccess("Test deleted successfully");
+      notifications?.showSuccess?.("Test deleted successfully");
       return true;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete test";
-      notifications?.showError(errorMessage);
+      notifications?.showError?.(errorMessage);
       return false;
     }
   }, [testId, notifications, confirm]);
@@ -123,6 +123,6 @@ export const useTestDetail = (
     setTestData,
     // Backward compatibility aliases
     handleUpdateTest: updateTest,
-    handleDeleteTest: deleteTest
+    handleDeleteTest: deleteTest,
   };
 };

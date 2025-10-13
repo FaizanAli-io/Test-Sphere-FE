@@ -10,9 +10,11 @@ import CreateTestModal from "../CreateTestModal";
 import { ConfirmationModal, ClassModal } from "./Modals";
 import { useTeacherPortal, useClassDetails } from "./hooks";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
+import { useNotifications } from "../../contexts/NotificationContext";
 
 export default function TeacherPortal(): ReactElement {
   const router = useRouter();
+  const notifications = useNotifications();
 
   // Hooks
   const { classes, loading, error, createClass, updateClass, deleteClass } =
@@ -86,8 +88,9 @@ export default function TeacherPortal(): ReactElement {
       await navigator.clipboard.writeText(code);
       setCopiedCode(id as string);
       setTimeout(() => setCopiedCode(null), 2000);
+      notifications.showSuccess("Class code copied to clipboard!");
     } catch {
-      alert("Failed to copy code");
+      notifications.showError("Failed to copy code");
     }
   };
 
@@ -96,7 +99,7 @@ export default function TeacherPortal(): ReactElement {
     ...cls,
     id: cls.id as string,
     studentCount: cls.studentCount ?? cls.students?.length ?? 0,
-    testCount: cls.testCount ?? cls.tests?.length ?? 0
+    testCount: cls.testCount ?? cls.tests?.length ?? 0,
   }));
 
   // Quick actions configuration
@@ -108,7 +111,7 @@ export default function TeacherPortal(): ReactElement {
         "Set up a new class and generate a unique join code for your students",
       actionText: "Get Started",
       colorScheme: "indigo",
-      onClick: () => setShowCreateModal(true)
+      onClick: () => setShowCreateModal(true),
     },
     {
       icon: "📝",
@@ -117,8 +120,8 @@ export default function TeacherPortal(): ReactElement {
         "Design comprehensive assessments and schedule them for your classes",
       actionText: "Get Started",
       colorScheme: "orange",
-      onClick: () => setShowCreateTestModal(true)
-    }
+      onClick: () => setShowCreateTestModal(true),
+    },
   ];
 
   // Class card actions configuration
@@ -126,7 +129,7 @@ export default function TeacherPortal(): ReactElement {
     {
       label: "View",
       onClick: (classData) => navigateToClassDetail(classData.id as string),
-      colorScheme: "green"
+      colorScheme: "green",
     },
     {
       label: "Edit",
@@ -134,7 +137,7 @@ export default function TeacherPortal(): ReactElement {
         setEditClass(classData as Class);
         setShowEditModal(true);
       },
-      colorScheme: "yellow"
+      colorScheme: "yellow",
     },
     {
       label: "Delete",
@@ -142,8 +145,8 @@ export default function TeacherPortal(): ReactElement {
         setDeleteConfirm(classData.id as string);
         setShowDeleteConfirm(true);
       },
-      colorScheme: "red"
-    }
+      colorScheme: "red",
+    },
   ];
 
   return (
