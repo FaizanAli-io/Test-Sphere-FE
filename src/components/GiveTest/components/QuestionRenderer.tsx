@@ -53,7 +53,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           <div className="flex gap-4">
             <label
               className={`flex-1 flex items-center justify-center gap-3 p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                answer === "0"
+                answer === "1"
                   ? "bg-green-100 border-green-400 shadow-md"
                   : "bg-gray-50 border-gray-300 hover:border-green-300 hover:bg-green-50"
               }`}
@@ -61,8 +61,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               <input
                 type="radio"
                 name={`question-${question.id}`}
-                value="0"
-                checked={answer === "0"}
+                value="1"
+                checked={answer === "1"}
                 onChange={(e) => onAnswerChange(question.id, e.target.value)}
                 className="w-5 h-5 text-green-600"
               />
@@ -70,7 +70,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             </label>
             <label
               className={`flex-1 flex items-center justify-center gap-3 p-6 rounded-xl border-2 cursor-pointer transition-all ${
-                answer === "1"
+                answer === "0"
                   ? "bg-red-100 border-red-400 shadow-md"
                   : "bg-gray-50 border-gray-300 hover:border-red-300 hover:bg-red-50"
               }`}
@@ -78,8 +78,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               <input
                 type="radio"
                 name={`question-${question.id}`}
-                value="1"
-                checked={answer === "1"}
+                value="0"
+                checked={answer === "0"}
                 onChange={(e) => onAnswerChange(question.id, e.target.value)}
                 className="w-5 h-5 text-red-600"
               />

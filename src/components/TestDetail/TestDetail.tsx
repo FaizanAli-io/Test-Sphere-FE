@@ -1,21 +1,20 @@
 import Image from "next/image";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import { Question, Test } from "./types";
+import { useQuestions, useTestDetail, useAIQuestions } from "./hooks";
+import { useSubmissions } from "../Submissions";
+
+import { Question, Test, QuestionUpdatePayload } from "./types";
+import { useConfirmation } from "@/hooks/useConfirmation";
+import { useNotifications } from "@/contexts/NotificationContext";
+import { calculateCurrentTotalMarks } from "../Submissions/utils";
+
 import EditTestModal from "./EditTestModal";
 import AIApprovalModal from "./AIApprovalModal";
 import AddQuestionModal from "./AddQuestionModal";
 import SubmissionsModal from "./SubmissionsModal";
 import EditQuestionModal from "./EditQuestionModal";
-import {
-  useQuestions,
-  useTestDetail,
-  useAIQuestions,
-  useSubmissions,
-} from "./hooks";
-import { useNotifications } from "@/contexts/NotificationContext";
-import { useConfirmation } from "@/hooks/useConfirmation";
 import ConfirmationModal from "@/components/ConfirmationModal";
 
 interface TestDetailProps {
@@ -29,13 +28,12 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const notifications = useNotifications();
   const confirmation = useConfirmation();
 
-  // State management
   const [showEditTestModal, setShowEditTestModal] = useState(false);
   const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
   const [showEditQuestionModal, setShowEditQuestionModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
-  // Custom hooks - using the original hook structure
   const testDetailHook = useTestDetail(
     testId,
     notifications,
@@ -46,15 +44,14 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     notifications,
     confirmation.confirm
   );
-  const submissionsHook = useSubmissions(testId, notifications);
+  const submissionsHook = useSubmissions(testId, "teacher", notifications);
   const aiQuestionsHook = useAIQuestions(
     testId,
-    questionsHook.fetchQuestions,
+    questionsHook.refreshQuestions,
     notifications,
     () => setShowAddQuestionModal(false)
   );
 
-  // Extract values from hooks
   const test = testDetailHook.testData;
   const loadingTest = testDetailHook.loading;
   const questions = questionsHook.questions;
@@ -62,9 +59,21 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const submissions = submissionsHook.submissions;
   const loadingSubmissions = submissionsHook.submissionsLoading;
 
-  // Event handlers
   const handleEditTest = () => {
     setShowEditTestModal(true);
+  };
+
+  const handleBackToClass = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+      return;
+    }
+    const classId = test?.class?.id ?? test?.classId;
+    if (classId) {
+      router.push(`/class/${classId}`);
+    } else {
+      router.push("/teacher");
+    }
   };
 
   const handleUpdateTest = async (updatedTest: Partial<Test>) => {
@@ -74,7 +83,18 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleDeleteTest = async () => {
-    await testDetailHook.handleDeleteTest();
+    const result = await testDetailHook.handleDeleteTest();
+
+    if (result !== false) {
+      setRedirecting(true);
+      if (typeof window !== "undefined") {
+        if (window.history.length > 1) {
+          router.back();
+        } else {
+          router.push("/teacher");
+        }
+      }
+    }
   };
 
   const handleAddQuestion = () => {
@@ -97,19 +117,16 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const handleUpdateQuestion = async (question: Question) => {
     const { id } = question;
 
-    // Only send the fields that can be updated according to API documentation
-    const updates: any = {
+    const updates: QuestionUpdatePayload = {
       text: question.text,
       type: question.type,
-      maxMarks: question.maxMarks,
+      maxMarks: question.maxMarks
     };
 
-    // Only include options for MULTIPLE_CHOICE questions
     if (question.type === "MULTIPLE_CHOICE" && question.options) {
       updates.options = question.options;
     }
 
-    // Only include correctAnswer for MULTIPLE_CHOICE and TRUE_FALSE questions
     if (
       (question.type === "MULTIPLE_CHOICE" || question.type === "TRUE_FALSE") &&
       typeof question.correctAnswer === "number"
@@ -117,7 +134,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       updates.correctAnswer = question.correctAnswer;
     }
 
-    // Include image if provided
     if (question.image) {
       updates.image = question.image;
     }
@@ -139,30 +155,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleViewIndividualSubmission = (submissionId: number) => {
-    submissionsHook.setPreSelectedSubmissionId(submissionId);
+    const submission = submissions.find((s) => s.id === submissionId);
+    if (submission) {
+      submissionsHook.setSelectedSubmission(submission);
+    }
     submissionsHook.setShowSubmissionsModal(true);
   };
 
-  const handleGradeSubmission = async (submissionId: string) => {
-    const submission = submissions.find((s) => s.id === parseInt(submissionId));
-    if (submission) {
-      await submissionsHook.submitGrades(submission);
-    }
-  };
-
-  const handleUpdateIndividualScore = async (
-    submissionId: string,
-    questionIndex: number,
-    score: number
-  ) => {
-    submissionsHook.updateDraftMark(
-      parseInt(submissionId),
-      questionIndex,
-      score
-    );
-  };
-
-  // AI wrapper functions to match expected signatures
   const handleGenerateFromPrompt = () => {
     aiQuestionsHook.generateAIQuestions(aiQuestionsHook.aiPrompt);
   };
@@ -177,7 +176,18 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     await aiQuestionsHook.approveQuestions(questions);
   };
 
-  // Hooks automatically fetch data when testId changes
+  useEffect(() => {
+    if (!loadingTest && !test) {
+      setRedirecting(true);
+      if (typeof window !== "undefined") {
+        if (window.history.length > 1) {
+          router.back();
+        } else {
+          router.push("/teacher");
+        }
+      }
+    }
+  }, [loadingTest, test, router]);
 
   if (loadingTest) {
     return (
@@ -197,20 +207,10 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 p-4">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="text-6xl mb-4">😞</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Test Not Found
-            </h2>
-            <p className="text-gray-600 mb-4">
-              The test you&apos;re looking for doesn&apos;t exist or has been
-              deleted.
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">
+              {redirecting ? "Redirecting..." : "Loading..."}
             </p>
-            <button
-              onClick={() => router.push("/teacher")}
-              className="px-6 py-3 bg-yellow-500 text-white font-bold rounded-xl hover:bg-yellow-600 transition-all"
-            >
-              Back to Dashboard
-            </button>
           </div>
         </div>
       </div>
@@ -223,7 +223,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       month: "long",
       day: "numeric",
       hour: "2-digit",
-      minute: "2-digit",
+      minute: "2-digit"
     });
   };
 
@@ -246,7 +246,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Header */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
+        <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 relative">
+          <button
+            onClick={handleBackToClass}
+            className="absolute top-4 right-4 px-4 py-2 bg-gray-100 text-gray-900 font-semibold rounded-lg hover:bg-gray-200 transition-all shadow"
+          >
+            ← Back to Class
+          </button>
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
@@ -514,11 +520,19 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                   <p className="text-sm text-gray-600 mb-2">
                     {submission.answers?.length || 0} questions answered
                   </p>
-                  {submission.obtainedMarks !== null &&
-                  submission.obtainedMarks !== undefined ? (
+                  {submission.totalMarks !== null &&
+                  submission.totalMarks !== undefined ? (
                     <div className="text-sm">
                       <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">
-                        Graded: {submission.obtainedMarks} marks
+                        Graded: {submission.totalMarks} marks
+                      </span>
+                    </div>
+                  ) : submission.answers &&
+                    calculateCurrentTotalMarks(submission.answers) > 0 ? (
+                    <div className="text-sm">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
+                        Partial:{" "}
+                        {calculateCurrentTotalMarks(submission.answers)} marks
                       </span>
                     </div>
                   ) : (
@@ -589,7 +603,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         }}
         onApproveMultipleQuestions={handleApproveMultipleQuestions}
         onRejectAIQuestion={(index) => {
-          // Remove question from pending list
           const newQuestions = [...aiQuestionsHook.pendingApprovalQuestions];
           newQuestions.splice(index, 1);
           aiQuestionsHook.setPendingApprovalQuestions(newQuestions);
@@ -602,12 +615,10 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         submissions={submissions}
         onClose={() => {
           submissionsHook.setShowSubmissionsModal(false);
-          submissionsHook.setPreSelectedSubmissionId(undefined);
+          submissionsHook.setSelectedSubmission(null);
         }}
-        onGradeSubmission={handleGradeSubmission}
-        onUpdateIndividualScore={handleUpdateIndividualScore}
         loadingSubmissions={loadingSubmissions}
-        preSelectedSubmissionId={submissionsHook.preSelectedSubmissionId}
+        preSelectedSubmissionId={submissionsHook.selectedSubmission?.id}
         fetchSubmissionDetails={submissionsHook.fetchSubmissionDetails}
       />
 

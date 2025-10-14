@@ -1,6 +1,8 @@
-export const BASE_API_URL = !process.env.NEXT_PUBLIC_DEV_MODE
+export const API_BASE_URL = !process.env.NEXT_PUBLIC_DEV_MODE
   ? "https://test-sphere-be.onrender.com"
   : "http://localhost:3000";
+
+console.log("API Base URL:", API_BASE_URL);
 
 export interface ExtendedRequestInit extends RequestInit {
   auth?: boolean;
@@ -9,7 +11,6 @@ export interface ExtendedRequestInit extends RequestInit {
 }
 
 export const api = async (path: string, options?: ExtendedRequestInit) => {
-  const baseUrl = BASE_API_URL;
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -86,7 +87,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     body: requestBody
   };
 
-  const url = `${baseUrl}${path}`;
+  const url = `${API_BASE_URL}${path}`;
   console.log("🌐 API Request:", { url, payload });
 
   const res = await fetch(url, payload);

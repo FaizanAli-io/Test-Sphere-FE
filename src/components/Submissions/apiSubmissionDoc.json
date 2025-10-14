@@ -1,0 +1,404 @@
+{
+  "/submissions/test/{id}": [
+    {
+      "id": 12,
+      "userId": 28,
+      "testId": 22,
+      "status": "SUBMITTED",
+      "startedAt": "2025-10-14T15:47:35.458Z",
+      "submittedAt": "2025-10-14T15:48:00.017Z",
+      "gradedAt": null,
+      "createdAt": "2025-10-14T15:47:35.465Z",
+      "updatedAt": "2025-10-14T15:48:00.021Z",
+      "user": {
+        "id": 28,
+        "name": "Monké",
+        "email": "1142abdulali@gmail.com"
+      },
+      "answers": [
+        {
+          "id": 41,
+          "studentId": 28,
+          "questionId": 90,
+          "submissionId": 12,
+          "answer": "Faizan",
+          "obtainedMarks": null,
+          "gradingStatus": "PENDING",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z"
+        },
+        {
+          "id": 42,
+          "studentId": 28,
+          "questionId": 91,
+          "submissionId": 12,
+          "answer": "2",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z"
+        },
+        {
+          "id": 43,
+          "studentId": 28,
+          "questionId": 92,
+          "submissionId": 12,
+          "answer": "0",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z"
+        },
+        {
+          "id": 44,
+          "studentId": 28,
+          "questionId": 95,
+          "submissionId": 12,
+          "answer": "0",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z"
+        },
+        {
+          "id": 45,
+          "studentId": 28,
+          "questionId": 96,
+          "submissionId": 12,
+          "answer": "1",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z"
+        }
+      ]
+    }
+  ],
+  "/submissions/student": [
+    {
+      "id": 12,
+      "userId": 28,
+      "testId": 22,
+      "status": "SUBMITTED",
+      "startedAt": "2025-10-14T15:47:35.458Z",
+      "submittedAt": "2025-10-14T15:48:00.017Z",
+      "gradedAt": null,
+      "createdAt": "2025-10-14T15:47:35.465Z",
+      "updatedAt": "2025-10-14T15:48:00.021Z",
+      "test": {
+        "id": 22,
+        "title": "Quiz 1",
+        "duration": 30,
+        "startAt": "2025-10-14T15:00:00.000Z",
+        "endAt": "2025-10-14T15:30:00.000Z",
+        "class": {
+          "id": 8,
+          "name": "Mathematics 101"
+        }
+      },
+      "answers": [
+        {
+          "id": 41,
+          "studentId": 28,
+          "questionId": 90,
+          "submissionId": 12,
+          "answer": "Faizan",
+          "obtainedMarks": null,
+          "gradingStatus": "PENDING",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z",
+          "question": {
+            "id": 90,
+            "testId": 22,
+            "text": "What is your name?",
+            "type": "SHORT_ANSWER",
+            "options": [],
+            "correctAnswer": null,
+            "maxMarks": 5,
+            "image": null
+          }
+        },
+        {
+          "id": 42,
+          "studentId": 28,
+          "questionId": 91,
+          "submissionId": 12,
+          "answer": "2",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z",
+          "question": {
+            "id": 91,
+            "testId": 22,
+            "text": "What is the solution of the equation 2x + 3 = 7?",
+            "type": "MULTIPLE_CHOICE",
+            "options": ["x = 4", "x = 3", "x = 2", "x = 1"],
+            "correctAnswer": 2,
+            "maxMarks": 1,
+            "image": null
+          }
+        },
+        {
+          "id": 43,
+          "studentId": 28,
+          "questionId": 92,
+          "submissionId": 12,
+          "answer": "0",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z",
+          "question": {
+            "id": 92,
+            "testId": 22,
+            "text": "If A = [1, 2; 3, 4], what is the determinant of A?",
+            "type": "MULTIPLE_CHOICE",
+            "options": ["-2", "2", "0", "1"],
+            "correctAnswer": 0,
+            "maxMarks": 1,
+            "image": null
+          }
+        },
+        {
+          "id": 44,
+          "studentId": 28,
+          "questionId": 95,
+          "submissionId": 12,
+          "answer": "0",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z",
+          "question": {
+            "id": 95,
+            "testId": 22,
+            "text": "A rectangle has four equal sides.",
+            "type": "TRUE_FALSE",
+            "options": [],
+            "correctAnswer": 0,
+            "maxMarks": 1,
+            "image": null
+          }
+        },
+        {
+          "id": 45,
+          "studentId": 28,
+          "questionId": 96,
+          "submissionId": 12,
+          "answer": "1",
+          "obtainedMarks": 1,
+          "gradingStatus": "AUTOMATIC",
+          "createdAt": "2025-10-14T15:47:58.893Z",
+          "updatedAt": "2025-10-14T15:47:58.893Z",
+          "question": {
+            "id": 96,
+            "testId": 22,
+            "text": "The sum of the angles in a triangle is 180 degrees.",
+            "type": "TRUE_FALSE",
+            "options": [],
+            "correctAnswer": 1,
+            "maxMarks": 1,
+            "image": null
+          }
+        }
+      ]
+    }
+  ],
+  "/submissions/{id}": {
+    "id": 12,
+    "userId": 28,
+    "testId": 22,
+    "status": "SUBMITTED",
+    "startedAt": "2025-10-14T15:47:35.458Z",
+    "submittedAt": "2025-10-14T15:48:00.017Z",
+    "gradedAt": null,
+    "createdAt": "2025-10-14T15:47:35.465Z",
+    "updatedAt": "2025-10-14T15:48:00.021Z",
+    "test": {
+      "id": 22,
+      "classId": 8,
+      "title": "Quiz 1",
+      "description": "Quiz 1",
+      "duration": 30,
+      "startAt": "2025-10-14T15:00:00.000Z",
+      "endAt": "2025-10-14T15:30:00.000Z",
+      "status": "ACTIVE",
+      "createdAt": "2025-10-14T14:43:26.533Z",
+      "updatedAt": "2025-10-14T14:43:26.533Z",
+      "class": {
+        "id": 8,
+        "code": "WGW5PM",
+        "name": "Mathematics 101",
+        "description": "A mathematics class",
+        "teacherId": 8,
+        "createdAt": "2025-10-14T13:46:09.182Z",
+        "updatedAt": "2025-10-14T13:46:09.182Z"
+      },
+      "questions": [
+        {
+          "id": 90,
+          "testId": 22,
+          "text": "What is your name?",
+          "type": "SHORT_ANSWER",
+          "options": [],
+          "correctAnswer": null,
+          "maxMarks": 5,
+          "image": null
+        },
+        {
+          "id": 92,
+          "testId": 22,
+          "text": "If A = [1, 2; 3, 4], what is the determinant of A?",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["-2", "2", "0", "1"],
+          "correctAnswer": 0,
+          "maxMarks": 1,
+          "image": null
+        },
+        {
+          "id": 95,
+          "testId": 22,
+          "text": "A rectangle has four equal sides.",
+          "type": "TRUE_FALSE",
+          "options": [],
+          "correctAnswer": 0,
+          "maxMarks": 1,
+          "image": null
+        },
+        {
+          "id": 96,
+          "testId": 22,
+          "text": "The sum of the angles in a triangle is 180 degrees.",
+          "type": "TRUE_FALSE",
+          "options": [],
+          "correctAnswer": 1,
+          "maxMarks": 1,
+          "image": null
+        },
+        {
+          "id": 91,
+          "testId": 22,
+          "text": "What is the solution of the equation 2x + 3 = 7?",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["x = 4", "x = 3", "x = 2", "x = 1"],
+          "correctAnswer": 2,
+          "maxMarks": 1,
+          "image": null
+        }
+      ]
+    },
+    "user": {
+      "id": 28,
+      "name": "Monké",
+      "email": "1142abdulali@gmail.com"
+    },
+    "answers": [
+      {
+        "id": 41,
+        "studentId": 28,
+        "questionId": 90,
+        "submissionId": 12,
+        "answer": "Faizan",
+        "obtainedMarks": null,
+        "gradingStatus": "PENDING",
+        "createdAt": "2025-10-14T15:47:58.893Z",
+        "updatedAt": "2025-10-14T15:47:58.893Z",
+        "question": {
+          "id": 90,
+          "testId": 22,
+          "text": "What is your name?",
+          "type": "SHORT_ANSWER",
+          "options": [],
+          "correctAnswer": null,
+          "maxMarks": 5,
+          "image": null
+        }
+      },
+      {
+        "id": 42,
+        "studentId": 28,
+        "questionId": 91,
+        "submissionId": 12,
+        "answer": "2",
+        "obtainedMarks": 1,
+        "gradingStatus": "AUTOMATIC",
+        "createdAt": "2025-10-14T15:47:58.893Z",
+        "updatedAt": "2025-10-14T15:47:58.893Z",
+        "question": {
+          "id": 91,
+          "testId": 22,
+          "text": "What is the solution of the equation 2x + 3 = 7?",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["x = 4", "x = 3", "x = 2", "x = 1"],
+          "correctAnswer": 2,
+          "maxMarks": 1,
+          "image": null
+        }
+      },
+      {
+        "id": 43,
+        "studentId": 28,
+        "questionId": 92,
+        "submissionId": 12,
+        "answer": "0",
+        "obtainedMarks": 1,
+        "gradingStatus": "AUTOMATIC",
+        "createdAt": "2025-10-14T15:47:58.893Z",
+        "updatedAt": "2025-10-14T15:47:58.893Z",
+        "question": {
+          "id": 92,
+          "testId": 22,
+          "text": "If A = [1, 2; 3, 4], what is the determinant of A?",
+          "type": "MULTIPLE_CHOICE",
+          "options": ["-2", "2", "0", "1"],
+          "correctAnswer": 0,
+          "maxMarks": 1,
+          "image": null
+        }
+      },
+      {
+        "id": 44,
+        "studentId": 28,
+        "questionId": 95,
+        "submissionId": 12,
+        "answer": "0",
+        "obtainedMarks": 1,
+        "gradingStatus": "AUTOMATIC",
+        "createdAt": "2025-10-14T15:47:58.893Z",
+        "updatedAt": "2025-10-14T15:47:58.893Z",
+        "question": {
+          "id": 95,
+          "testId": 22,
+          "text": "A rectangle has four equal sides.",
+          "type": "TRUE_FALSE",
+          "options": [],
+          "correctAnswer": 0,
+          "maxMarks": 1,
+          "image": null
+        }
+      },
+      {
+        "id": 45,
+        "studentId": 28,
+        "questionId": 96,
+        "submissionId": 12,
+        "answer": "1",
+        "obtainedMarks": 1,
+        "gradingStatus": "AUTOMATIC",
+        "createdAt": "2025-10-14T15:47:58.893Z",
+        "updatedAt": "2025-10-14T15:47:58.893Z",
+        "question": {
+          "id": 96,
+          "testId": 22,
+          "text": "The sum of the angles in a triangle is 180 degrees.",
+          "type": "TRUE_FALSE",
+          "options": [],
+          "correctAnswer": 1,
+          "maxMarks": 1,
+          "image": null
+        }
+      }
+    ]
+  }
+}

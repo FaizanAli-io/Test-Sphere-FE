@@ -5,16 +5,15 @@ import React, {
   useEffect,
   ReactElement,
   useCallback,
-  useRef,
+  useRef
 } from "react";
 import { useRouter, useParams } from "next/navigation";
 import api from "../hooks/useApi";
 import CreateTestModal from "./CreateTestModal";
-import { useNotifications } from "../contexts/NotificationContext";
+
 import { useConfirmation } from "../hooks/useConfirmation";
 import ConfirmationModal from "./ConfirmationModal";
 
-// Interfaces
 interface Test {
   id: number;
   title: string;
@@ -40,21 +39,19 @@ interface ClassData {
   students: Student[];
 }
 
-// Reusable style constants
 const BUTTON_STYLES = {
   primary:
     "px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl",
   secondary:
-    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl",
+    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
 };
 
-// Helper functions
 const getStatusColor = (status: Test["status"]) => {
   const colors = {
     DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
     ACTIVE: "bg-green-100 text-green-800 border-green-300",
     COMPLETED: "bg-blue-100 text-blue-800 border-blue-300",
-    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300",
+    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300"
   };
   return colors[status] || colors.DRAFT;
 };
@@ -76,19 +73,15 @@ export default function ClassDetail(): ReactElement {
   const router = useRouter();
   const params = useParams();
   const classId = params?.classId as string;
-  const notifications = useNotifications();
   const confirmation = useConfirmation();
 
-  // Core state - simplified and grouped
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [tests, setTests] = useState<Test[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"students" | "tests">("students");
   const [showCreateTestModal, setShowCreateTestModal] = useState(false);
   const [loadingQuestionCounts, setLoadingQuestionCounts] = useState(false);
 
-  // Refs to prevent concurrent API calls
   const fetchingClassRef = useRef(false);
   const fetchingTestsRef = useRef(false);
 
@@ -96,12 +89,11 @@ export default function ClassDetail(): ReactElement {
     if (!classId || fetchingClassRef.current) return;
     fetchingClassRef.current = true;
     setLoading(true);
-    setError(null);
 
     try {
       const classRes = await api(`/classes/${classId}`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
       if (!classRes.ok) {
         const errorData = await classRes.json();
@@ -114,27 +106,36 @@ export default function ClassDetail(): ReactElement {
         description: data.description ?? "",
         code: data.code,
         students: Array.isArray(data.students)
-          ? data.students.map((s: any) =>
-              s?.student
-                ? {
-                    id: Number(s.student.id),
-                    name: s.student.name,
-                    email: s.student.email,
-                  }
-                : {
-                    id: Number(s.id),
-                    name: s.name ?? "",
-                    email: s.email ?? "",
-                  }
-            )
-          : [],
+          ? data.students.map((s: unknown) => {
+              if (
+                typeof s === "object" &&
+                s !== null &&
+                "student" in s &&
+                typeof (s as { student?: unknown }).student === "object" &&
+                (s as { student?: unknown }).student !== null
+              ) {
+                const inner =
+                  (s as { student: Partial<Student> }).student || {};
+                return {
+                  id: Number(inner.id),
+                  name: inner.name ?? "",
+                  email: inner.email ?? ""
+                } as Student;
+              }
+              const flat = s as Partial<Student>;
+              return {
+                id: Number(flat.id),
+                name: flat.name ?? "",
+                email: flat.email ?? ""
+              } as Student;
+            })
+          : []
       };
       setClassData(normalized);
     } catch (err) {
-      console.error(err);
-      setError(
-        err instanceof Error ? err.message : "Failed to fetch class data"
-      );
+      const message =
+        err instanceof Error ? err.message : "Failed to fetch class data";
+      console.error(message);
     } finally {
       setLoading(false);
       fetchingClassRef.current = false;
@@ -149,28 +150,26 @@ export default function ClassDetail(): ReactElement {
           try {
             const res = await api(`/tests/${test.id}/questions`, {
               method: "GET",
-              auth: true,
+              auth: true
             });
 
             if (res.ok) {
               const questions = await res.json();
               return {
                 ...test,
-                questionCount: Array.isArray(questions) ? questions.length : 0,
+                questionCount: Array.isArray(questions) ? questions.length : 0
               };
             }
 
-            // Handle all non-200 responses as "no questions" - this is expected behavior
             return { ...test, questionCount: 0 };
           } catch (error) {
-            // Handle network errors gracefully - return 0 questions
+            console.log(error);
             return { ...test, questionCount: 0 };
           }
         })
       );
       setTests(testsWithCounts);
     } catch (err) {
-      // Only log unexpected errors, not the "no questions" case
       console.error("Failed to fetch question counts:", err);
     } finally {
       setLoadingQuestionCounts(false);
@@ -183,7 +182,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const testsRes = await api(`/tests/class/${classId}`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
       if (!testsRes.ok) {
         const errorData = await testsRes.json();
@@ -212,7 +211,7 @@ export default function ClassDetail(): ReactElement {
       fetchClassDetails();
       fetchTests();
     }
-  }, [classId]); // Only depend on classId to prevent infinite loops
+  }, [classId, fetchClassDetails, fetchTests]);
 
   if (loading) {
     return (
@@ -230,7 +229,7 @@ export default function ClassDetail(): ReactElement {
     );
   }
 
-  if (error || !classData) {
+  if (!classData) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-md border-2 border-red-200">
@@ -240,9 +239,7 @@ export default function ClassDetail(): ReactElement {
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Error Loading Class
           </h2>
-          <p className="text-gray-600 mb-8 text-lg">
-            {error || "Class not found"}
-          </p>
+          <p className="text-gray-600 mb-8 text-lg">{"Class not found"}</p>
           <button
             onClick={() => router.push("/teacher")}
             className={BUTTON_STYLES.primary}
@@ -257,6 +254,7 @@ export default function ClassDetail(): ReactElement {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <div className="max-w-7xl mx-auto px-4 py-12">
+        {/* Live region removed with error state elimination */}
         <button
           onClick={() => router.push("/teacher")}
           className="group flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-bold mb-8 transition-all"
@@ -466,7 +464,7 @@ export default function ClassDetail(): ReactElement {
                                       month: "short",
                                       day: "numeric",
                                       hour: "2-digit",
-                                      minute: "2-digit",
+                                      minute: "2-digit"
                                     }
                                   )}
                                 </p>

@@ -98,25 +98,3 @@ export interface StudentSubmission {
     };
   }>;
 }
-
-// Helper function to calculate total obtained marks for a submission
-export const calculateSubmissionScore = (
-  submission: StudentSubmission
-): number => {
-  if (!submission.answers) return 0;
-  return submission.answers.reduce(
-    (total, answer) => total + (answer.obtainedMarks || 0),
-    0
-  );
-};
-
-// Helper function to calculate total possible marks for a submission
-export const calculateSubmissionMaxScore = (
-  submission: StudentSubmission
-): number => {
-  if (!submission.answers) return 0;
-  return submission.answers.reduce(
-    (total, answer) => total + (answer.question?.maxMarks || 0),
-    0
-  );
-};

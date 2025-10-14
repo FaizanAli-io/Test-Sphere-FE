@@ -5,7 +5,7 @@ import {
   QuestionCreatePayload,
   QuestionUpdatePayload,
   NotificationFunctions,
-  ConfirmationFunction,
+  ConfirmationFunction
 } from "../types";
 
 /**
@@ -23,7 +23,6 @@ export const useQuestions = (
   const fetchQuestions = useCallback(async () => {
     if (!testId) return;
 
-    // Prevent multiple fetches for the same testId
     if (hasFetchedRef.current === testId) return;
 
     setLoadingQuestions(true);
@@ -31,12 +30,12 @@ export const useQuestions = (
     try {
       const response = await api(`/tests/${testId}/questions`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        // Handle the specific case where no questions exist - this is not an error to show to user
+
         if (errorData.message === "No questions found for this test.") {
           setQuestions([]);
           hasFetchedRef.current = testId;
@@ -52,7 +51,7 @@ export const useQuestions = (
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch questions";
       console.error("Error fetching questions:", errorMessage);
-      // Only show error notification if it's not the "no questions found" case
+
       if (!errorMessage.includes("No questions found")) {
         notifications?.showError?.(errorMessage);
       }
@@ -61,12 +60,16 @@ export const useQuestions = (
     } finally {
       setLoadingQuestions(false);
     }
-  }, [testId]);
+  }, [testId, notifications]);
+
+  const refreshQuestions = useCallback(async () => {
+    hasFetchedRef.current = null;
+    await fetchQuestions();
+  }, [fetchQuestions]);
 
   const createQuestion = useCallback(
     async (questionData: QuestionCreatePayload) => {
       try {
-        // Format single question as per API documentation
         const payload = {
           questions: [
             {
@@ -76,17 +79,17 @@ export const useQuestions = (
               maxMarks: questionData.maxMarks || 1,
               ...(questionData.options && { options: questionData.options }),
               ...(typeof questionData.correctAnswer === "number" && {
-                correctAnswer: questionData.correctAnswer,
+                correctAnswer: questionData.correctAnswer
               }),
-              ...(questionData.image && { image: questionData.image }),
-            },
-          ],
+              ...(questionData.image && { image: questionData.image })
+            }
+          ]
         };
 
         const response = await api(`/tests/${testId}/questions`, {
           method: "POST",
           auth: true,
-          body: JSON.stringify(payload),
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -97,7 +100,7 @@ export const useQuestions = (
         const result = await response.json();
         const newQuestions = Array.isArray(result) ? result : [result];
         setQuestions((prev) => [...prev, ...newQuestions]);
-        hasFetchedRef.current = null; // Reset to allow refetch
+        hasFetchedRef.current = null;
         notifications?.showSuccess?.("Question created successfully");
         return true;
       } catch (err) {
@@ -116,7 +119,7 @@ export const useQuestions = (
         const response = await api(`/tests/questions/${questionId}`, {
           method: "PATCH",
           auth: true,
-          body: JSON.stringify(updates),
+          body: JSON.stringify(updates)
         });
 
         if (!response.ok) {
@@ -149,7 +152,7 @@ export const useQuestions = (
         message:
           "Are you sure you want to delete this question? This action cannot be undone.",
         confirmText: "Delete",
-        type: "danger",
+        type: "danger"
       });
 
       if (!confirmed) return false;
@@ -157,7 +160,7 @@ export const useQuestions = (
       try {
         const response = await api(`/tests/questions/${questionId}`, {
           method: "DELETE",
-          auth: true,
+          auth: true
         });
 
         if (!response.ok) {
@@ -183,7 +186,6 @@ export const useQuestions = (
       if (questions.length === 0) return true;
 
       try {
-        // Format bulk questions as per API documentation
         const payload = {
           questions: questions.map((question) => ({
             testId: Number(testId),
@@ -192,16 +194,16 @@ export const useQuestions = (
             maxMarks: question.maxMarks || 1,
             ...(question.options && { options: question.options }),
             ...(typeof question.correctAnswer === "number" && {
-              correctAnswer: question.correctAnswer,
+              correctAnswer: question.correctAnswer
             }),
-            ...(question.image && { image: question.image }),
-          })),
+            ...(question.image && { image: question.image })
+          }))
         };
 
         const response = await api(`/tests/${testId}/questions`, {
           method: "POST",
           auth: true,
-          body: JSON.stringify(payload),
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -212,7 +214,7 @@ export const useQuestions = (
         const result = await response.json();
         const newQuestions = Array.isArray(result) ? result : [result];
         setQuestions((prev) => [...prev, ...newQuestions]);
-        hasFetchedRef.current = null; // Reset to allow refetch
+        hasFetchedRef.current = null;
         notifications?.showSuccess?.(
           `${newQuestions.length} questions created successfully`
         );
@@ -227,9 +229,8 @@ export const useQuestions = (
     [testId, notifications]
   );
 
-  // Reset ref and fetch questions when testId changes
   useEffect(() => {
-    hasFetchedRef.current = null; // Reset the ref for new testId
+    hasFetchedRef.current = null;
     if (testId) {
       fetchQuestions();
     }
@@ -239,14 +240,15 @@ export const useQuestions = (
     questions,
     loadingQuestions,
     fetchQuestions,
+    refreshQuestions,
     createQuestion,
     updateQuestion,
     deleteQuestion,
     bulkCreateQuestions,
     setQuestions,
-    // Backward compatibility aliases
+
     handleAddQuestion: createQuestion,
     handleUpdateQuestion: updateQuestion,
-    handleDeleteQuestion: deleteQuestion,
+    handleDeleteQuestion: deleteQuestion
   };
 };

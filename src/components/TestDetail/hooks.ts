@@ -4,5 +4,4 @@ export * from "./hooks";
 // Explicit exports for better compatibility with bundlers
 export { useTestDetail } from "./hooks/useTestDetail";
 export { useQuestions } from "./hooks/useQuestions";
-export { useSubmissions } from "./hooks/useSubmissions";
 export { useAIQuestions } from "./hooks/useAIQuestions";

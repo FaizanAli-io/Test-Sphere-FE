@@ -11,7 +11,7 @@ export const formatDate = (dateString: string | undefined): string => {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
+    second: "2-digit"
   });
 };
 
@@ -140,11 +140,25 @@ export const formatAnswerText = (
 ): string => {
   if (!answer) return "No answer provided";
 
-  if (questionType === "MULTIPLE_CHOICE" || questionType === "TRUE_FALSE") {
-    const answerIndex = parseInt(answer);
-    if (options && options[answerIndex]) {
+  if (questionType === "MULTIPLE_CHOICE") {
+    const answerIndex = Number.isFinite(Number(answer))
+      ? parseInt(answer)
+      : (options?.indexOf(answer || "") ?? -1);
+    if (options && answerIndex >= 0 && options[answerIndex]) {
       return options[answerIndex];
     }
+    return answer;
+  }
+
+  if (questionType === "TRUE_FALSE") {
+    // In this app, 1 => True, 0 => False
+    const idx = Number.isFinite(Number(answer))
+      ? parseInt(answer)
+      : (options?.indexOf(answer || "") ?? -1);
+    if (options && idx >= 0 && options[idx]) {
+      return options[idx];
+    }
+    return idx === 1 ? "True" : idx === 0 ? "False" : answer;
   }
 
   return answer;
@@ -158,10 +172,21 @@ export const getCorrectAnswerText = (
   questionType?: string,
   options?: string[]
 ): string => {
-  if (questionType === "MULTIPLE_CHOICE" || questionType === "TRUE_FALSE") {
+  if (questionType === "MULTIPLE_CHOICE") {
     if (options && correctAnswer !== undefined && options[correctAnswer]) {
       return options[correctAnswer];
     }
+    return "N/A";
   }
+
+  if (questionType === "TRUE_FALSE") {
+    if (options && correctAnswer !== undefined && options[correctAnswer]) {
+      return options[correctAnswer];
+    }
+    if (correctAnswer === 1) return "True";
+    if (correctAnswer === 0) return "False";
+    return "N/A";
+  }
+
   return "Teacher will review";
 };

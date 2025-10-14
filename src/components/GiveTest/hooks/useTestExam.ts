@@ -40,7 +40,6 @@ export const useTestExam = (testId: number | null) => {
   const [testStarted, setTestStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
 
-  // Fetch test details
   const fetchTestDetails = useCallback(async () => {
     if (!testId) {
       setError(
@@ -62,10 +61,9 @@ export const useTestExam = (testId: number | null) => {
       }
       const testData = await res.json();
 
-      // Fetch questions
       const questionsRes = await api(`/tests/${testId}/questions`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
 
       if (!questionsRes.ok) {
@@ -83,7 +81,6 @@ export const useTestExam = (testId: number | null) => {
     }
   }, [testId]);
 
-  // Start the test
   const startTest = useCallback(async () => {
     if (!testId) {
       setError(
@@ -98,7 +95,7 @@ export const useTestExam = (testId: number | null) => {
       const res = await api("/submissions/start", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ testId }),
+        body: JSON.stringify({ testId })
       });
 
       if (!res.ok) {
@@ -124,14 +121,12 @@ export const useTestExam = (testId: number | null) => {
     } finally {
       setLoading(false);
     }
-  }, [testId, test]);
+  }, [testId, test, notifications]);
 
-  // Handle answer change
   const updateAnswer = (questionId: number, answer: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
   };
 
-  // Submit test
   const submitTest = useCallback(async () => {
     setSubmitting(true);
 
@@ -139,14 +134,14 @@ export const useTestExam = (testId: number | null) => {
       const answersArray: Answer[] = Object.entries(answers).map(
         ([questionId, answer]) => ({
           questionId: Number(questionId),
-          answer: answer,
+          answer: answer
         })
       );
 
       const res = await api("/submissions/submit", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ answers: answersArray }),
+        body: JSON.stringify({ answers: answersArray })
       });
 
       if (!res.ok) {
@@ -165,9 +160,8 @@ export const useTestExam = (testId: number | null) => {
     } finally {
       setSubmitting(false);
     }
-  }, [answers, router]);
+  }, [answers, router, notifications]);
 
-  // Timer effect
   useEffect(() => {
     if (!testStarted || timeRemaining <= 0) return;
 
@@ -189,7 +183,6 @@ export const useTestExam = (testId: number | null) => {
     fetchTestDetails();
   }, [fetchTestDetails]);
 
-  // Calculate progress
   const calculateProgress = () => {
     if (!test) return 0;
     const answered = Object.keys(answers).length;
@@ -197,7 +190,6 @@ export const useTestExam = (testId: number | null) => {
     return total > 0 ? (answered / total) * 100 : 0;
   };
 
-  // Format time display
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -213,7 +205,6 @@ export const useTestExam = (testId: number | null) => {
     test?.questions.reduce((sum, q) => sum + q.maxMarks, 0) || 0;
 
   return {
-    // State
     test,
     answers,
     loading,
@@ -222,18 +213,15 @@ export const useTestExam = (testId: number | null) => {
     testStarted,
     timeRemaining,
 
-    // Computed values
     answeredCount,
     totalQuestions,
     totalMarks,
     progress: calculateProgress(),
 
-    // Actions
     startTest,
     updateAnswer,
     submitTest,
 
-    // Utilities
-    formatTime,
+    formatTime
   };
 };

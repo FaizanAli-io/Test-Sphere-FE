@@ -63,20 +63,6 @@ export interface SubmissionAnswer {
   };
 }
 
-export interface SubmissionItem {
-  id: number; // submission id
-  student?: Student;
-  totalMarks?: number;
-  obtainedMarks?: number | null;
-  answers?: SubmissionAnswer[];
-  status?: SubmissionStatus;
-  submittedAt?: string;
-  gradedAt?: string;
-  startedAt?: string;
-  // Enhanced for detailed API response
-  test?: Test;
-}
-
 // API payload types
 export interface QuestionCreatePayload {
   testId: number;

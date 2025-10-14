@@ -1,22 +1,14 @@
 import React, { useState, useEffect } from "react";
 
-import { SubmissionItem } from "./types";
-import SubmissionsList from "../Submissions/SubmissionsList";
-import SubmissionDetail from "../Submissions/SubmissionDetail";
+import { Submission, SubmissionsList, SubmissionDetail } from "../Submissions";
 
 interface SubmissionsModalProps {
   showSubmissionsModal: boolean;
-  submissions: SubmissionItem[];
+  submissions: Submission[];
   onClose: () => void;
-  onGradeSubmission: (submissionId: string, marks: number) => Promise<void>;
-  onUpdateIndividualScore: (
-    submissionId: string,
-    questionIndex: number,
-    score: number
-  ) => Promise<void>;
   loadingSubmissions: boolean;
   preSelectedSubmissionId?: number;
-  fetchSubmissionDetails: (submissionId: number) => Promise<SubmissionItem>;
+  fetchSubmissionDetails: (submissionId: number) => Promise<Submission>;
 }
 
 export default function SubmissionsModal({
@@ -24,10 +16,10 @@ export default function SubmissionsModal({
   submissions,
   onClose,
   preSelectedSubmissionId,
-  fetchSubmissionDetails,
+  fetchSubmissionDetails
 }: SubmissionsModalProps) {
   const [selectedSubmission, setSelectedSubmission] =
-    useState<SubmissionItem | null>(null);
+    useState<Submission | null>(null);
   const [loadingSubmissionDetails, setLoadingSubmissionDetails] =
     useState(false);
   const [hasNavigatedBack, setHasNavigatedBack] = useState(false);
@@ -53,7 +45,9 @@ export default function SubmissionsModal({
         if (!hasDetailedData) {
           setLoadingSubmissionDetails(true);
           fetchSubmissionDetails(submission.id)
-            .then(() => {
+            .then((detailedSubmission) => {
+              // Update the local selected submission with the detailed data
+              setSelectedSubmission(detailedSubmission);
               setLoadingSubmissionDetails(false);
             })
             .catch((err) => {
@@ -71,7 +65,7 @@ export default function SubmissionsModal({
     submissions,
     selectedSubmission,
     hasNavigatedBack,
-    fetchSubmissionDetails,
+    fetchSubmissionDetails
   ]);
 
   // Reset states when modal closes
@@ -85,7 +79,7 @@ export default function SubmissionsModal({
 
   if (!showSubmissionsModal) return null;
 
-  const handleSelectSubmission = async (submission: SubmissionItem) => {
+  const handleSelectSubmission = async (submission: Submission) => {
     setHasNavigatedBack(false);
     setSelectedSubmission(submission);
 
@@ -96,7 +90,9 @@ export default function SubmissionsModal({
     if (!hasDetailedData) {
       setLoadingSubmissionDetails(true);
       try {
-        await fetchSubmissionDetails(submission.id);
+        const detailedSubmission = await fetchSubmissionDetails(submission.id);
+        // Update the local selected submission with the detailed data
+        setSelectedSubmission(detailedSubmission);
       } catch (err) {
         console.error("Failed to fetch submission details:", err);
       } finally {
@@ -122,14 +118,24 @@ export default function SubmissionsModal({
     );
   }
 
+  // Wrapper function to update local state after fetching details
+  const handleFetchSubmissionDetails = async (submissionId: number) => {
+    const detailedSubmission = await fetchSubmissionDetails(submissionId);
+    // Update the local selected submission with fresh data
+    setSelectedSubmission(detailedSubmission);
+    return detailedSubmission;
+  };
+
   // Show detail view
   return (
     <SubmissionDetail
+      isOpen={true}
       submission={selectedSubmission}
+      viewContext="teacher"
       onBack={handleBackToList}
       onClose={onClose}
       loadingSubmissionDetails={loadingSubmissionDetails}
-      fetchSubmissionDetails={fetchSubmissionDetails}
+      fetchSubmissionDetails={handleFetchSubmissionDetails}
     />
   );
 }

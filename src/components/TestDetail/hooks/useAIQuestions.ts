@@ -1,10 +1,8 @@
 import { useState, useCallback } from "react";
-import { Question, NotificationFunctions } from "../types";
-import api from "../../../hooks/useApi";
 
-/**
- * Hook for managing AI question generation and approval workflow
- */
+import api from "@/hooks/useApi";
+import { Question, NotificationFunctions } from "../types";
+
 export const useAIQuestions = (
   testId: string,
   onQuestionsCreated?: () => void,
@@ -41,7 +39,7 @@ export const useAIQuestions = (
           "TRUE_FALSE",
           "MULTIPLE_CHOICE",
           "SHORT_ANSWER",
-          "LONG_ANSWER",
+          "LONG_ANSWER"
         ].includes(rawType)
       ) {
         type = rawType as Question["type"];
@@ -71,26 +69,25 @@ export const useAIQuestions = (
       } else if (type === "TRUE_FALSE") {
         options = ["True", "False"];
 
-        // Handle various true/false formats
         if (
-          q.correctAnswer === "False" ||
-          q.correctAnswer === false ||
-          q.correctAnswer === 1
-        ) {
-          correctAnswer = 1; // False
-        } else if (
           q.correctAnswer === "True" ||
           q.correctAnswer === true ||
+          q.correctAnswer === 1
+        ) {
+          correctAnswer = 1;
+        } else if (
+          q.correctAnswer === "False" ||
+          q.correctAnswer === false ||
           q.correctAnswer === 0
         ) {
-          correctAnswer = 0; // True
+          correctAnswer = 0;
         } else {
-          correctAnswer = 0; // Default to True
+          correctAnswer = 1;
         }
       }
 
       const normalizedQuestion: Question = {
-        id: Math.random(), // Temporary ID for approval process
+        id: Math.random(),
         testId: Number(testId),
         text,
         type,
@@ -100,10 +97,9 @@ export const useAIQuestions = (
         image:
           typeof q.image === "string" && q.image.trim()
             ? q.image.trim()
-            : undefined,
+            : undefined
       };
 
-      // Validate the normalized question
       if (type === "MULTIPLE_CHOICE" && (!options || options.length < 2)) {
         console.warn("Invalid multiple choice question:", normalizedQuestion);
         return null;
@@ -142,8 +138,8 @@ export const useAIQuestions = (
           method: "POST",
           auth: true,
           body: JSON.stringify({
-            prompt: prompt.trim(),
-          }),
+            prompt: prompt.trim()
+          })
         });
 
         if (!response.ok) {
@@ -153,12 +149,10 @@ export const useAIQuestions = (
 
         const result = await response.json();
 
-        // Set the message if available
         if (result.message) {
           setAiMessages([result.message]);
         }
 
-        // Process the questions
         if (result.questions && result.questions.length > 0) {
           const normalized = result.questions
             .map(normalizeAIQuestion)
@@ -190,7 +184,7 @@ export const useAIQuestions = (
         setAiGenerating(false);
       }
     },
-    [testId, notifications, closeModal, normalizeAIQuestion]
+    [notifications, closeModal, normalizeAIQuestion]
   );
 
   const uploadPDFForQuestions = useCallback(
@@ -205,7 +199,7 @@ export const useAIQuestions = (
           method: "POST",
           auth: true,
           headers: {},
-          body: formData,
+          body: formData
         });
 
         if (!response.ok) {
@@ -240,7 +234,7 @@ export const useAIQuestions = (
         setAiPdfUploading(false);
       }
     },
-    [testId, notifications, closeModal, normalizeAIQuestion]
+    [notifications, closeModal, normalizeAIQuestion]
   );
 
   const approveQuestions = useCallback(
@@ -249,14 +243,21 @@ export const useAIQuestions = (
 
       try {
         const questionsToCreate = questions.map((q) => {
-          const questionData: any = {
+          const questionData: {
+            testId: number;
+            text: string;
+            type: Question["type"];
+            maxMarks: number;
+            options?: string[];
+            correctAnswer?: number;
+            image?: string;
+          } = {
             testId: Number(testId),
             text: q.text?.trim() || "Question text not provided",
             type: q.type || "MULTIPLE_CHOICE",
-            maxMarks: q.maxMarks || 1,
+            maxMarks: q.maxMarks || 1
           };
 
-          // Only include options for MULTIPLE_CHOICE questions
           if (
             q.type === "MULTIPLE_CHOICE" &&
             q.options &&
@@ -267,13 +268,11 @@ export const useAIQuestions = (
               typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
           }
 
-          // Only include correctAnswer for TRUE_FALSE questions
           if (q.type === "TRUE_FALSE") {
             questionData.correctAnswer =
               typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
           }
 
-          // Include image if provided
           if (q.image && q.image.trim()) {
             questionData.image = q.image.trim();
           }
@@ -281,15 +280,14 @@ export const useAIQuestions = (
           return questionData;
         });
 
-        // Send all questions in a single request as expected by the backend
         const payload = {
-          questions: questionsToCreate,
+          questions: questionsToCreate
         };
 
         const response = await api(`/tests/${testId}/questions`, {
           method: "POST",
           auth: true,
-          body: JSON.stringify(payload),
+          body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -305,13 +303,12 @@ export const useAIQuestions = (
           `${questions.length} questions approved and created successfully`
         );
 
-        // Trigger questions refresh
         onQuestionsCreated?.();
 
-        // Reset state
         setPendingApprovalQuestions([]);
         setApprovedQuestionIds(new Set());
         setShowApprovalModal(false);
+        closeModal?.();
 
         return true;
       } catch (err) {
@@ -323,7 +320,8 @@ export const useAIQuestions = (
         return false;
       }
     },
-    [testId, notifications, onQuestionsCreated]
+
+    [testId, notifications, onQuestionsCreated, closeModal]
   );
 
   const resetAIState = useCallback(() => {
@@ -336,7 +334,6 @@ export const useAIQuestions = (
   }, []);
 
   return {
-    // State
     aiPrompt,
     aiGenerating,
     aiPdfUploading,
@@ -346,7 +343,6 @@ export const useAIQuestions = (
     pendingApprovalQuestions,
     approvedQuestionIds,
 
-    // Actions
     setAiPrompt,
     setShowAiSection,
     setShowApprovalModal,
@@ -357,9 +353,8 @@ export const useAIQuestions = (
     resetAIState,
     setPendingApprovalQuestions,
 
-    // Backward compatibility aliases
     handleGenerateFromPrompt: generateAIQuestions,
     handleGenerateFromPdf: uploadPDFForQuestions,
-    handleApproveBatchQuestions: approveQuestions,
+    handleApproveBatchQuestions: approveQuestions
   };
 };

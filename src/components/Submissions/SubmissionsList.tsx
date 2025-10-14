@@ -1,22 +1,23 @@
 import React from "react";
-import { SubmissionItem } from "../TestDetail/types";
+
+import { Submission } from "./types";
 import {
   formatDate,
-  calculateTotalPossibleMarks,
   getSubmissionStatus,
   getSubmissionStatusColor,
-} from "../TestDetail/utils";
+  calculateTotalPossibleMarks
+} from "./utils";
 
 interface SubmissionsListProps {
-  submissions: SubmissionItem[];
+  submissions: Submission[];
   onClose: () => void;
-  onSelectSubmission: (submission: SubmissionItem) => void;
+  onSelectSubmission: (submission: Submission) => void;
 }
 
 export default function SubmissionsList({
   submissions,
   onClose,
-  onSelectSubmission,
+  onSelectSubmission
 }: SubmissionsListProps) {
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
@@ -58,10 +59,13 @@ export default function SubmissionsList({
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <h4 className="text-lg font-bold text-gray-900 mb-1">
-                          {submission.student?.name || "Unknown Student"}
-                          {submission.student?.id && (
+                          {submission.student?.name ||
+                            submission.user?.name ||
+                            "Unknown Student"}
+                          {(submission.student?.id || submission.user?.id) && (
                             <span className="text-sm font-normal text-gray-600 ml-2">
-                              (ID: {submission.student.id})
+                              (ID:{" "}
+                              {submission.student?.id || submission.user?.id})
                             </span>
                           )}
                         </h4>
