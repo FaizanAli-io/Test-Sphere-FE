@@ -1,4 +1,4 @@
-import { SubmissionAnswer } from "./types";
+import { Answer } from "../Submissions/types";
 
 /**
  * Format dates consistently across the TestDetail module
@@ -19,7 +19,7 @@ export const formatDate = (dateString: string | undefined): string => {
  * Calculate total possible marks from answers array
  */
 export const calculateTotalPossibleMarks = (
-  answers: SubmissionAnswer[] | undefined
+  answers: Answer[] | undefined
 ): number => {
   if (!answers) return 0;
   return answers.reduce((total, answer) => {
@@ -33,7 +33,7 @@ export const calculateTotalPossibleMarks = (
  * Calculate current total obtained marks from answers array
  */
 export const calculateCurrentTotalMarks = (
-  answers: SubmissionAnswer[] | undefined
+  answers: Answer[] | undefined
 ): number => {
   if (!answers) return 0;
   return answers.reduce(

@@ -1,12 +1,8 @@
-// Base types and enums
-export type QuestionType =
-  | "TRUE_FALSE"
-  | "MULTIPLE_CHOICE"
-  | "SHORT_ANSWER"
-  | "LONG_ANSWER";
+// Import shared types from Submissions
+import { QuestionType } from "../Submissions/types";
+
+// TestDetail specific types
 export type TestStatus = "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
-export type SubmissionStatus = "IN_PROGRESS" | "SUBMITTED" | "GRADED";
-export type GradingStatus = "AUTOMATIC" | "PENDING" | "GRADED";
 
 // Core entities
 export interface Question {
@@ -41,28 +37,6 @@ export interface Student {
   email: string;
 }
 
-// Submission related types
-export interface SubmissionAnswer {
-  id: number; // answerId
-  questionId?: number;
-  questionText?: string;
-  questionType?: QuestionType;
-  maxMarks?: number;
-  answer?: string; // raw answer string
-  obtainedMarks?: number | null; // may be null if not graded
-  isAutoEvaluated?: boolean;
-  gradingStatus?: GradingStatus;
-  // Enhanced for detailed API response
-  question?: {
-    id: number;
-    text: string;
-    type: QuestionType;
-    options?: string[];
-    correctAnswer?: number;
-    maxMarks: number;
-  };
-}
-
 // API payload types
 export interface QuestionCreatePayload {
   testId: number;
@@ -81,13 +55,6 @@ export interface QuestionUpdatePayload {
   options?: string[];
   correctAnswer?: number;
   image?: string;
-}
-
-export interface GradeSubmissionPayload {
-  answers: {
-    answerId: number;
-    obtainedMarks: number;
-  }[];
 }
 
 // Hook utility types

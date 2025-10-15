@@ -21,8 +21,7 @@ export const useSubmissions = (
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null);
-  const [loadingSubmissionDetails, setLoadingSubmissionDetails] =
-    useState(false);
+  // Removed loadingSubmissionDetails - using rich data from list API
 
   /**
    * Fetch submissions based on context
@@ -66,55 +65,7 @@ export const useSubmissions = (
     }
   }, [testId, viewContext, notifications]);
 
-  /**
-   * Fetch detailed submission data
-   * GET /submissions/{submissionId}
-   */
-  const fetchSubmissionDetails = useCallback(
-    async (submissionId: number): Promise<Submission> => {
-      setLoadingSubmissionDetails(true);
-
-      try {
-        const response = await api(`/submissions/${submissionId}`, {
-          method: "GET",
-          auth: true
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.message || "Failed to fetch submission details"
-          );
-        }
-
-        const rawSubmission = await response.json();
-        const detailedSubmission = normalizeSubmission(rawSubmission);
-
-        setSubmissions((prevSubmissions) =>
-          prevSubmissions.map((submission) =>
-            submission.id === submissionId ? detailedSubmission : submission
-          )
-        );
-
-        if (selectedSubmission?.id === submissionId) {
-          setSelectedSubmission(detailedSubmission);
-        }
-
-        return detailedSubmission;
-      } catch (err) {
-        console.error("Failed to fetch submission details:", err);
-        notifications?.showError(
-          err instanceof Error
-            ? err.message
-            : "Failed to fetch submission details"
-        );
-        throw err;
-      } finally {
-        setLoadingSubmissionDetails(false);
-      }
-    },
-    [notifications, selectedSubmission?.id]
-  );
+  // Removed fetchSubmissionDetails - using rich data from list API calls
 
   /**
    * Grade a submission (teacher only)
@@ -177,16 +128,10 @@ export const useSubmissions = (
   /**
    * Select a submission for detailed view
    */
-  const selectSubmission = useCallback(
-    async (submission: Submission) => {
-      setSelectedSubmission(submission);
-
-      if (!submission.answers || submission.answers.length === 0) {
-        await fetchSubmissionDetails(submission.id);
-      }
-    },
-    [fetchSubmissionDetails]
-  );
+  const selectSubmission = useCallback((submission: Submission) => {
+    setSelectedSubmission(submission);
+    // Rich data is already available from list API - no need to fetch details
+  }, []);
 
   /**
    * Close submission detail view
@@ -230,10 +175,8 @@ export const useSubmissions = (
     submissions,
     submissionsLoading,
     selectedSubmission,
-    loadingSubmissionDetails,
 
     fetchSubmissions,
-    fetchSubmissionDetails,
     gradeSubmission,
     openSubmissionsModal,
     selectSubmission,

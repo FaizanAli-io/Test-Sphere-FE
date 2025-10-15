@@ -91,26 +91,21 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   console.log("🌐 API Request:", { url, payload });
 
   const res = await fetch(url, payload);
-
-  if (options?.stream) {
-    return res;
-  }
-
-  console.log("📩 API Response Status:", res.status, res.statusText);
+  if (options?.stream) return res;
 
   try {
     const cloned = res.clone();
     const contentType = cloned.headers.get("content-type");
+    const responseData = contentType?.includes("application/json")
+      ? await cloned.json().catch(() => "⚠️ Failed to parse JSON")
+      : await cloned.text().catch(() => "⚠️ Failed to read text");
 
-    let responseData: unknown;
-
-    if (contentType?.includes("application/json")) {
-      responseData = await cloned.json().catch(() => "⚠️ Failed to parse JSON");
-    } else {
-      responseData = await cloned.text().catch(() => "⚠️ Failed to read text");
-    }
-
-    console.log("📦 API Response Data:", responseData);
+    console.log("📦 API Response:", {
+      url,
+      status: res.status,
+      statusText: res.statusText,
+      data: responseData
+    });
 
     if (!res.ok) {
       console.error("❌ API Request Failed:", {

@@ -28,6 +28,15 @@ export interface Answer {
   answer: string;
 }
 
+const shuffleArray = <T>(array: T[]): T[] => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
+
 export const useTestExam = (testId: number | null) => {
   const router = useRouter();
   const notifications = useNotifications();
@@ -72,7 +81,7 @@ export const useTestExam = (testId: number | null) => {
       }
       const questionsData = await questionsRes.json();
 
-      const fullTest = { ...testData, questions: questionsData };
+      const fullTest = { ...testData, questions: shuffleArray(questionsData) };
       setTest(fullTest);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load test");
@@ -131,12 +140,11 @@ export const useTestExam = (testId: number | null) => {
     setSubmitting(true);
 
     try {
-      const answersArray: Answer[] = Object.entries(answers).map(
-        ([questionId, answer]) => ({
-          questionId: Number(questionId),
-          answer: answer
-        })
-      );
+      const answersArray: Answer[] =
+        test?.questions.map((q) => ({
+          answer: answers[q.id] ?? null,
+          questionId: q.id
+        })) || [];
 
       const res = await api("/submissions/submit", {
         method: "POST",
@@ -160,7 +168,7 @@ export const useTestExam = (testId: number | null) => {
     } finally {
       setSubmitting(false);
     }
-  }, [answers, router, notifications]);
+  }, [answers, router, notifications, test]);
 
   useEffect(() => {
     if (!testStarted || timeRemaining <= 0) return;

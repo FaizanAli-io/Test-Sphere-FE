@@ -253,9 +253,17 @@ interface RawTestLike {
 const normalizeTest = (t: unknown): Test | undefined => {
   if (!isObject(t)) return undefined;
   const rt = t as RawTestLike;
+  const cls = isObject(rt.class)
+    ? (rt.class as Record<string, unknown>)
+    : undefined;
+  const classIdFromClass =
+    cls && (typeof cls.id === "string" || typeof cls.id === "number")
+      ? Number(cls.id)
+      : undefined;
+
   return {
     id: Number(rt.id),
-    classId: Number(rt.classId || 0),
+    classId: Number(rt.classId ?? classIdFromClass ?? 0),
     title: String(rt.title || ""),
     description:
       typeof rt.description === "string" ? rt.description : undefined,
@@ -264,7 +272,13 @@ const normalizeTest = (t: unknown): Test | undefined => {
     endAt: String(rt.endAt || ""),
     status: String(rt.status || "") || "DRAFT",
     createdAt: String(rt.createdAt || ""),
-    updatedAt: String(rt.updatedAt || "")
+    updatedAt: String(rt.updatedAt || ""),
+    class: cls
+      ? {
+          id: classIdFromClass ?? 0,
+          name: typeof cls.name === "string" ? cls.name : ""
+        }
+      : undefined
   } as Test;
 };
 

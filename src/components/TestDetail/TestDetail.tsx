@@ -59,6 +59,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const submissions = submissionsHook.submissions;
   const loadingSubmissions = submissionsHook.submissionsLoading;
 
+  const totalMarks = questions.reduce((sum, q) => sum + q.maxMarks, 0);
+
   const handleEditTest = () => {
     setShowEditTestModal(true);
   };
@@ -162,8 +164,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     submissionsHook.setShowSubmissionsModal(true);
   };
 
-  const handleGenerateFromPrompt = () => {
-    aiQuestionsHook.generateAIQuestions(aiQuestionsHook.aiPrompt);
+  const handleGenerateFromPrompt = (prompt: string) => {
+    aiQuestionsHook.generateAIQuestions(prompt);
   };
 
   const handleGenerateFromPdf = (file: File | null) => {
@@ -312,9 +314,15 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         {/* Questions Section */}
         <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Questions ({questions.length})
-            </h2>
+            <div className="flex flex-col">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Questions ({questions.length})
+              </h2>
+              <h3 className="text-lg font-semibold text-gray-700 mt-1">
+                Total Marks: {totalMarks}
+              </h3>
+            </div>
+
             <button
               onClick={handleAddQuestion}
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl"
@@ -498,7 +506,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                 No Submissions Yet
               </h3>
               <p className="text-gray-600">
-                Students haven&apos;t submitted their tests yet.
+                Students haven{"'"}t submitted their tests yet.
               </p>
             </div>
           ) : (
@@ -571,8 +579,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         showAddQuestionModal={showAddQuestionModal}
         onClose={() => setShowAddQuestionModal(false)}
         onAdd={handleCreateQuestion}
-        aiPrompt={aiQuestionsHook.aiPrompt}
-        setAiPrompt={aiQuestionsHook.setAiPrompt}
         aiGenerating={aiQuestionsHook.aiGenerating}
         aiPdfUploading={aiQuestionsHook.aiPdfUploading}
         aiMessages={aiQuestionsHook.aiMessages}
@@ -619,7 +625,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         }}
         loadingSubmissions={loadingSubmissions}
         preSelectedSubmissionId={submissionsHook.selectedSubmission?.id}
-        fetchSubmissionDetails={submissionsHook.fetchSubmissionDetails}
       />
 
       <ConfirmationModal

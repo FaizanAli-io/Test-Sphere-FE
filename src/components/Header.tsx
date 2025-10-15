@@ -162,9 +162,10 @@ export default function Header() {
               ) : user?.profileImage ? (
                 <>
                   <Image
+                    fill
                     src={user.profileImage}
                     alt={user.name || "User"}
-                    fill
+                    sizes="(max-width: 768px) 40px, 60px"
                     className="object-cover"
                     onError={() => {
                       // Use state-based approach instead of DOM manipulation

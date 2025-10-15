@@ -80,7 +80,8 @@ export default function StudentPortal() {
     selectedSubmission: selectedSubmissionFromHook,
     selectSubmission,
     closeSubmissionDetail,
-    getSubmissionForTest: getSubmissionForTestFromHook
+    getSubmissionForTest: getSubmissionForTestFromHook,
+    fetchSubmissions
   } = useSubmissions(undefined, "student", notificationsApi);
 
   const [classCode, setClassCode] = useState("");
@@ -157,6 +158,8 @@ export default function StudentPortal() {
   const openSubmissionsModal = async (cls: ClassData) => {
     setSubmissionsForClass(cls.id);
     setShowSubmissionsListModal(true);
+
+    await fetchSubmissions();
   };
 
   const closeTestsModal = () => {
@@ -201,8 +204,10 @@ export default function StudentPortal() {
       description: "Review your test submissions and scores",
       actionText: "View All",
       colorScheme: "orange",
-      onClick: () => {
+      onClick: async () => {
+        setSubmissionsForClass(null);
         setShowSubmissionsListModal(true);
+        await fetchSubmissions();
       }
     }
   ];

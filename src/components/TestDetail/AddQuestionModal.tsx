@@ -1,19 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Question } from "./types";
 
 interface AddQuestionModalProps {
   showAddQuestionModal: boolean;
   onClose: () => void;
   onAdd: (question: Question) => Promise<boolean>;
-  aiPrompt: string;
-  setAiPrompt: (prompt: string) => void;
   aiGenerating: boolean;
   aiPdfUploading: boolean;
-
   aiMessages: string[];
   showAiSection: boolean;
   setShowAiSection: (show: boolean) => void;
-  handleGenerateFromPrompt: () => void;
+  handleGenerateFromPrompt: (prompt: string) => void;
   handleGenerateFromPdf: (file: File | null) => void;
   loadingQuestions: boolean;
 }
@@ -22,11 +19,8 @@ export default function AddQuestionModal({
   showAddQuestionModal,
   onClose,
   onAdd,
-  aiPrompt,
-  setAiPrompt,
   aiGenerating,
   aiPdfUploading,
-
   aiMessages,
   showAiSection,
   setShowAiSection,
@@ -34,7 +28,7 @@ export default function AddQuestionModal({
   handleGenerateFromPdf,
   loadingQuestions
 }: AddQuestionModalProps) {
-  const [newQuestion, setNewQuestion] = useState<Question>({
+  const baseQuestionState: Question = {
     id: 0,
     testId: 0,
     text: "",
@@ -43,40 +37,64 @@ export default function AddQuestionModal({
     correctAnswer: 0,
     maxMarks: 1,
     image: ""
-  });
+  };
+
+  const [newQuestion, setNewQuestion] = useState<Question>(baseQuestionState);
+
+  const [subject, setSubject] = useState("");
+  const [difficulty, setDifficulty] = useState("Easy");
+  const [aiType, setAiType] = useState<
+    "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER" | "LONG_ANSWER"
+  >("MULTIPLE_CHOICE");
+  const [numberOfQuestions, setNumberOfQuestions] = useState(1);
+
+  const resetQuestion = () => {
+    setNewQuestion(baseQuestionState);
+  };
 
   const handleAddQuestion = async () => {
+    if (loadingQuestions) return;
     const success = await onAdd(newQuestion);
     if (success) {
-      setNewQuestion({
-        id: 0,
-        testId: 0,
-        text: "",
-        type: "MULTIPLE_CHOICE",
-        options: ["Option A", "Option B", "Option C", "Option D"],
-        correctAnswer: 0,
-        maxMarks: 1,
-        image: ""
-      });
+      resetQuestion();
       onClose();
     }
   };
 
-  const handleCancel = () => {
-    setNewQuestion({
-      id: 0,
-      testId: 0,
-      text: "",
-      type: "MULTIPLE_CHOICE",
-      options: ["Option A", "Option B", "Option C", "Option D"],
-      correctAnswer: 0,
-      maxMarks: 1,
-      image: ""
-    });
-    onClose();
-  };
+  const generatedPrompt = useMemo(() => {
+    if (!subject) return "";
+    return `Generate ${numberOfQuestions} ${difficulty} difficulty ${aiType.replace("_", " ")} question(s) for ${subject}.`;
+  }, [subject, difficulty, aiType, numberOfQuestions]);
 
   if (!showAddQuestionModal) return null;
+
+  const currentCorrect = newQuestion.correctAnswer ?? 0;
+  const isProcessing = loadingQuestions || aiGenerating || aiPdfUploading;
+
+  const renderInput = <T extends string | number>(
+    label: string,
+    value: T,
+    onChange: (v: T) => void,
+    type: "text" | "number" = "text"
+  ) => (
+    <div>
+      <label className="block text-sm font-bold text-gray-700 mb-2">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => {
+          const val =
+            type === "number"
+              ? (Number(e.target.value) as T)
+              : (e.target.value as T);
+          onChange(val);
+        }}
+        className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
+      />
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
@@ -84,8 +102,9 @@ export default function AddQuestionModal({
         <div className="px-8 py-6 bg-gradient-to-r from-green-500 to-emerald-600 sticky top-0 z-10">
           <h3 className="text-2xl font-bold text-white">Add New Question</h3>
         </div>
+
         <div className="p-8 space-y-6">
-          {/* AI Section Toggle */}
+          {/* AI Section */}
           <div className="border-2 border-emerald-200 rounded-2xl p-4 bg-gradient-to-br from-green-50 to-emerald-50">
             <button
               type="button"
@@ -93,43 +112,81 @@ export default function AddQuestionModal({
               className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow hover:shadow-lg transition-all"
             >
               <span className="flex items-center gap-2">
-                <span>🧠</span>
-                {showAiSection
-                  ? "Hide AI Question Generator"
-                  : "AI Question Generator"}
+                🧠{" "}
+                {showAiSection ? "Hide AI Generator" : "AI Question Generator"}
               </span>
               <span>{showAiSection ? "▲" : "▼"}</span>
             </button>
+
             {showAiSection && (
               <div className="mt-4 space-y-4">
+                {/* Subject + Difficulty Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  {renderInput("Subject Matter", subject, setSubject)}
+                  {renderInput("Difficulty Level", difficulty, setDifficulty)}
+                </div>
+
+                {/* Type + Number of Questions Row */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Type of Question
+                    </label>
+                    <select
+                      value={aiType}
+                      onChange={(e) =>
+                        setAiType(e.target.value as typeof aiType)
+                      }
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 bg-white"
+                    >
+                      <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                      <option value="TRUE_FALSE">True/False</option>
+                      <option value="SHORT_ANSWER">Short Answer</option>
+                      <option value="LONG_ANSWER">Long Answer</option>
+                    </select>
+                  </div>
+                  {renderInput(
+                    "Number of Questions",
+                    numberOfQuestions,
+                    setNumberOfQuestions,
+                    "number"
+                  )}
+                </div>
+
+                {/* Generated Prompt */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Topic or Prompt for AI Generation
+                    Generated Prompt
                   </label>
                   <textarea
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    rows={3}
-                    placeholder="e.g., Algebra linear equations basics"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 resize-none"
+                    value={generatedPrompt}
+                    readOnly
+                    rows={2}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl bg-gray-100 text-gray-900 resize-none"
                   />
                 </div>
+
+                {/* Buttons */}
                 <div className="flex gap-4 justify-center">
                   <button
-                    onClick={handleGenerateFromPrompt}
-                    disabled={aiGenerating}
+                    onClick={() => handleGenerateFromPrompt(generatedPrompt)}
+                    disabled={
+                      aiPdfUploading || aiGenerating || !generatedPrompt
+                    }
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
                     {aiGenerating ? "Generating..." : "Generate from Prompt"}
                   </button>
+
+                  {/* PDF Flow unchanged */}
                   <input
                     type="file"
                     accept=".pdf"
+                    className="hidden"
+                    id="pdf-upload"
                     onChange={(e) =>
                       handleGenerateFromPdf(e.target.files?.[0] || null)
                     }
-                    className="hidden"
-                    id="pdf-upload"
                   />
                   <label htmlFor="pdf-upload" className="flex-1">
                     <button
@@ -137,7 +194,7 @@ export default function AddQuestionModal({
                       onClick={() =>
                         document.getElementById("pdf-upload")?.click()
                       }
-                      disabled={aiPdfUploading}
+                      disabled={aiPdfUploading || aiGenerating}
                       className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                     >
                       {aiPdfUploading
@@ -146,6 +203,8 @@ export default function AddQuestionModal({
                     </button>
                   </label>
                 </div>
+
+                {/* AI Messages */}
                 {aiMessages.length > 0 && (
                   <div className="bg-gray-50 rounded-xl p-4 max-h-32 overflow-y-auto">
                     {aiMessages.map((msg, i) => (
@@ -159,6 +218,7 @@ export default function AddQuestionModal({
             )}
           </div>
 
+          {/* Question Text */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">
               Question Text *
@@ -174,6 +234,7 @@ export default function AddQuestionModal({
             />
           </div>
 
+          {/* Question Settings */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -225,6 +286,7 @@ export default function AddQuestionModal({
             </div>
           </div>
 
+          {/* Optional Image */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">
               Image URL (Optional)
@@ -240,6 +302,7 @@ export default function AddQuestionModal({
             />
           </div>
 
+          {/* Dynamic Options */}
           {newQuestion.type === "MULTIPLE_CHOICE" && (
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">
@@ -268,22 +331,21 @@ export default function AddQuestionModal({
                       placeholder={`Option ${String.fromCharCode(65 + i)}`}
                       className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
                     />
-                    {(newQuestion.options?.length || 0) > 2 && (
+                    {newQuestion.options!.length > 2 && (
                       <button
                         onClick={() => {
-                          const newOptions = newQuestion.options?.filter(
+                          const newOptions = newQuestion.options!.filter(
                             (_, idx) => idx !== i
                           );
                           setNewQuestion({
                             ...newQuestion,
                             options: newOptions,
                             correctAnswer:
-                              newQuestion.correctAnswer === i
+                              currentCorrect === i
                                 ? 0
-                                : newQuestion.correctAnswer &&
-                                    newQuestion.correctAnswer > i
-                                  ? newQuestion.correctAnswer - 1
-                                  : newQuestion.correctAnswer
+                                : currentCorrect > i
+                                  ? currentCorrect - 1
+                                  : currentCorrect
                           });
                         }}
                         className="px-3 py-2 text-red-600 hover:bg-red-100 rounded-lg font-bold"
@@ -296,13 +358,12 @@ export default function AddQuestionModal({
               </div>
               <button
                 onClick={() => {
-                  const currentOptions = newQuestion.options || [];
-                  if (currentOptions.length < 6) {
+                  if ((newQuestion.options || []).length < 6) {
                     setNewQuestion({
                       ...newQuestion,
                       options: [
-                        ...currentOptions,
-                        `Option ${String.fromCharCode(65 + currentOptions.length)}`
+                        ...(newQuestion.options || []),
+                        `Option ${String.fromCharCode(65 + newQuestion.options!.length)}`
                       ]
                     });
                   }
@@ -314,61 +375,61 @@ export default function AddQuestionModal({
             </div>
           )}
 
+          {/* True/False */}
           {newQuestion.type === "TRUE_FALSE" && (
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">
                 Correct Answer *
               </label>
               <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="trueFalseAnswer"
-                    checked={newQuestion.correctAnswer === 0}
-                    onChange={() =>
-                      setNewQuestion({ ...newQuestion, correctAnswer: 0 })
-                    }
-                    className="w-5 h-5 text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-gray-900 font-medium">True</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="trueFalseAnswer"
-                    checked={newQuestion.correctAnswer === 1}
-                    onChange={() =>
-                      setNewQuestion({ ...newQuestion, correctAnswer: 1 })
-                    }
-                    className="w-5 h-5 text-green-600 focus:ring-green-500"
-                  />
-                  <span className="text-gray-900 font-medium">False</span>
-                </label>
+                {["True", "False"].map((val, idx) => (
+                  <label
+                    key={idx}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="trueFalseAnswer"
+                      checked={newQuestion.correctAnswer === idx}
+                      onChange={() =>
+                        setNewQuestion({ ...newQuestion, correctAnswer: idx })
+                      }
+                      className="w-5 h-5 text-green-600 focus:ring-green-500"
+                    />
+                    <span className="text-gray-900 font-medium">{val}</span>
+                  </label>
+                ))}
               </div>
             </div>
           )}
 
+          {/* Short/Long Answer Info */}
           {(newQuestion.type === "SHORT_ANSWER" ||
             newQuestion.type === "LONG_ANSWER") && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
               <p className="text-sm text-blue-800 font-medium">
                 ℹ️ This question type requires manual grading. Students will
-                provide written answers that you&apos;ll need to evaluate and
+                provide written answers that you{"'"}ll need to evaluate and
                 grade manually.
               </p>
             </div>
           )}
 
+          {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <button
-              onClick={handleCancel}
+              onClick={() => {
+                resetQuestion();
+                onClose();
+              }}
               className="flex-1 px-6 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all text-lg"
+              disabled={isProcessing}
             >
               Cancel
             </button>
             <button
               onClick={handleAddQuestion}
-              disabled={loadingQuestions}
+              disabled={isProcessing}
               className="flex-1 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 text-lg"
             >
               {loadingQuestions ? "Adding..." : "Add Question"}

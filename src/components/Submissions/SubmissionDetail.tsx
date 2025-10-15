@@ -19,9 +19,7 @@ export default function SubmissionDetail({
   onClose,
   onBack,
   submission,
-  viewContext,
-  loadingSubmissionDetails = false,
-  fetchSubmissionDetails
+  viewContext
 }: SubmissionDetailProps) {
   const [gradingScores, setGradingScores] = useState<Record<string, number>>(
     {}
@@ -84,9 +82,7 @@ export default function SubmissionDetail({
 
       setGradingScores({});
 
-      if (fetchSubmissionDetails) {
-        await fetchSubmissionDetails(submission.id);
-      }
+      // Removed fetchSubmissionDetails call - using rich data from list API
     } catch (error) {
       console.error("Failed to update scores:", error);
       notifications.showError(
@@ -116,9 +112,7 @@ export default function SubmissionDetail({
         `Submission marked as ${newStatus.toLowerCase()} successfully`
       );
 
-      if (fetchSubmissionDetails) {
-        await fetchSubmissionDetails(submission.id);
-      }
+      // Removed fetchSubmissionDetails call - using rich data from list API
     } catch (error) {
       console.error("Failed to update status:", error);
       notifications.showError(
@@ -149,7 +143,7 @@ export default function SubmissionDetail({
             <div>
               <h3 className="text-2xl font-bold text-white">
                 {isTeacherView
-                  ? `${submission.student?.name || submission.user?.name || "Unknown Student"}&apos;s Submission`
+                  ? `${submission.student?.name || submission.user?.name || "Unknown Student"}'s Submission`
                   : `Your Test Submission - (ID: ${submission.id})`}
               </h3>
               <p className={`${getHeaderTextColor()} mt-1`}>
@@ -177,17 +171,7 @@ export default function SubmissionDetail({
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Loading State */}
-          {loadingSubmissionDetails && (
-            <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
-              <div className="flex items-center justify-center space-x-2">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                <span className="text-blue-700 font-medium">
-                  Loading submission details...
-                </span>
-              </div>
-            </div>
-          )}
+          {/* Removed loading state - using rich data from list API */}
 
           {/* Score Summary */}
           <div
@@ -514,9 +498,7 @@ export default function SubmissionDetail({
                   {/* Student Answer */}
                   <div className="bg-white/80 rounded-xl p-4 mb-4">
                     <h6 className="font-semibold text-gray-900 mb-2">
-                      {isTeacherView
-                        ? "Student&apos;s Answer:"
-                        : "Your Answer:"}
+                      {isTeacherView ? "Student's Answer:" : "Your Answer:"}
                     </h6>
                     <p className="text-gray-800 font-medium">
                       {formattedStudentAnswer}
@@ -569,7 +551,7 @@ export default function SubmissionDetail({
                                 <div className="flex space-x-2">
                                   {isStudentChoice && (
                                     <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded">
-                                      Student&apos;s Choice
+                                      Student{"'"}s Choice
                                     </span>
                                   )}
                                   {isCorrectOption && (

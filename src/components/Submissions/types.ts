@@ -94,17 +94,6 @@ export interface SubmissionDetailProps {
   onBack?: () => void;
   submission: Submission | null;
   viewContext: ViewContext;
-  loadingSubmissionDetails?: boolean;
-  fetchSubmissionDetails?: (submissionId: number) => Promise<Submission>;
-}
-
-export type TeacherSubmissionsResponse = Array<Submission>;
-
-export type StudentSubmissionsResponse = Array<Submission>;
-
-export interface SubmissionDetailResponse extends Submission {
-  test: Test & { questions: Question[] };
-  answers: (Answer & { question: Question })[];
 }
 
 export interface NotificationFunctions {

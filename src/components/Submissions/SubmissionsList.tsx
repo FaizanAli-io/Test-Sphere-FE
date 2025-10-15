@@ -39,7 +39,7 @@ export default function SubmissionsList({
                 No Submissions Yet
               </h3>
               <p className="text-gray-600">
-                Students haven&apos;t submitted their tests yet.
+                Students haven{"'"}t submitted their tests yet.
               </p>
             </div>
           ) : (
