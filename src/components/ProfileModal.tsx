@@ -15,7 +15,7 @@ interface UserProfile {
   verified: boolean;
   createdAt: string;
   profileImage?: string;
-  uniqueIdentifier?: string;
+  cnic?: string;
 }
 
 interface ProfileModalProps {
@@ -35,8 +35,8 @@ export default function ProfileModal({
     // Form state
     name,
     setName,
-    uniqueIdentifier,
-    setUniqueIdentifier,
+    cnic,
+    setCnic,
     profileImage,
     setProfileImage,
 
@@ -169,10 +169,10 @@ export default function ProfileModal({
                   </p>
 
                   <p className="text-xs font-medium text-indigo-600 uppercase tracking-wider mt-4 mb-1">
-                    User ID
+                    CNIC
                   </p>
                   <p className="text-sm text-gray-800 font-mono bg-gray-50 px-2 py-1 rounded-md border border-gray-100 inline-block">
-                    {userProfile?.uniqueIdentifier || "Not set"}
+                    {userProfile?.cnic || "Not set"}
                   </p>
                 </div>
               </div>
@@ -196,11 +196,11 @@ export default function ProfileModal({
                   <div>
                     <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                       <span className="w-1 h-4 bg-indigo-500 rounded-full inline-block"></span>
-                      Unique identifier
+                      CNIC Number
                     </label>
                     <input
-                      value={uniqueIdentifier}
-                      onChange={(e) => setUniqueIdentifier(e.target.value)}
+                      value={cnic}
+                      onChange={(e) => setCnic(e.target.value)}
                       className="mt-1.5 block w-full rounded-lg border border-gray-200 shadow-sm focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 px-4 py-3 text-gray-700 bg-white transition-colors duration-200 font-mono"
                       placeholder="e.g., TCH123"
                     />

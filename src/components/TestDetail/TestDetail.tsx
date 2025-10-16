@@ -5,9 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuestions, useTestDetail, useAIQuestions } from "./hooks";
 import { useSubmissions } from "../Submissions";
 
-import { Question, Test, QuestionUpdatePayload } from "./types";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useNotifications } from "@/contexts/NotificationContext";
+
+import type { Submission } from "../Submissions/types";
+import { Question, Test, QuestionUpdatePayload } from "./types";
 import { calculateCurrentTotalMarks } from "../Submissions/utils";
 
 import EditTestModal from "./EditTestModal";
@@ -60,6 +62,60 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const loadingSubmissions = submissionsHook.submissionsLoading;
 
   const totalMarks = questions.reduce((sum, q) => sum + q.maxMarks, 0);
+
+  // Helper functions for table calculations
+  const calculateObjectiveMarks = (submission: Submission) => {
+    if (!submission.answers) return { obtained: 0, total: 0 };
+
+    const objectiveAnswers = submission.answers.filter(
+      (answer) =>
+        answer.question?.type === "MULTIPLE_CHOICE" ||
+        answer.question?.type === "TRUE_FALSE"
+    );
+
+    const obtained = objectiveAnswers.reduce(
+      (sum, answer) => sum + (answer.obtainedMarks || 0),
+      0
+    );
+    const total = objectiveAnswers.reduce(
+      (sum, answer) => sum + (answer.question?.maxMarks || 0),
+      0
+    );
+
+    return { obtained, total };
+  };
+
+  const calculateSubjectiveMarks = (submission: Submission) => {
+    if (!submission.answers) return { obtained: 0, total: 0 };
+
+    const subjectiveAnswers = submission.answers.filter(
+      (answer) =>
+        answer.question?.type === "SHORT_ANSWER" ||
+        answer.question?.type === "LONG_ANSWER"
+    );
+
+    const obtained = subjectiveAnswers.reduce(
+      (sum, answer) => sum + (answer.obtainedMarks || 0),
+      0
+    );
+    const total = subjectiveAnswers.reduce(
+      (sum, answer) => sum + (answer.question?.maxMarks || 0),
+      0
+    );
+
+    return { obtained, total };
+  };
+
+  const calculatePercentage = (obtained: number, total: number) => {
+    if (total === 0) return 0;
+    return Math.round((obtained / total) * 100);
+  };
+
+  const countAnsweredQuestions = (submission: Submission) => {
+    if (!submission.answers) return 0;
+    return submission.answers.filter((a) => a.answer != null && a.answer !== "")
+      .length;
+  };
 
   const handleEditTest = () => {
     setShowEditTestModal(true);
@@ -510,56 +566,156 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {submissions.slice(0, 6).map((submission) => (
-                <div
-                  key={submission.id}
-                  className="border-2 border-gray-200 rounded-xl p-4 hover:border-purple-300 hover:shadow-lg transition-all cursor-pointer"
-                  onClick={() => handleViewIndividualSubmission(submission.id)}
-                >
-                  <h4 className="font-semibold text-gray-900 mb-2">
-                    {submission.student?.name || "Unknown Student"}
-                    {submission.student?.id && (
-                      <span className="text-sm font-normal text-gray-600 ml-2">
-                        (ID: {submission.student.id})
-                      </span>
-                    )}
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {submission.answers?.length || 0} questions answered
-                  </p>
-                  {submission.totalMarks !== null &&
-                  submission.totalMarks !== undefined ? (
-                    <div className="text-sm">
-                      <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">
-                        Graded: {submission.totalMarks} marks
-                      </span>
-                    </div>
-                  ) : submission.answers &&
-                    calculateCurrentTotalMarks(submission.answers) > 0 ? (
-                    <div className="text-sm">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
-                        Partial:{" "}
-                        {calculateCurrentTotalMarks(submission.answers)} marks
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-sm">
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full font-medium">
-                        Pending Review
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-              {submissions.length > 6 && (
-                <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center justify-center">
-                  <button
-                    onClick={handleViewSubmissions}
-                    className="text-gray-600 hover:text-purple-600 font-medium transition-all"
-                  >
-                    +{submissions.length - 6} more submissions
-                  </button>
+            <div className="overflow-x-auto">
+              <table className="w-full bg-white border-collapse">
+                <thead>
+                  <tr className="bg-gradient-to-r from-purple-50 to-indigo-50 border-b-2 border-purple-200">
+                    <th className="text-left p-4 font-bold text-gray-900 border-r border-purple-100">
+                      Submission ID
+                    </th>
+                    <th className="text-left p-4 font-bold text-gray-900 border-r border-purple-100">
+                      Student ID
+                    </th>
+                    <th className="text-center p-4 font-bold text-gray-900 border-r border-purple-100">
+                      Objective Marks
+                    </th>
+                    <th className="text-center p-4 font-bold text-gray-900 border-r border-purple-100">
+                      Subjective Marks
+                    </th>
+                    <th className="text-center p-4 font-bold text-gray-900 border-r border-purple-100">
+                      Total Marks
+                    </th>
+                    <th className="text-center p-4 font-bold text-gray-900 border-r border-purple-100">
+                      Percentage
+                    </th>
+                    <th className="text-center p-4 font-bold text-gray-900">
+                      Grading Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {submissions.map((submission, index) => {
+                    const objectiveMarks = calculateObjectiveMarks(submission);
+                    const subjectiveMarks =
+                      calculateSubjectiveMarks(submission);
+                    const currentTotal = calculateCurrentTotalMarks(
+                      submission.answers
+                    );
+                    const finalTotal = submission.totalMarks ?? currentTotal;
+                    const percentage = calculatePercentage(
+                      finalTotal,
+                      totalMarks
+                    );
+                    const gradingStatus = submission.status;
+
+                    return (
+                      <tr
+                        key={submission.id}
+                        className={`border-b border-gray-200 hover:bg-purple-50 transition-all cursor-pointer ${
+                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                        }`}
+                        onClick={() =>
+                          handleViewIndividualSubmission(submission.id)
+                        }
+                      >
+                        <td className="p-4 border-r border-gray-200">
+                          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                            #{submission.id}
+                          </span>
+                        </td>
+                        <td className="p-4 border-r border-gray-200">
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-gray-900">
+                              {submission.student?.name || "Unknown Student"}
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              ID: {submission.student?.id || "N/A"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center border-r border-gray-200">
+                          {objectiveMarks.total > 0 ? (
+                            <div className="flex flex-col items-center">
+                              <span className="font-bold text-lg text-gray-900">
+                                {objectiveMarks.obtained}/{objectiveMarks.total}
+                              </span>
+                              <span className="text-xs text-gray-600">
+                                MCQ & T/F
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">
+                              No objective
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4 text-center border-r border-gray-200">
+                          {subjectiveMarks.total > 0 ? (
+                            <div className="flex flex-col items-center">
+                              <span className="font-bold text-lg text-gray-900">
+                                {subjectiveMarks.obtained}/
+                                {subjectiveMarks.total}
+                              </span>
+                              <span className="text-xs text-gray-600">
+                                Short & Long
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">
+                              No subjective
+                            </span>
+                          )}
+                        </td>
+                        <td className="p-4 text-center border-r border-gray-200">
+                          <div className="flex flex-col items-center">
+                            <span className="font-bold text-xl text-indigo-600">
+                              {finalTotal}/{totalMarks}
+                            </span>
+                            <span className="text-xs text-gray-600">
+                              {countAnsweredQuestions(submission)} questions
+                              answered
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center border-r border-gray-200">
+                          <div className="flex flex-col items-center">
+                            <div
+                              className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg ${
+                                percentage >= 80
+                                  ? "bg-green-100 text-green-800"
+                                  : percentage >= 60
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : percentage >= 40
+                                      ? "bg-orange-100 text-orange-800"
+                                      : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {percentage}%
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4 text-center">
+                          <span
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              gradingStatus === "GRADED"
+                                ? "bg-green-100 text-green-800"
+                                : gradingStatus === "SUBMITTED"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {gradingStatus}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              {submissions.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No submissions found
                 </div>
               )}
             </div>

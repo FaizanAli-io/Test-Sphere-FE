@@ -14,6 +14,7 @@ export interface ClassData {
   studentCount?: number;
   testCount?: number;
   createdAt?: string;
+  approved?: boolean;
 }
 
 export interface Test {

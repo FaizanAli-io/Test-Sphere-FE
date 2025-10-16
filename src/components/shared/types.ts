@@ -2,15 +2,18 @@ import { ReactNode } from "react";
 
 // Common types for both portals
 export interface BaseClass {
-  id: string | number;
+  id: number | string;
   name: string;
-  description?: string;
   code: string;
+  description?: string;
   students?: Array<{ id: number; name: string; email: string }>;
   tests?: Array<{ id: number; title: string; [key: string]: unknown }>;
   studentCount?: number;
   testCount?: number;
   createdAt?: string;
+  approved?: boolean;
+  disabled?: boolean;
+  statusLabel?: string;
 }
 
 export interface QuickAction {
@@ -27,6 +30,7 @@ export interface ClassCardAction {
   onClick: (classData: BaseClass) => void;
   colorScheme: "green" | "blue" | "yellow" | "red" | "orange";
   variant?: "primary" | "secondary";
+  badge?: (classData: BaseClass) => number | undefined;
 }
 
 export interface BasePortalProps {

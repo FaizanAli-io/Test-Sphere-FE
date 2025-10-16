@@ -32,10 +32,10 @@ export default function SignupForm({
   setError,
   setSuccess,
   setLoading,
-  setOtpSent,
+  setOtpSent
 }: SignupFormProps) {
   const [name, setName] = useState("");
-  const [role, setRole] = useState("STUDENT");
+  const [role, setRole] = useState("");
   const [cnic, setCnic] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -52,12 +52,12 @@ export default function SignupForm({
         name,
         role,
         cnic,
-        profileImage: profileImage || undefined,
+        profileImage: profileImage || undefined
       };
 
       const res = await api("/auth/signup", {
         method: "POST",
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(requestBody)
       });
 
       const data: { message?: string } = await res.json();
@@ -188,6 +188,9 @@ export default function SignupForm({
           required
           disabled={loading}
         >
+          <option value="" disabled>
+            Select Role
+          </option>
           <option value="STUDENT">Student</option>
           <option value="TEACHER">Teacher</option>
         </select>

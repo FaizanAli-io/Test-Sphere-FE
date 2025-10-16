@@ -11,18 +11,18 @@ interface UserProfile {
   verified: boolean;
   createdAt: string;
   profileImage?: string;
-  uniqueIdentifier?: string;
+  cnic?: string;
 }
 
 export function useProfileEditor(
   userProfile: UserProfile | null,
-  onSaved: (updated: UserProfile) => void,
+  onSaved: (updated: UserProfile) => void
 ) {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [profileImage, setProfileImage] = useState("");
-  const [uniqueIdentifier, setUniqueIdentifier] = useState("");
+  const [cnic, setCnic] = useState("");
   const [msg, setMsg] = useState<{
     type: "success" | "error";
     text: string;
@@ -32,7 +32,7 @@ export function useProfileEditor(
   useEffect(() => {
     if (userProfile) {
       setName(userProfile.name ?? "");
-      setUniqueIdentifier(userProfile.uniqueIdentifier ?? "");
+      setCnic(userProfile.cnic ?? "");
       setProfileImage(userProfile.profileImage ?? "");
     }
   }, [userProfile]);
@@ -44,12 +44,12 @@ export function useProfileEditor(
       const payload: Partial<UserProfile> = {
         name: name || undefined,
         profileImage: profileImage || undefined,
-        uniqueIdentifier: uniqueIdentifier || undefined,
+        cnic: cnic || undefined
       };
       const res = await api("/auth/me", {
         auth: true,
         method: "PATCH",
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "Failed to update");
@@ -68,12 +68,12 @@ export function useProfileEditor(
       // clear success message after a moment
       setTimeout(() => setMsg(null), 2500);
     }
-  }, [name, uniqueIdentifier, profileImage, onSaved]);
+  }, [name, cnic, profileImage, onSaved]);
 
   const handleCancel = useCallback(() => {
     // revert form to original
     setName(userProfile?.name ?? "");
-    setUniqueIdentifier(userProfile?.uniqueIdentifier ?? "");
+    setCnic(userProfile?.cnic ?? "");
     setProfileImage(userProfile?.profileImage ?? "");
     setEditing(false);
     setMsg(null);
@@ -87,8 +87,8 @@ export function useProfileEditor(
     // Form state
     name,
     setName,
-    uniqueIdentifier,
-    setUniqueIdentifier,
+    cnic,
+    setCnic,
     profileImage,
     setProfileImage,
 
@@ -101,6 +101,6 @@ export function useProfileEditor(
     handleSave,
     handleCancel,
     toggleEditing,
-    setEditing,
+    setEditing
   };
 }

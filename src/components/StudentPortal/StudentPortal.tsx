@@ -179,7 +179,9 @@ export default function StudentPortal() {
     ...cls,
     id: cls.id.toString(),
     studentCount: undefined,
-    testCount: cls.testCount ?? cls.tests?.length ?? 0
+    disabled: cls.approved === false,
+    testCount: cls.testCount ?? cls.tests?.length ?? 0,
+    statusLabel: cls.approved === false ? "Pending Approval" : undefined
   }));
 
   const displayError =

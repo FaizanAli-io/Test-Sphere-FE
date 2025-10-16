@@ -28,49 +28,40 @@ export function useStudentClasses() {
             .map((raw: unknown) => {
               if (!raw || typeof raw !== "object") return null;
               const value = raw as Record<string, unknown>;
+
               // Case 1: shape already a class
-              if (!("class" in value)) {
-                return {
-                  id: Number(value.id),
-                  name: value.name as string,
-                  description: value.description as string | undefined,
-                  code: value.code as string,
-                  teacherId: Number(value.teacherId),
-                  teacher: value.teacher as ClassData["teacher"],
-                  studentCount: Array.isArray(value.students)
-                    ? value.students.length
-                    : typeof value.studentCount === "number"
-                      ? value.studentCount
-                      : 0,
-                  testCount: Array.isArray(value.tests)
-                    ? value.tests.length
-                    : typeof value.testCount === "number"
-                      ? value.testCount
-                      : 0,
-                  createdAt: value.createdAt as string | undefined
-                } as ClassData;
-              }
-              // Case 2: nested under 'class'
-              const cls = value.class as Record<string, unknown> | undefined;
-              if (!cls) return null;
+              const source =
+                "class" in value
+                  ? (value.class as Record<string, unknown> | undefined)
+                  : value;
+              if (!source) return null;
+
+              const approved =
+                typeof (value.approved ?? source.approved) === "boolean"
+                  ? (value.approved ?? source.approved)
+                  : true;
+
               return {
-                id: Number(cls.id),
-                name: cls.name as string,
-                description: cls.description as string | undefined,
-                code: cls.code as string,
-                teacherId: Number(cls.teacherId),
-                teacher: cls.teacher as ClassData["teacher"],
-                studentCount: Array.isArray(cls.students as unknown[])
-                  ? (cls.students as unknown[]).length
-                  : typeof cls.studentCount === "number"
-                    ? cls.studentCount
+                id: Number(source.id),
+                name: source.name as string,
+                description: source.description as string | undefined,
+                code: source.code as string,
+                teacherId: Number(source.teacherId),
+                teacher: source.teacher as ClassData["teacher"],
+                studentCount: Array.isArray(source.students)
+                  ? source.students.length
+                  : typeof source.studentCount === "number"
+                    ? source.studentCount
                     : 0,
-                testCount: Array.isArray(cls.tests as unknown[])
-                  ? (cls.tests as unknown[]).length
-                  : typeof cls.testCount === "number"
-                    ? cls.testCount
+                testCount: Array.isArray(source.tests)
+                  ? source.tests.length
+                  : typeof source.testCount === "number"
+                    ? source.testCount
                     : 0,
-                createdAt: cls.createdAt as string | undefined
+                createdAt: source.createdAt as string | undefined,
+                approved,
+                disabled: approved === false,
+                statusLabel: approved === false ? "Pending Approval" : undefined
               } as ClassData;
             })
             .filter(Boolean) as ClassData[])

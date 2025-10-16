@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Copy } from "lucide-react";
 import { BaseClass, ClassCardAction } from "./types";
 
@@ -57,9 +58,16 @@ export default function BaseClassCard({
                 #{classData.id}
               </span>
             </div>
-            <h4 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors cursor-pointer hover:underline">
-              {classData.name}
-            </h4>
+            <Link href={`/class/${classData.id}`}>
+              <h4 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors cursor-pointer hover:underline">
+                {classData.name}
+              </h4>
+            </Link>
+            {classData.statusLabel && (
+              <p className="text-yellow-600 font-semibold mt-1">
+                {classData.statusLabel}
+              </p>
+            )}
             <p className="text-gray-600 line-clamp-2 leading-relaxed">
               {classData.description || "No description provided"}
             </p>
@@ -100,18 +108,33 @@ export default function BaseClassCard({
         <div
           className={`grid gap-3 ${actions.length === 3 ? "grid-cols-3" : actions.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}
         >
-          {actions.map((action, index) => (
-            <button
-              key={index}
-              onClick={(e) => {
-                e.stopPropagation();
-                action.onClick(classData);
-              }}
-              className={`px-4 py-3 bg-gradient-to-r ${colorSchemes[action.colorScheme]} text-white text-sm font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:scale-105`}
-            >
-              {action.label}
-            </button>
-          ))}
+          {actions.map((action, index) => {
+            const badgeCount = action.badge
+              ? action.badge(classData)
+              : undefined;
+            return (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!classData.disabled) action.onClick(classData);
+                }}
+                disabled={classData.disabled}
+                className={`relative px-4 py-3 bg-gradient-to-r ${colorSchemes[action.colorScheme]} text-white text-sm font-bold rounded-xl transition-all shadow-md ${
+                  classData.disabled
+                    ? "opacity-50 cursor-not-allowed hover:scale-100 hover:shadow-none"
+                    : "hover:shadow-lg hover:scale-105"
+                }`}
+              >
+                {action.label}
+                {badgeCount && badgeCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg border-2 border-white animate-pulse">
+                    {badgeCount > 99 ? "99+" : badgeCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

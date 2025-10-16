@@ -5,21 +5,29 @@ import type { ReactElement } from "react";
 import { useRouter } from "next/navigation";
 import { GraduationCap } from "lucide-react";
 
-import { Class, KickConfirm } from "./types";
+import { Class, KickConfirm, RequestAction } from "./types";
 import CreateTestModal from "../CreateTestModal";
-import { ConfirmationModal, ClassModal } from "./Modals";
+import { ConfirmationModal, ClassModal, RequestsModal } from "./Modals";
 import { useTeacherPortal, useClassDetails } from "./hooks";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 import { useNotifications } from "../../contexts/NotificationContext";
+import { api } from "@/hooks/useApi";
 
 export default function TeacherPortal(): ReactElement {
   const router = useRouter();
   const notifications = useNotifications();
 
   // Hooks
-  const { classes, loading, error, createClass, updateClass, deleteClass } =
-    useTeacherPortal();
-  const { kickStudent } = useClassDetails();
+  const {
+    classes,
+    loading,
+    error,
+    createClass,
+    updateClass,
+    deleteClass,
+    fetchClasses
+  } = useTeacherPortal();
+  const { kickStudent, handleStudentRequest } = useClassDetails();
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -27,11 +35,14 @@ export default function TeacherPortal(): ReactElement {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showKickConfirm, setShowKickConfirm] = useState(false);
+  const [showRequestsModal, setShowRequestsModal] = useState(false);
 
   // Form states
   const [editClass, setEditClass] = useState<Class | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [kickConfirm, setKickConfirm] = useState<KickConfirm | null>(null);
+  const [selectedClassForRequests, setSelectedClassForRequests] =
+    useState<Class | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Event handlers
@@ -79,6 +90,14 @@ export default function TeacherPortal(): ReactElement {
     setShowCreateTestModal(false);
   };
 
+  const handleRequestAction = async (action: RequestAction) => {
+    const success = await handleStudentRequest(action);
+    if (success) {
+      // Refresh the classes data to update counts
+      await fetchClasses();
+    }
+  };
+
   const navigateToClassDetail = (classId: string) => {
     router.push(`/class/${classId}`);
   };
@@ -98,8 +117,20 @@ export default function TeacherPortal(): ReactElement {
   const baseClasses: BaseClass[] = classes.map((cls) => ({
     ...cls,
     id: cls.id as string,
-    studentCount: cls.studentCount ?? cls.students?.length ?? 0,
     testCount: cls.testCount ?? cls.tests?.length ?? 0,
+    // Use approved student count for display
+    studentCount:
+      cls.studentCount ??
+      cls.students?.filter((s) => s.approved === true).length ??
+      0,
+    // Convert ClassStudent[] to simple student array for BaseClass (only approved students)
+    students: cls.students
+      ?.filter((s) => s.approved === true)
+      .map((classStudent) => ({
+        id: classStudent.student.id,
+        name: classStudent.student.name,
+        email: classStudent.student.email
+      }))
   }));
 
   // Quick actions configuration
@@ -111,7 +142,7 @@ export default function TeacherPortal(): ReactElement {
         "Set up a new class and generate a unique join code for your students",
       actionText: "Get Started",
       colorScheme: "indigo",
-      onClick: () => setShowCreateModal(true),
+      onClick: () => setShowCreateModal(true)
     },
     {
       icon: "📝",
@@ -120,24 +151,36 @@ export default function TeacherPortal(): ReactElement {
         "Design comprehensive assessments and schedule them for your classes",
       actionText: "Get Started",
       colorScheme: "orange",
-      onClick: () => setShowCreateTestModal(true),
-    },
+      onClick: () => setShowCreateTestModal(true)
+    }
   ];
 
   // Class card actions configuration
   const classCardActions: ClassCardAction[] = [
-    {
-      label: "View",
-      onClick: (classData) => navigateToClassDetail(classData.id as string),
-      colorScheme: "green",
-    },
     {
       label: "Edit",
       onClick: (classData) => {
         setEditClass(classData as Class);
         setShowEditModal(true);
       },
-      colorScheme: "yellow",
+      colorScheme: "green"
+    },
+    {
+      label: "Requests",
+      onClick: (classData) => {
+        const fullClass = classes.find((cls) => cls.id === classData.id);
+        if (fullClass) {
+          setSelectedClassForRequests(fullClass);
+          setShowRequestsModal(true);
+        }
+      },
+      colorScheme: "blue",
+      badge: (classData) => {
+        const fullClass = classes.find((cls) => cls.id === classData.id);
+        const pendingCount =
+          fullClass?.students?.filter((s) => !s.approved).length ?? 0;
+        return pendingCount > 0 ? pendingCount : undefined;
+      }
     },
     {
       label: "Delete",
@@ -145,8 +188,8 @@ export default function TeacherPortal(): ReactElement {
         setDeleteConfirm(classData.id as string);
         setShowDeleteConfirm(true);
       },
-      colorScheme: "red",
-    },
+      colorScheme: "red"
+    }
   ];
 
   return (
@@ -223,6 +266,17 @@ export default function TeacherPortal(): ReactElement {
         onConfirm={handleKickStudent}
         loading={loading}
         type="kick"
+      />
+
+      <RequestsModal
+        isOpen={showRequestsModal}
+        onClose={() => {
+          setShowRequestsModal(false);
+          setSelectedClassForRequests(null);
+        }}
+        selectedClass={selectedClassForRequests}
+        onRequestAction={handleRequestAction}
+        loading={loading}
       />
     </BasePortal>
   );

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../../hooks/useApi";
-import { Class, NewClass, KickConfirm } from "./types";
+import { Class, NewClass, KickConfirm, RequestAction } from "./types";
 import { useNotifications } from "../../contexts/NotificationContext";
 
 export const useTeacherPortal = () => {
@@ -31,6 +31,14 @@ export const useTeacherPortal = () => {
                   : typeof cls.testCount === "number"
                     ? cls.testCount
                     : 0,
+                // Count only approved students for the display count
+                studentCount: Array.isArray(cls.students)
+                  ? cls.students.filter(
+                      (student: any) => student.approved === true
+                    ).length
+                  : typeof cls.studentCount === "number"
+                    ? cls.studentCount
+                    : 0
               }) as Class
           )
         : [];
@@ -53,7 +61,7 @@ export const useTeacherPortal = () => {
       const response = await api("/classes", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(newClass),
+        body: JSON.stringify(newClass)
       });
 
       if (!response.ok) {
@@ -89,8 +97,8 @@ export const useTeacherPortal = () => {
         auth: true,
         body: JSON.stringify({
           name: classToUpdate.name,
-          description: classToUpdate.description,
-        }),
+          description: classToUpdate.description
+        })
       });
 
       if (!response.ok) {
@@ -116,7 +124,7 @@ export const useTeacherPortal = () => {
     try {
       const response = await api(`/classes/${classId}`, {
         method: "DELETE",
-        auth: true,
+        auth: true
       });
 
       if (!response.ok) {
@@ -147,7 +155,7 @@ export const useTeacherPortal = () => {
     fetchClasses,
     createClass,
     updateClass,
-    deleteClass,
+    deleteClass
   };
 };
 
@@ -161,7 +169,7 @@ export const useClassDetails = () => {
     try {
       const response = await api(`/classes/${classId}`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -176,7 +184,7 @@ export const useClassDetails = () => {
           ? data.tests.length
           : typeof data.testCount === "number"
             ? data.testCount
-            : 0,
+            : 0
       };
 
       setSelectedClass(normalized);
@@ -197,7 +205,7 @@ export const useClassDetails = () => {
       const response = await api(`/classes/${kickConfirm.classId}/kick`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ studentId: kickConfirm.studentId }),
+        body: JSON.stringify({ studentId: kickConfirm.studentId })
       });
 
       if (!response.ok) {
@@ -226,11 +234,55 @@ export const useClassDetails = () => {
     setSelectedClass(null);
   };
 
+  const handleStudentRequest = async (
+    action: RequestAction
+  ): Promise<boolean> => {
+    setLoading(true);
+    try {
+      // Based on the user's requirements, both endpoints are /classes/{id}/remove
+      // But logically approve should be different. Let me use approve for now
+      const endpoint =
+        action.action === "approve"
+          ? `/classes/${action.classId}/approve`
+          : `/classes/${action.classId}/remove`;
+
+      const response = await api(endpoint, {
+        auth: true,
+        method: "POST",
+        body: JSON.stringify({ studentId: action.studentId })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `Failed to ${action.action} student`
+        );
+      }
+
+      const actionText = action.action === "approve" ? "approved" : "rejected";
+      notifications.showSuccess(`${action.studentName} has been ${actionText}`);
+
+      // Refresh class details
+      await fetchClassDetails(action.classId);
+      return true;
+    } catch (err) {
+      notifications.showError(
+        err instanceof Error
+          ? err.message
+          : `Failed to ${action.action} student`
+      );
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     selectedClass,
     loading,
     fetchClassDetails,
     kickStudent,
     clearSelectedClass,
+    handleStudentRequest
   };
 };
