@@ -1,6 +1,6 @@
 import router from "next/router";
 import { useState } from "react";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, CreditCard } from "lucide-react";
 
 import api from "@/hooks/useApi";
 import GoogleSignIn from "./GoogleSignIn";
@@ -32,11 +32,11 @@ export default function SignupForm({
   setError,
   setSuccess,
   setLoading,
-  setOtpSent
+  setOtpSent,
 }: SignupFormProps) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("STUDENT");
-  const [uniqueIdentifier, setUniqueIdentifier] = useState("");
+  const [cnic, setCnic] = useState("");
   const [profileImage, setProfileImage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
@@ -46,24 +46,18 @@ export default function SignupForm({
     setLoading(true);
 
     try {
-      const identifier =
-        uniqueIdentifier ||
-        `${email.split("@")[0].slice(0, 10)}-${Math.floor(
-          Math.random() * 10000
-        )}`.slice(0, 20);
-
       const requestBody = {
         email,
         password,
         name,
         role,
-        uniqueIdentifier: identifier,
-        profileImage: profileImage || undefined
+        cnic,
+        profileImage: profileImage || undefined,
       };
 
       const res = await api("/auth/signup", {
         method: "POST",
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       const data: { message?: string } = await res.json();
@@ -201,18 +195,26 @@ export default function SignupForm({
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Unique Identifier{" "}
-          <span className="text-gray-400 font-normal">(Optional)</span>
+          CNIC
         </label>
-        <input
-          type="text"
-          value={uniqueIdentifier}
-          onChange={(e) => setUniqueIdentifier(e.target.value)}
-          placeholder="Auto-generated if left empty"
-          className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-          disabled={loading}
-          maxLength={20}
-        />
+        <div className="relative">
+          <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            value={cnic}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "");
+              setCnic(value);
+            }}
+            placeholder="3520212345678"
+            className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+            required
+            disabled={loading}
+            maxLength={13}
+            minLength={13}
+          />
+        </div>
+        <p className="text-xs text-gray-500 mt-1">13-digit CNIC number</p>
       </div>
 
       <div>

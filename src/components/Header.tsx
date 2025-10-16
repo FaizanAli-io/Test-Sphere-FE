@@ -55,15 +55,26 @@ export default function Header() {
     // initial auth check
     const token =
       typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    setIsAuth(!!token);
-    if (token) fetchUser();
+    const hasToken = !!token;
+    setIsAuth(hasToken);
+
+    // Only fetch if authenticated AND not on a public route
+    if (hasToken && !publicRoutes.includes(pathname ?? "")) {
+      fetchUser();
+    } else {
+      // Ensure no user state is kept on public or unauthenticated views
+      setUser(null);
+    }
 
     const onAuthChange = () => {
       const t =
         typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      setIsAuth(!!t);
-      if (t) fetchUser();
-      else {
+      const authed = !!t;
+      setIsAuth(authed);
+
+      if (authed && !publicRoutes.includes(pathname ?? "")) {
+        fetchUser();
+      } else {
         setUser(null);
       }
     };
@@ -74,7 +85,7 @@ export default function Header() {
       window.removeEventListener("storage", onAuthChange);
       window.removeEventListener("authChange", onAuthChange);
     };
-  }, [fetchUser]);
+  }, [fetchUser, pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -151,8 +162,10 @@ export default function Header() {
             <button
               onClick={() => {
                 setShowProfileModal(true);
-                // ensure we have latest profile when opening
-                fetchUser();
+                // ensure we have latest profile when opening only if authenticated
+                if (isAuth) {
+                  fetchUser();
+                }
               }}
               className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full ring-2 ring-indigo-100 ring-offset-2 shadow-md flex items-center justify-center overflow-hidden bg-white hover:scale-105 hover:ring-indigo-300 transition-all duration-200"
               aria-label="Open profile"
