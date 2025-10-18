@@ -22,25 +22,30 @@ export const useTeacherPortal = () => {
 
       // Normalize the data to ensure correct counts
       const normalized = Array.isArray(data)
-        ? data.map(
-            (cls: Record<string, unknown>) =>
-              ({
-                ...cls,
-                testCount: Array.isArray(cls.tests)
-                  ? cls.tests.length
-                  : typeof cls.testCount === "number"
-                    ? cls.testCount
-                    : 0,
-                // Count only approved students for the display count
-                studentCount: Array.isArray(cls.students)
-                  ? cls.students.filter(
-                      (student: any) => student.approved === true
-                    ).length
-                  : typeof cls.studentCount === "number"
-                    ? cls.studentCount
-                    : 0
-              }) as Class
-          )
+        ? data.map((cls: Record<string, unknown>) => {
+            const c = cls as unknown as {
+              tests?: unknown[];
+              testCount?: number;
+              students?: Array<{ approved?: boolean }>;
+              studentCount?: number;
+            };
+
+            return {
+              ...cls,
+              testCount: Array.isArray(c.tests)
+                ? c.tests.length
+                : typeof c.testCount === "number"
+                  ? c.testCount
+                  : 0,
+              // Count only approved students for the display count
+              studentCount: Array.isArray(c.students)
+                ? c.students.filter((student) => student.approved === true)
+                    .length
+                : typeof c.studentCount === "number"
+                  ? c.studentCount
+                  : 0,
+            } as Class;
+          })
         : [];
 
       setClasses(normalized);
@@ -61,7 +66,7 @@ export const useTeacherPortal = () => {
       const response = await api("/classes", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(newClass)
+        body: JSON.stringify(newClass),
       });
 
       if (!response.ok) {
@@ -97,8 +102,8 @@ export const useTeacherPortal = () => {
         auth: true,
         body: JSON.stringify({
           name: classToUpdate.name,
-          description: classToUpdate.description
-        })
+          description: classToUpdate.description,
+        }),
       });
 
       if (!response.ok) {
@@ -124,7 +129,7 @@ export const useTeacherPortal = () => {
     try {
       const response = await api(`/classes/${classId}`, {
         method: "DELETE",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -155,7 +160,7 @@ export const useTeacherPortal = () => {
     fetchClasses,
     createClass,
     updateClass,
-    deleteClass
+    deleteClass,
   };
 };
 
@@ -169,7 +174,7 @@ export const useClassDetails = () => {
     try {
       const response = await api(`/classes/${classId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -184,7 +189,7 @@ export const useClassDetails = () => {
           ? data.tests.length
           : typeof data.testCount === "number"
             ? data.testCount
-            : 0
+            : 0,
       };
 
       setSelectedClass(normalized);
@@ -202,10 +207,10 @@ export const useClassDetails = () => {
   const kickStudent = async (kickConfirm: KickConfirm): Promise<boolean> => {
     setLoading(true);
     try {
-      const response = await api(`/classes/${kickConfirm.classId}/kick`, {
+      const response = await api(`/classes/${kickConfirm.classId}/remove`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ studentId: kickConfirm.studentId })
+        body: JSON.stringify({ studentId: kickConfirm.studentId }),
       });
 
       if (!response.ok) {
@@ -249,7 +254,7 @@ export const useClassDetails = () => {
       const response = await api(endpoint, {
         auth: true,
         method: "POST",
-        body: JSON.stringify({ studentId: action.studentId })
+        body: JSON.stringify({ studentId: action.studentId }),
       });
 
       if (!response.ok) {
@@ -283,6 +288,6 @@ export const useClassDetails = () => {
     fetchClassDetails,
     kickStudent,
     clearSelectedClass,
-    handleStudentRequest
+    handleStudentRequest,
   };
 };

@@ -11,16 +11,19 @@ import {
   calculateTimeTaken,
   getCorrectAnswerText,
   calculateCurrentTotalMarks,
-  calculateTotalPossibleMarks
+  calculateTotalPossibleMarks,
 } from "./utils";
 
-export default function SubmissionDetail({
-  isOpen,
-  onClose,
-  onBack,
-  submission,
-  viewContext
-}: SubmissionDetailProps) {
+export default function SubmissionDetail(props: SubmissionDetailProps) {
+  const {
+    isOpen,
+    onClose,
+    onBack,
+    submission,
+    viewContext,
+    onUpdateStatus,
+    onUpdateScores,
+  } = props;
   const [gradingScores, setGradingScores] = useState<Record<string, number>>(
     {}
   );
@@ -66,7 +69,7 @@ export default function SubmissionDetail({
       const response = await api(`/submissions/${submission.id}/grade`, {
         body: JSON.stringify({ answers }),
         method: "POST",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -80,9 +83,20 @@ export default function SubmissionDetail({
         `Updated ${answers.length} score(s) successfully`
       );
 
-      setGradingScores({});
+      // Update parent state with new scores
+      if (onUpdateScores && submission.answers) {
+        const updatedAnswers = submission.answers.map((answer, idx) => {
+          const key = `${submission.id}-${idx}`;
+          const newScore = gradingScores[key];
+          if (newScore !== undefined) {
+            return { ...answer, obtainedMarks: newScore };
+          }
+          return answer;
+        });
+        onUpdateScores(submission.id, updatedAnswers);
+      }
 
-      // Removed fetchSubmissionDetails call - using rich data from list API
+      setGradingScores({});
     } catch (error) {
       console.error("Failed to update scores:", error);
       notifications.showError(
@@ -100,7 +114,7 @@ export default function SubmissionDetail({
       const response = await api(`/submissions/${submission.id}/status`, {
         method: "PATCH",
         auth: true,
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
@@ -112,7 +126,10 @@ export default function SubmissionDetail({
         `Submission marked as ${newStatus.toLowerCase()} successfully`
       );
 
-      // Removed fetchSubmissionDetails call - using rich data from list API
+      // Update status in parent state
+      if (onUpdateStatus) {
+        onUpdateStatus(submission.id, newStatus);
+      }
     } catch (error) {
       console.error("Failed to update status:", error);
       notifications.showError(
@@ -137,7 +154,20 @@ export default function SubmissionDetail({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto relative">
+        {/* Loading Overlay */}
+        {loadingBulkUpdate && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-3xl">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mb-4"></div>
+              <p className="text-lg font-semibold text-gray-900">
+                Updating scores...
+              </p>
+              <p className="text-sm text-gray-600 mt-2">Please wait</p>
+            </div>
+          </div>
+        )}
+
         <div className={`px-8 py-6 ${getHeaderGradient()} sticky top-0 z-10`}>
           <div className="flex items-center justify-between">
             <div>
@@ -233,35 +263,26 @@ export default function SubmissionDetail({
                 <p className="text-sm font-medium text-gray-700">Total Marks</p>
               </div>
 
-              {/* Percentage Display */}
+              {/* Percentage Display (always visible) */}
               <div className="text-center">
-                {submission.gradedAt && totalPossible > 0 ? (
-                  <>
-                    <div
-                      className={`inline-flex px-4 py-3 rounded-full font-bold text-lg ${
-                        currentTotal / totalPossible >= 0.8
-                          ? "bg-green-500 text-white"
-                          : currentTotal / totalPossible >= 0.6
-                            ? "bg-yellow-500 text-white"
-                            : "bg-red-500 text-white"
-                      }`}
-                    >
-                      {((currentTotal / totalPossible) * 100).toFixed(1)}%
-                    </div>
-                    <p className="text-sm text-gray-700 mt-1 font-medium">
-                      Score Percentage
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <div className="inline-flex px-4 py-3 rounded-full font-bold text-lg bg-gray-400 text-white">
-                      ---%
-                    </div>
-                    <p className="text-sm text-gray-700 mt-1 font-medium">
-                      {isTeacherView ? "Pending Grading" : "Not Yet Graded"}
-                    </p>
-                  </>
-                )}
+                <div
+                  className={`inline-flex px-4 py-3 rounded-full font-bold text-lg ${
+                    totalPossible > 0
+                      ? currentTotal / totalPossible >= 0.8
+                        ? "bg-green-500 text-white"
+                        : currentTotal / totalPossible >= 0.6
+                          ? "bg-yellow-500 text-white"
+                          : "bg-red-500 text-white"
+                      : "bg-gray-400 text-white"
+                  }`}
+                >
+                  {totalPossible > 0
+                    ? `${((currentTotal / totalPossible) * 100).toFixed(1)}%`
+                    : "---%"}
+                </div>
+                <p className="text-sm text-gray-700 mt-1 font-medium">
+                  Score Percentage
+                </p>
               </div>
 
               {/* Submission Info */}
@@ -458,9 +479,7 @@ export default function SubmissionDetail({
                     </div>
                     <div className="text-right ml-4">
                       <div className="text-sm text-gray-600 mb-1">Score</div>
-                      {isTeacherView &&
-                      (question?.type === "SHORT_ANSWER" ||
-                        question?.type === "LONG_ANSWER") ? (
+                      {isTeacherView ? (
                         <div className="flex items-center space-x-2">
                           <input
                             type="number"

@@ -1,5 +1,5 @@
 export * from "./hooks";
-export * from "./Modals";
+export * from "./modals";
 export type * from "./types";
 
 export { default } from "./StudentPortal";

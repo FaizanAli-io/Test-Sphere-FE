@@ -3,14 +3,18 @@ import { Test } from "../hooks/useTestExam";
 
 interface TestInstructionsProps {
   test: Test;
-  onStartTest: () => void;
+  onStartTest: (options?: { requireWebcam: boolean }) => void;
   onCancel: () => void;
+  requireWebcam?: boolean;
+  onToggleRequireWebcam?: (val: boolean) => void;
 }
 
 export const TestInstructions: React.FC<TestInstructionsProps> = ({
   test,
   onStartTest,
-  onCancel
+  onCancel,
+  requireWebcam = true,
+  onToggleRequireWebcam,
 }) => {
   const totalMarks = test.questions.reduce((sum, q) => sum + q.maxMarks, 0);
 
@@ -100,19 +104,37 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
               </ul>
             </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={onCancel}
-                className="flex-1 px-8 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all text-lg"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={onStartTest}
-                className="flex-1 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl text-lg"
-              >
-                Start Test
-              </button>
+            <div className="flex flex-col gap-6">
+              <div className="flex items-center gap-3 bg-white border-2 border-gray-200 rounded-xl p-4">
+                <input
+                  id="require-webcam"
+                  type="checkbox"
+                  className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
+                  checked={requireWebcam}
+                  onChange={(e) => onToggleRequireWebcam?.(e.target.checked)}
+                />
+                <label
+                  htmlFor="require-webcam"
+                  className="text-gray-800 font-medium"
+                >
+                  Require webcam monitoring
+                </label>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={onCancel}
+                  className="flex-1 px-8 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all text-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => onStartTest({ requireWebcam })}
+                  className="flex-1 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl text-lg"
+                >
+                  Start Test
+                </button>
+              </div>
             </div>
           </div>
         </div>

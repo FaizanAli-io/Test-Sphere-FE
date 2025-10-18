@@ -4,7 +4,7 @@ import {
   Submission,
   ViewContext,
   GradeSubmissionPayload,
-  NotificationFunctions
+  NotificationFunctions,
 } from "./types";
 import { normalizeSubmission } from "./utils";
 
@@ -39,7 +39,7 @@ export const useSubmissions = (
 
       const response = await api(endpoint, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -82,7 +82,7 @@ export const useSubmissions = (
         const response = await api(`/submissions/${submissionId}/grade`, {
           method: "POST",
           auth: true,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -110,6 +110,50 @@ export const useSubmissions = (
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to grade submission";
+        notifications?.showError(errorMessage);
+        return false;
+      }
+    },
+    [viewContext, notifications, selectedSubmission?.id]
+  );
+
+  const deleteSubmission = useCallback(
+    async (submissionId: number) => {
+      if (viewContext !== "teacher") {
+        notifications?.showError("Only teachers can delete submissions");
+        return false;
+      }
+
+      try {
+        const response = await api(`/submissions/${submissionId}`, {
+          method: "DELETE",
+          auth: true,
+        });
+
+        if (!response.ok) {
+          let errorMessage = "Failed to delete submission";
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (_) {
+            // ignore parse error (e.g., 204 No Content)
+          }
+          throw new Error(errorMessage);
+        }
+
+        // Some APIs return 204 No Content, so no JSON parse here
+        setSubmissions((prev) =>
+          prev.filter((submission) => submission.id !== submissionId)
+        );
+        if (selectedSubmission?.id === submissionId) {
+          setSelectedSubmission(null);
+        }
+
+        notifications?.showSuccess("Submission deleted successfully");
+        return true;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to delete submission";
         notifications?.showError(errorMessage);
         return false;
       }
@@ -178,6 +222,8 @@ export const useSubmissions = (
 
     fetchSubmissions,
     gradeSubmission,
+    deleteSubmission,
+
     openSubmissionsModal,
     selectSubmission,
     closeSubmissionDetail,
@@ -186,6 +232,6 @@ export const useSubmissions = (
     getSubmissionsForClass,
 
     setSubmissions,
-    setSelectedSubmission
+    setSelectedSubmission,
   };
 };

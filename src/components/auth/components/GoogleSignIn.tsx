@@ -85,24 +85,10 @@ export default function GoogleSignIn({
       setPendingUser(null);
 
       setTimeout(() => {
-        try {
-          if (router) {
-            if (data.user?.role) {
-              router.push("/" + data.user.role.toLowerCase());
-            } else {
-              router.push("/");
-            }
-          } else {
-            throw new Error("Router not available");
-          }
-        } catch (routerError) {
-          console.error("Router error, using window.location:", routerError);
-          // Fallback to window.location if router fails
-          if (data.user?.role) {
-            window.location.href = "/" + data.user.role.toLowerCase();
-          } else {
-            window.location.href = "/";
-          }
+        if (data.user?.role) {
+          router.push("/" + data.user.role.toLowerCase());
+        } else {
+          router.push("/");
         }
       }, 1000);
     } catch (err) {
@@ -168,24 +154,10 @@ export default function GoogleSignIn({
       window.dispatchEvent(new Event("authChange"));
       setSuccess(data.user?.name ? `Welcome, ${data.user.name}!` : "Success!");
       setTimeout(() => {
-        try {
-          if (router) {
-            if (data.user?.role) {
-              router.push("/" + data.user.role.toLowerCase());
-            } else {
-              router.push("/");
-            }
-          } else {
-            throw new Error("Router not available");
-          }
-        } catch (routerError) {
-          console.error("Router error, using window.location:", routerError);
-          // Fallback to window.location if router fails
-          if (data.user?.role) {
-            window.location.href = "/" + data.user.role.toLowerCase();
-          } else {
-            window.location.href = "/";
-          }
+        if (data.user?.role) {
+          router.push("/" + data.user.role.toLowerCase());
+        } else {
+          router.push("/");
         }
       }, 1000);
     } catch (err: unknown) {

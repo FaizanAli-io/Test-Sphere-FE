@@ -2,19 +2,15 @@
 
 import React, { useState } from "react";
 import type { ReactElement } from "react";
-import { useRouter } from "next/navigation";
-import { GraduationCap } from "lucide-react";
 
 import { Class, KickConfirm, RequestAction } from "./types";
 import CreateTestModal from "../CreateTestModal";
-import { ConfirmationModal, ClassModal, RequestsModal } from "./Modals";
+import { ConfirmationModal, ClassModal, RequestsModal } from "./modals";
 import { useTeacherPortal, useClassDetails } from "./hooks";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 import { useNotifications } from "../../contexts/NotificationContext";
-import { api } from "@/hooks/useApi";
 
 export default function TeacherPortal(): ReactElement {
-  const router = useRouter();
   const notifications = useNotifications();
 
   // Hooks
@@ -25,9 +21,14 @@ export default function TeacherPortal(): ReactElement {
     createClass,
     updateClass,
     deleteClass,
-    fetchClasses
+    fetchClasses,
   } = useTeacherPortal();
-  const { kickStudent, handleStudentRequest } = useClassDetails();
+  const {
+    kickStudent,
+    handleStudentRequest,
+    fetchClassDetails,
+    selectedClass,
+  } = useClassDetails();
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -41,8 +42,6 @@ export default function TeacherPortal(): ReactElement {
   const [editClass, setEditClass] = useState<Class | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [kickConfirm, setKickConfirm] = useState<KickConfirm | null>(null);
-  const [selectedClassForRequests, setSelectedClassForRequests] =
-    useState<Class | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Event handlers
@@ -98,9 +97,7 @@ export default function TeacherPortal(): ReactElement {
     }
   };
 
-  const navigateToClassDetail = (classId: string) => {
-    router.push(`/class/${classId}`);
-  };
+  // navigateToClassDetail removed (not used) to satisfy lint rules
 
   const handleCopyCode = async (code: string, id: string | number) => {
     try {
@@ -129,8 +126,8 @@ export default function TeacherPortal(): ReactElement {
       .map((classStudent) => ({
         id: classStudent.student.id,
         name: classStudent.student.name,
-        email: classStudent.student.email
-      }))
+        email: classStudent.student.email,
+      })),
   }));
 
   // Quick actions configuration
@@ -142,7 +139,7 @@ export default function TeacherPortal(): ReactElement {
         "Set up a new class and generate a unique join code for your students",
       actionText: "Get Started",
       colorScheme: "indigo",
-      onClick: () => setShowCreateModal(true)
+      onClick: () => setShowCreateModal(true),
     },
     {
       icon: "📝",
@@ -151,8 +148,8 @@ export default function TeacherPortal(): ReactElement {
         "Design comprehensive assessments and schedule them for your classes",
       actionText: "Get Started",
       colorScheme: "orange",
-      onClick: () => setShowCreateTestModal(true)
-    }
+      onClick: () => setShowCreateTestModal(true),
+    },
   ];
 
   // Class card actions configuration
@@ -163,14 +160,14 @@ export default function TeacherPortal(): ReactElement {
         setEditClass(classData as Class);
         setShowEditModal(true);
       },
-      colorScheme: "green"
+      colorScheme: "green",
     },
     {
       label: "Requests",
-      onClick: (classData) => {
+      onClick: async (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
         if (fullClass) {
-          setSelectedClassForRequests(fullClass);
+          await fetchClassDetails(fullClass.id as string);
           setShowRequestsModal(true);
         }
       },
@@ -180,7 +177,7 @@ export default function TeacherPortal(): ReactElement {
         const pendingCount =
           fullClass?.students?.filter((s) => !s.approved).length ?? 0;
         return pendingCount > 0 ? pendingCount : undefined;
-      }
+      },
     },
     {
       label: "Delete",
@@ -188,28 +185,19 @@ export default function TeacherPortal(): ReactElement {
         setDeleteConfirm(classData.id as string);
         setShowDeleteConfirm(true);
       },
-      colorScheme: "red"
-    }
+      colorScheme: "red",
+    },
   ];
 
   return (
     <BasePortal
-      title="Teacher Portal"
-      subtitle="Manage your classes, track student progress, and create engaging assessments"
-      headerIcon={<GraduationCap className="w-10 h-10 text-white" />}
+      role="teacher"
       quickActions={quickActions}
       classes={baseClasses}
       loading={loading}
       error={error}
       copiedCode={copiedCode}
-      classListTitle="My Classes"
-      classListSubtitle="Manage and monitor all your classes"
-      primaryActionLabel="Create New Class"
       onPrimaryAction={() => setShowCreateModal(true)}
-      emptyStateTitle="No Classes Yet"
-      emptyStateSubtitle="Start your teaching journey by creating your first class"
-      emptyStateIcon="🏫"
-      emptyStateActionLabel="Create Your First Class"
       onCopyCode={handleCopyCode}
       classCardActions={classCardActions}
     >
@@ -272,9 +260,8 @@ export default function TeacherPortal(): ReactElement {
         isOpen={showRequestsModal}
         onClose={() => {
           setShowRequestsModal(false);
-          setSelectedClassForRequests(null);
         }}
-        selectedClass={selectedClassForRequests}
+        selectedClass={selectedClass}
         onRequestAction={handleRequestAction}
         loading={loading}
       />

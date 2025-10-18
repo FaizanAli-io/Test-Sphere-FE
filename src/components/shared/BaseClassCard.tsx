@@ -4,10 +4,12 @@ import { Copy } from "lucide-react";
 import { BaseClass, ClassCardAction } from "./types";
 
 interface BaseClassCardProps {
+  role: "student" | "teacher";
   classData: BaseClass;
-  copiedCode: string | number | null;
-  onCopyCode: (code: string, id: string | number) => void;
   actions: ClassCardAction[];
+  copiedCode: string | number | null;
+  onClassClick?: (classData: BaseClass) => void;
+  onCopyCode: (code: string, id: string | number) => void;
 }
 
 const colorSchemes = {
@@ -19,16 +21,26 @@ const colorSchemes = {
   red: "from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700",
   orange: "from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600",
   indigo:
-    "from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+    "from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700",
 };
 
 export default function BaseClassCard({
+  role,
+  actions,
   classData,
   copiedCode,
   onCopyCode,
-  actions
+  onClassClick,
 }: BaseClassCardProps) {
+  const isTeacher = role === "teacher";
   const isCopied = copiedCode === classData.id;
+
+  const handleClassClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onClassClick) {
+      onClassClick(classData);
+    }
+  };
 
   return (
     <div className="group relative bg-gradient-to-br from-white via-blue-50 to-indigo-50 rounded-2xl p-6 shadow-md border-2 border-blue-100 hover:shadow-2xl hover:border-indigo-300 transition-all duration-300">
@@ -58,11 +70,20 @@ export default function BaseClassCard({
                 #{classData.id}
               </span>
             </div>
-            <Link href={`/class/${classData.id}`}>
-              <h4 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors cursor-pointer hover:underline">
+            {isTeacher ? (
+              <Link href={`/class/${classData.id}`}>
+                <h4 className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors cursor-pointer hover:underline">
+                  {classData.name}
+                </h4>
+              </Link>
+            ) : (
+              <h4
+                onClick={handleClassClick}
+                className="text-2xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors cursor-pointer hover:underline"
+              >
                 {classData.name}
               </h4>
-            </Link>
+            )}
             {classData.statusLabel && (
               <p className="text-yellow-600 font-semibold mt-1">
                 {classData.statusLabel}

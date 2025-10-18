@@ -137,10 +137,10 @@ export default function GoogleSignupModal({
                   ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50/50"
                   : "border-gray-300 focus:ring-blue-500 focus:border-blue-500 hover:border-gray-400"
               }`}
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  handleSubmit(e as any);
+                  handleSubmit();
                 }
               }}
             />
@@ -174,7 +174,7 @@ export default function GoogleSignupModal({
             </button>
             <button
               type="button"
-              onClick={(e) => handleSubmit(e as any)}
+              onClick={() => handleSubmit()}
               className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold active:scale-[0.98] transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40"
             >
               Complete Signup

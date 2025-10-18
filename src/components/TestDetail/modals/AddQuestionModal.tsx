@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Question } from "./types";
+import { Question } from "../types";
 
 interface AddQuestionModalProps {
   showAddQuestionModal: boolean;
@@ -26,7 +26,7 @@ export default function AddQuestionModal({
   setShowAiSection,
   handleGenerateFromPrompt,
   handleGenerateFromPdf,
-  loadingQuestions
+  loadingQuestions,
 }: AddQuestionModalProps) {
   const baseQuestionState: Question = {
     id: 0,
@@ -36,7 +36,7 @@ export default function AddQuestionModal({
     options: ["Option A", "Option B", "Option C", "Option D"],
     correctAnswer: 0,
     maxMarks: 1,
-    image: ""
+    image: "",
   };
 
   const [newQuestion, setNewQuestion] = useState<Question>(baseQuestionState);
@@ -256,7 +256,7 @@ export default function AddQuestionModal({
                     correctAnswer:
                       type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE"
                         ? 0
-                        : undefined
+                        : undefined,
                   });
                 }}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white"
@@ -278,7 +278,7 @@ export default function AddQuestionModal({
                 onChange={(e) =>
                   setNewQuestion({
                     ...newQuestion,
-                    maxMarks: Number(e.target.value)
+                    maxMarks: Number(e.target.value),
                   })
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
@@ -345,7 +345,7 @@ export default function AddQuestionModal({
                                 ? 0
                                 : currentCorrect > i
                                   ? currentCorrect - 1
-                                  : currentCorrect
+                                  : currentCorrect,
                           });
                         }}
                         className="px-3 py-2 text-red-600 hover:bg-red-100 rounded-lg font-bold"
@@ -363,8 +363,8 @@ export default function AddQuestionModal({
                       ...newQuestion,
                       options: [
                         ...(newQuestion.options || []),
-                        `Option ${String.fromCharCode(65 + newQuestion.options!.length)}`
-                      ]
+                        `Option ${String.fromCharCode(65 + newQuestion.options!.length)}`,
+                      ],
                     });
                   }
                 }}

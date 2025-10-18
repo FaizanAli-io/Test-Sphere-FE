@@ -1,6 +1,7 @@
 export { default } from "./GiveTest";
 
 export { useTestExam } from "./hooks/useTestExam";
+export { useTestMonitoring } from "./hooks/useTestMonitoring";
 export type { Question, Test, Answer } from "./hooks/useTestExam";
 
 export { TestHeader } from "./components/TestHeader";

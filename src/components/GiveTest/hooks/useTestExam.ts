@@ -48,6 +48,7 @@ export const useTestExam = (testId: number | null) => {
   const [error, setError] = useState<string | null>(null);
   const [testStarted, setTestStarted] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
+  const [submissionId, setSubmissionId] = useState<number | null>(null);
 
   const fetchTestDetails = useCallback(async () => {
     if (!testId) {
@@ -72,7 +73,7 @@ export const useTestExam = (testId: number | null) => {
 
       const questionsRes = await api(`/tests/${testId}/questions`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!questionsRes.ok) {
@@ -104,7 +105,7 @@ export const useTestExam = (testId: number | null) => {
       const res = await api("/submissions/start", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ testId })
+        body: JSON.stringify({ testId }),
       });
 
       if (!res.ok) {
@@ -112,7 +113,8 @@ export const useTestExam = (testId: number | null) => {
         throw new Error(errorData.message || "Failed to start test");
       }
 
-      await res.json();
+      const submissionData = await res.json();
+      setSubmissionId(submissionData.id || null);
 
       setTestStarted(true);
 
@@ -143,13 +145,13 @@ export const useTestExam = (testId: number | null) => {
       const answersArray: Answer[] =
         test?.questions.map((q) => ({
           answer: answers[q.id] ?? null,
-          questionId: q.id
+          questionId: q.id,
         })) || [];
 
       const res = await api("/submissions/submit", {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ answers: answersArray })
+        body: JSON.stringify({ answers: answersArray }),
       });
 
       if (!res.ok) {
@@ -220,6 +222,7 @@ export const useTestExam = (testId: number | null) => {
     error,
     testStarted,
     timeRemaining,
+    submissionId,
 
     answeredCount,
     totalQuestions,
@@ -230,6 +233,6 @@ export const useTestExam = (testId: number | null) => {
     updateAnswer,
     submitTest,
 
-    formatTime
+    formatTime,
   };
 };

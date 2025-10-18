@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
 import Image from "next/image";
-import { IKContext, IKUpload } from "imagekitio-react";
-import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 import { Upload, AlertCircle } from "lucide-react";
+import React, { useState, useCallback } from "react";
+import { IKContext, IKUpload } from "imagekitio-react";
+
+import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 
 interface ProfileImageUploadProps {
   profileImage: string;
@@ -15,7 +16,7 @@ interface ProfileImageUploadProps {
 export default function ProfileImageUpload({
   profileImage,
   onImageChange,
-  className = ""
+  className = "",
 }: ProfileImageUploadProps) {
   const {
     config,
@@ -23,7 +24,7 @@ export default function ProfileImageUpload({
     error: uploadError,
     loading: configLoading,
     handleUploadSuccess,
-    handleUploadError
+    handleUploadError,
   } = useImageKitUploader();
 
   const [isUploading, setIsUploading] = useState(false);
@@ -105,7 +106,7 @@ export default function ProfileImageUpload({
                     opacity: 0,
                     width: "100%",
                     height: "100%",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 />
                 <div className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow hover:bg-indigo-700 cursor-pointer transition-colors">

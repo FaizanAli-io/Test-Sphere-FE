@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useNotification } from "../hooks/useNotification";
 import NotificationBar from "../components/NotificationBar";
 
@@ -28,7 +28,7 @@ interface NotificationProviderProps {
 }
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
-  children
+  children,
 }) => {
   const {
     notifications,
@@ -36,8 +36,16 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     showSuccess,
     showError,
     showWarning,
-    showInfo
+    showInfo,
+    clearAllTimeouts,
   } = useNotification();
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      clearAllTimeouts();
+    };
+  }, [clearAllTimeouts]);
 
   return (
     <NotificationContext.Provider

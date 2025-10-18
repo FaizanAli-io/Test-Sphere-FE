@@ -34,32 +34,16 @@ export interface ClassCardAction {
 }
 
 export interface BasePortalProps {
-  title: string;
-  subtitle: string;
-  headerIcon: ReactNode;
+  role: "student" | "teacher";
   quickActions: QuickAction[];
   classes: BaseClass[];
   loading: boolean;
   error?: string | null;
   success?: string | null;
   copiedCode: string | number | null;
-
-  // Class list configuration
-  classListTitle: string;
-  classListSubtitle: string;
-  primaryActionLabel: string;
-  onPrimaryAction: () => void;
-  emptyStateTitle: string;
-  emptyStateSubtitle: string;
-  emptyStateIcon: string;
-  emptyStateActionLabel: string;
-
-  // Copy functionality
-  onCopyCode: (code: string, id: string | number) => void;
-
-  // Class card actions (these will be different for each portal)
   classCardActions: ClassCardAction[];
-
-  // Additional content (modals, etc.)
-  children?: ReactNode;
+  children?: React.ReactNode;
+  onPrimaryAction: () => void;
+  onClassClick?: (classData: BaseClass) => void;
+  onCopyCode: (code: string, id: string | number) => void;
 }

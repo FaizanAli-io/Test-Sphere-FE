@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -12,27 +12,39 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const teacherRoutes = useMemo(() => ["/teacher"], []);
   const studentRoutes = useMemo(() => ["/student"], []);
 
-  const matchesRoute = useMemo(
-    () =>
-      (path: string, patterns: string[]): boolean => {
-        return patterns.some((pattern) => {
-          if (pattern.includes("[") && pattern.includes("]")) {
-            const regexPattern = pattern.replace(/\[.*?\]/g, "[^/]+");
-            const regex = new RegExp(`^${regexPattern}$`);
-            return regex.test(path);
-          }
-          return path === pattern || path.startsWith(pattern + "/");
-        });
-      },
+  const matchesRoute = useCallback(
+    (path: string, patterns: string[]): boolean => {
+      return patterns.some((pattern) => {
+        if (pattern.includes("[") && pattern.includes("]")) {
+          const regexPattern = pattern.replace(/\[.*?\]/g, "[^/]+");
+          const regex = new RegExp(`^${regexPattern}$`);
+          return regex.test(path);
+        }
+        return path === pattern || path.startsWith(pattern + "/");
+      });
+    },
     []
   );
 
   useEffect(() => {
+    // Check if we're on the client side before accessing localStorage
+    if (typeof window === "undefined") {
+      setLoading(false);
+      return;
+    }
+
     const role = localStorage.getItem("role");
     const token = localStorage.getItem("token");
 
-    if (!token && pathname && !publicRoutes.includes(pathname)) {
+    // Early exit for public routes
+    if (publicRoutes.includes(pathname ?? "")) {
+      setLoading(false);
+      return;
+    }
+
+    if (!token) {
       router.replace("/");
+      setLoading(false);
       return;
     }
 
@@ -40,12 +52,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       try {
         const userRole = role.toUpperCase();
 
+        // Check role-based access
         if (
           pathname &&
           matchesRoute(pathname, studentRoutes) &&
           userRole !== "STUDENT"
         ) {
           router.replace("/teacher");
+          setLoading(false);
           return;
         }
 
@@ -56,6 +70,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
           userRole !== "TEACHER"
         ) {
           router.replace("/student");
+          setLoading(false);
           return;
         }
 
@@ -66,6 +81,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("role");
         localStorage.removeItem("token");
         router.replace("/");
+        setLoading(false);
         return;
       }
     } else {

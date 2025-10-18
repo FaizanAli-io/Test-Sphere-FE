@@ -1,24 +1,22 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { BookOpen } from "lucide-react";
 
 import {
+  useAllTests,
   useClassDetails,
   useNotifications,
   useTestsForClass,
   useStudentClasses,
-  useAllTests
 } from "./hooks";
+import { TestsModal, JoinClassModal, ClassDetailsModal } from "./modals";
 import { ClassData } from "./types";
 import { Submission } from "../Submissions/types";
 import {
-  JoinClassModal,
-  ClassDetailsModal,
-  TestsModal,
-  SubmissionsListModal
-} from "./Modals";
-import { useSubmissions, SubmissionDetail } from "../Submissions";
+  useSubmissions,
+  SubmissionDetail,
+  SubmissionsList,
+} from "../Submissions";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 
 export default function StudentPortal() {
@@ -28,13 +26,14 @@ export default function StudentPortal() {
     error: classesError,
     fetchClasses,
     joinClass,
-    leaveClass
+    leaveClass,
   } = useStudentClasses();
 
   const {
     selectedClass,
     loadingDetails,
-    error: detailsError
+    error: detailsError,
+    fetchClassDetails,
   } = useClassDetails();
 
   const {
@@ -43,15 +42,16 @@ export default function StudentPortal() {
     error: testsError,
     fetchTestsForClass,
     setTests,
-    setError: setTestsError
+    setError: setTestsError,
   } = useTestsForClass();
 
   const {
     allTests,
     allTestsLoading,
     allTestsError,
+    fetchAllTests,
     setAllTests,
-    setAllTestsError
+    setAllTestsError,
   } = useAllTests();
 
   const {
@@ -61,7 +61,7 @@ export default function StudentPortal() {
     showSuccess,
     showError,
     clearError,
-    handleCopyCode: originalHandleCopyCode
+    handleCopyCode: originalHandleCopyCode,
   } = useNotifications();
 
   const notificationsApi = useMemo(
@@ -69,7 +69,7 @@ export default function StudentPortal() {
       showSuccess,
       showError,
       showWarning: showError,
-      showInfo: showSuccess
+      showInfo: showSuccess,
     }),
     [showSuccess, showError]
   );
@@ -81,7 +81,7 @@ export default function StudentPortal() {
     selectSubmission,
     closeSubmissionDetail,
     getSubmissionForTest: getSubmissionForTestFromHook,
-    fetchSubmissions
+    fetchSubmissions,
   } = useSubmissions(undefined, "student", notificationsApi);
 
   const [classCode, setClassCode] = useState("");
@@ -175,13 +175,28 @@ export default function StudentPortal() {
     await originalHandleCopyCode(code, Number(id));
   };
 
+  const handleClassClick = async (classData: BaseClass) => {
+    try {
+      await fetchClassDetails(Number(classData.id));
+      // Fetch all tests to have data available for the modal
+      if (!allTests.length) {
+        await fetchAllTests(classes);
+      }
+      setShowDetailsModal(true);
+    } catch (err) {
+      showError(
+        err instanceof Error ? err.message : "Failed to load class details"
+      );
+    }
+  };
+
   const baseClasses: BaseClass[] = classes.map((cls) => ({
     ...cls,
     id: cls.id.toString(),
     studentCount: undefined,
     disabled: cls.approved === false,
     testCount: cls.testCount ?? cls.tests?.length ?? 0,
-    statusLabel: cls.approved === false ? "Pending Approval" : undefined
+    statusLabel: cls.approved === false ? "Pending Approval" : undefined,
   }));
 
   const displayError =
@@ -198,7 +213,7 @@ export default function StudentPortal() {
       description: "Enter a class code provided by your teacher to join",
       actionText: "Join Now",
       colorScheme: "indigo",
-      onClick: () => setShowJoinModal(true)
+      onClick: () => setShowJoinModal(true),
     },
     {
       icon: "📊",
@@ -210,50 +225,42 @@ export default function StudentPortal() {
         setSubmissionsForClass(null);
         setShowSubmissionsListModal(true);
         await fetchSubmissions();
-      }
-    }
+      },
+    },
   ];
 
   const classCardActions: ClassCardAction[] = [
     {
       label: "Scores",
       onClick: (classData) => openSubmissionsModal(classData as ClassData),
-      colorScheme: "green"
+      colorScheme: "green",
     },
     {
       label: "Tests",
       onClick: (classData) => openTestsModal(classData as ClassData),
-      colorScheme: "blue"
+      colorScheme: "blue",
     },
     {
       label: "Leave",
       onClick: (classData) =>
         handleLeaveClass(Number(classData.id), classData.name),
-      colorScheme: "red"
-    }
+      colorScheme: "red",
+    },
   ];
 
   return (
     <BasePortal
-      title="Student Portal"
-      subtitle="Manage your classes and assignments"
-      headerIcon={<BookOpen className="w-10 h-10 text-white" />}
+      role="student"
       quickActions={quickActions}
       classes={baseClasses}
       loading={loading}
       error={displayError}
       success={success}
       copiedCode={copiedCode}
-      classListTitle="My Classes"
-      classListSubtitle="Access your enrolled classes and assignments"
-      primaryActionLabel="Join New Class"
       onPrimaryAction={() => setShowJoinModal(true)}
-      emptyStateTitle="No Classes Yet"
-      emptyStateSubtitle="Join your first class using a code provided by your teacher"
-      emptyStateIcon="📚"
-      emptyStateActionLabel="Join Your First Class"
       onCopyCode={handleCopyCode}
       classCardActions={classCardActions}
+      onClassClick={handleClassClick}
     >
       {/* Modals */}
       <JoinClassModal
@@ -271,6 +278,20 @@ export default function StudentPortal() {
         onClose={() => setShowDetailsModal(false)}
         selectedClass={selectedClass}
         loadingDetails={loadingDetails}
+        tests={allTests}
+        submissions={submissions}
+        onViewTests={() => {
+          if (selectedClass) {
+            setShowDetailsModal(false);
+            openTestsModal({ ...selectedClass, id: selectedClass.id });
+          }
+        }}
+        onViewSubmissions={() => {
+          if (selectedClass) {
+            setShowDetailsModal(false);
+            openSubmissionsModal({ ...selectedClass, id: selectedClass.id });
+          }
+        }}
       />
 
       <TestsModal
@@ -285,15 +306,17 @@ export default function StudentPortal() {
         onViewSubmission={handleViewSubmission}
       />
 
-      <SubmissionsListModal
-        isOpen={showSubmissionsListModal}
-        onClose={() => setShowSubmissionsListModal(false)}
-        submissionsForClass={submissionsForClass}
-        submissions={submissions}
-        loading={submissionsLoading}
-        error={null}
-        onViewSubmission={handleViewSubmission}
-      />
+      {showSubmissionsListModal && (
+        <SubmissionsList
+          submissions={submissions}
+          onClose={() => setShowSubmissionsListModal(false)}
+          onSelectSubmission={handleViewSubmission}
+          viewContext="student"
+          loading={submissionsLoading}
+          error={null}
+          classFilter={submissionsForClass}
+        />
+      )}
 
       <SubmissionDetail
         isOpen={!!selectedSubmissionFromHook}

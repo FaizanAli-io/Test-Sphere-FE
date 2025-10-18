@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 
-import { Submission, SubmissionsList, SubmissionDetail } from "../Submissions";
+import {
+  Submission,
+  SubmissionsList,
+  SubmissionDetail,
+} from "../../Submissions";
+import type { SubmissionStatus } from "../../Submissions/types";
 
 interface SubmissionsModalProps {
   showSubmissionsModal: boolean;
@@ -8,13 +13,20 @@ interface SubmissionsModalProps {
   onClose: () => void;
   loadingSubmissions: boolean;
   preSelectedSubmissionId?: number;
+  onUpdateSubmissionStatus?: (id: number, newStatus: SubmissionStatus) => void;
+  onUpdateSubmissionScores?: (
+    id: number,
+    updatedAnswers: Submission["answers"]
+  ) => void;
 }
 
 export default function SubmissionsModal({
   showSubmissionsModal,
   submissions,
   onClose,
-  preSelectedSubmissionId
+  preSelectedSubmissionId,
+  onUpdateSubmissionStatus,
+  onUpdateSubmissionScores,
 }: SubmissionsModalProps) {
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null);
@@ -39,7 +51,7 @@ export default function SubmissionsModal({
     preSelectedSubmissionId,
     submissions,
     selectedSubmission,
-    hasNavigatedBack
+    hasNavigatedBack,
   ]);
 
   // Reset states when modal closes
@@ -56,6 +68,8 @@ export default function SubmissionsModal({
     setHasNavigatedBack(false);
     setSelectedSubmission(submission);
   };
+
+  // Status update handled via onUpdateSubmissionStatus and local selectedSubmission update below
 
   const handleBackToList = () => {
     setHasNavigatedBack(true);
@@ -81,6 +95,22 @@ export default function SubmissionsModal({
       viewContext="teacher"
       onBack={handleBackToList}
       onClose={onClose}
+      onUpdateStatus={(id, newStatus) => {
+        // update selected locally for immediate feedback
+        setSelectedSubmission((prev) =>
+          prev && prev.id === id ? { ...prev, status: newStatus } : prev
+        );
+        // propagate to parent so list and section update
+        onUpdateSubmissionStatus?.(id, newStatus);
+      }}
+      onUpdateScores={(id, updatedAnswers) => {
+        // update selected locally for immediate feedback
+        setSelectedSubmission((prev) =>
+          prev && prev.id === id ? { ...prev, answers: updatedAnswers } : prev
+        );
+        // propagate to parent so list and section update
+        onUpdateSubmissionScores?.(id, updatedAnswers);
+      }}
     />
   );
 }

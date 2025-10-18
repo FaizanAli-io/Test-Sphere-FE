@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Mail, KeyRound } from "lucide-react";
 
 import api from "@/hooks/useApi";
@@ -29,21 +29,36 @@ export default function OtpVerification({
   setSuccess,
   setLoading,
   onBackToLogin,
-  router
+  router,
 }: OtpVerificationProps) {
   const [otp, setOtp] = useState("");
   const [resendCooldown, setResendCooldown] = useState(60);
   const [autoResending, setAutoResending] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   // Auto-resend OTP if there was an email sending issue
   useEffect(() => {
     if (error && error.includes("issue sending verification email")) {
-      const timer = setTimeout(async () => {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(async () => {
         setAutoResending(true);
         try {
           const res = await api("/auth/resend-otp", {
             method: "POST",
-            body: JSON.stringify({ email })
+            body: JSON.stringify({ email }),
           });
 
           // We intentionally ignore response body unless needed later
@@ -56,32 +71,60 @@ export default function OtpVerification({
           console.error("Auto-resend error:", err);
         } finally {
           setAutoResending(false);
+          timeoutRef.current = null;
         }
       }, 2000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
+      };
     }
   }, [error, email, setAutoResending, setSuccess, setError, setResendCooldown]);
 
   // Cooldown timer
   useEffect(() => {
     if (resendCooldown > 0) {
-      const timer = setInterval(() => {
-        setResendCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
+      // Clear any existing interval
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+
+      intervalRef.current = setInterval(() => {
+        setResendCooldown((prev) => {
+          const newVal = prev <= 1 ? 0 : prev - 1;
+          if (newVal === 0 && intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          return newVal;
+        });
       }, 1000);
-      return () => clearInterval(timer);
+
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
     }
-  }, [resendCooldown, setResendCooldown]);
+  }, [resendCooldown]);
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent double submission
+    if (loading) return;
+
     setError("");
     setLoading(true);
 
     try {
       const res = await api("/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ email, otp })
+        body: JSON.stringify({ email, otp }),
       });
 
       const data: { message?: string } = await res.json();
@@ -92,10 +135,15 @@ export default function OtpVerification({
 
       setSuccess("Account verified successfully! Logging you in...");
 
-      setTimeout(async () => {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(async () => {
         const loginRes = await api("/auth/login", {
           method: "POST",
-          body: JSON.stringify({ email, password })
+          body: JSON.stringify({ email, password }),
         });
         const loginData: {
           token?: string;
@@ -110,6 +158,7 @@ export default function OtpVerification({
             router.push("/" + loginData.user.role.toLowerCase());
           }
         }
+        timeoutRef.current = null;
       }, 1000);
     } catch (err: unknown) {
       setError(extractErrorMessage(err));
@@ -127,7 +176,7 @@ export default function OtpVerification({
     try {
       const res = await api("/auth/resend-otp", {
         method: "POST",
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email }),
       });
 
       const data = await res.json();

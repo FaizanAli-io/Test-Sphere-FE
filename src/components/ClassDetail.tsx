@@ -5,14 +5,14 @@ import React, {
   useEffect,
   ReactElement,
   useCallback,
-  useRef
+  useRef,
 } from "react";
 import { useRouter, useParams } from "next/navigation";
+
 import api from "../hooks/useApi";
 import CreateTestModal from "./CreateTestModal";
-
-import { useConfirmation } from "../hooks/useConfirmation";
 import ConfirmationModal from "./ConfirmationModal";
+import { useConfirmation } from "../hooks/useConfirmation";
 
 interface Test {
   id: number;
@@ -43,7 +43,7 @@ const BUTTON_STYLES = {
   primary:
     "px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl",
   secondary:
-    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
+    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl",
 };
 
 const getStatusColor = (status: Test["status"]) => {
@@ -51,7 +51,7 @@ const getStatusColor = (status: Test["status"]) => {
     DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
     ACTIVE: "bg-green-100 text-green-800 border-green-300",
     COMPLETED: "bg-blue-100 text-blue-800 border-blue-300",
-    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300"
+    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300",
   };
   return colors[status] || colors.DRAFT;
 };
@@ -81,6 +81,7 @@ export default function ClassDetail(): ReactElement {
   const [activeTab, setActiveTab] = useState<"students" | "tests">("students");
   const [showCreateTestModal, setShowCreateTestModal] = useState(false);
   const [loadingQuestionCounts, setLoadingQuestionCounts] = useState(false);
+  const [kickingStudent, setKickingStudent] = useState<number | null>(null);
 
   const fetchingClassRef = useRef(false);
   const fetchingTestsRef = useRef(false);
@@ -93,7 +94,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const classRes = await api(`/classes/${classId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!classRes.ok) {
         const errorData = await classRes.json();
@@ -119,17 +120,17 @@ export default function ClassDetail(): ReactElement {
                 return {
                   id: Number(inner.id),
                   name: inner.name ?? "",
-                  email: inner.email ?? ""
+                  email: inner.email ?? "",
                 } as Student;
               }
               const flat = s as Partial<Student>;
               return {
                 id: Number(flat.id),
                 name: flat.name ?? "",
-                email: flat.email ?? ""
+                email: flat.email ?? "",
               } as Student;
             })
-          : []
+          : [],
       };
       setClassData(normalized);
     } catch (err) {
@@ -150,14 +151,14 @@ export default function ClassDetail(): ReactElement {
           try {
             const res = await api(`/tests/${test.id}/questions`, {
               method: "GET",
-              auth: true
+              auth: true,
             });
 
             if (res.ok) {
               const questions = await res.json();
               return {
                 ...test,
-                questionCount: Array.isArray(questions) ? questions.length : 0
+                questionCount: Array.isArray(questions) ? questions.length : 0,
               };
             }
 
@@ -182,7 +183,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const testsRes = await api(`/tests/class/${classId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!testsRes.ok) {
         const errorData = await testsRes.json();
@@ -206,6 +207,39 @@ export default function ClassDetail(): ReactElement {
     await fetchTests();
   };
 
+  const handleKickStudent = async (studentId: number, studentName: string) => {
+    const confirmed = await confirmation.confirm({
+      title: "Remove Student?",
+      message: `Are you sure you want to remove ${studentName} from this class? This action cannot be undone.`,
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      type: "danger",
+    });
+
+    if (!confirmed) return;
+
+    setKickingStudent(studentId);
+    try {
+      const response = await api(`/classes/${classId}/remove`, {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({ studentId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to remove student");
+      }
+
+      // Refresh class details to update student list
+      await fetchClassDetails();
+    } catch (err) {
+      console.error("Failed to remove student:", err);
+    } finally {
+      setKickingStudent(null);
+    }
+  };
+
   useEffect(() => {
     if (classId) {
       fetchClassDetails();
@@ -217,7 +251,7 @@ export default function ClassDetail(): ReactElement {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="text-center">
-          <div className="relative">
+          <div className="relative flex items-center justify-center">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0"></div>
           </div>
@@ -330,19 +364,39 @@ export default function ClassDetail(): ReactElement {
                         key={student.id}
                         className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 border-2 border-blue-100 hover:border-indigo-300 hover:shadow-lg transition-all"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-lg">
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shrink-0">
                             {index + 1}
                           </div>
-                          <div className="flex-1">
-                            <h4 className="font-bold text-gray-900 text-lg">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-bold text-gray-900 text-lg truncate">
                               {student.name}
                             </h4>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 truncate">
                               {student.email}
                             </p>
                           </div>
                         </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleKickStudent(student.id, student.name);
+                          }}
+                          disabled={kickingStudent === student.id}
+                          className="w-full px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-lg hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {kickingStudent === student.id ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                              <span>Removing...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>🚫</span>
+                              <span>Remove Student</span>
+                            </>
+                          )}
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -464,7 +518,7 @@ export default function ClassDetail(): ReactElement {
                                       month: "short",
                                       day: "numeric",
                                       hour: "2-digit",
-                                      minute: "2-digit"
+                                      minute: "2-digit",
                                     }
                                   )}
                                 </p>

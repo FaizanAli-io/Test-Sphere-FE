@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 import api from "@/hooks/useApi";
@@ -32,19 +32,33 @@ export default function LoginForm({
   setSuccess,
   setLoading,
   onForgotPassword,
-  router
+  router,
 }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent double submission
+    if (loading) return;
+
     setLoading(true);
     setError("");
 
     try {
       const res = await api("/auth/login", {
         method: "POST",
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
 
       const data: {
@@ -62,8 +76,15 @@ export default function LoginForm({
       window.dispatchEvent(new Event("authChange"));
       if (data.user?.name) setSuccess(`Welcome back, ${data.user.name}!`);
 
-      setTimeout(() => {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // Set timeout with proper cleanup
+      timeoutRef.current = setTimeout(() => {
         if (data.user?.role) router.push("/" + data.user.role.toLowerCase());
+        timeoutRef.current = null;
       }, 1000);
     } catch (err: unknown) {
       setError(extractErrorMessage(err));

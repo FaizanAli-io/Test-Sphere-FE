@@ -32,7 +32,7 @@ export default function SignupForm({
   setError,
   setSuccess,
   setLoading,
-  setOtpSent
+  setOtpSent,
 }: SignupFormProps) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
@@ -42,6 +42,10 @@ export default function SignupForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Prevent double submission
+    if (loading) return;
+
     setError("");
     setLoading(true);
 
@@ -52,12 +56,12 @@ export default function SignupForm({
         name,
         role,
         cnic,
-        profileImage: profileImage || undefined
+        profileImage: profileImage || undefined,
       };
 
       const res = await api("/auth/signup", {
         method: "POST",
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       const data: { message?: string } = await res.json();

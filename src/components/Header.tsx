@@ -18,6 +18,9 @@ interface UserProfile {
   uniqueIdentifier?: string;
 }
 
+// Move outside component to satisfy react-hooks/exhaustive-deps rule
+const PUBLIC_ROUTES = ["/", "/login", "/signup"];
+
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
@@ -26,8 +29,6 @@ export default function Header() {
   const [loadingUser, setLoadingUser] = useState(false);
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
-
-  const publicRoutes = ["/", "/login", "/signup"];
 
   const fetchUser = useCallback(async () => {
     try {
@@ -59,11 +60,12 @@ export default function Header() {
     setIsAuth(hasToken);
 
     // Only fetch if authenticated AND not on a public route
-    if (hasToken && !publicRoutes.includes(pathname ?? "")) {
+    if (hasToken && !PUBLIC_ROUTES.includes(pathname ?? "")) {
       fetchUser();
     } else {
       // Ensure no user state is kept on public or unauthenticated views
       setUser(null);
+      setLoadingUser(false);
     }
 
     const onAuthChange = () => {
@@ -72,18 +74,28 @@ export default function Header() {
       const authed = !!t;
       setIsAuth(authed);
 
-      if (authed && !publicRoutes.includes(pathname ?? "")) {
+      if (authed && !PUBLIC_ROUTES.includes(pathname ?? "")) {
         fetchUser();
       } else {
         setUser(null);
+        setLoadingUser(false);
       }
     };
 
-    window.addEventListener("storage", onAuthChange);
-    window.addEventListener("authChange", onAuthChange);
+    // Debounce event listeners to prevent rapid firing
+    let authChangeTimeout: NodeJS.Timeout;
+    const debouncedAuthChange = () => {
+      clearTimeout(authChangeTimeout);
+      authChangeTimeout = setTimeout(onAuthChange, 100);
+    };
+
+    window.addEventListener("storage", debouncedAuthChange);
+    window.addEventListener("authChange", debouncedAuthChange);
+
     return () => {
-      window.removeEventListener("storage", onAuthChange);
-      window.removeEventListener("authChange", onAuthChange);
+      clearTimeout(authChangeTimeout);
+      window.removeEventListener("storage", debouncedAuthChange);
+      window.removeEventListener("authChange", debouncedAuthChange);
     };
   }, [fetchUser, pathname]);
 
@@ -96,7 +108,7 @@ export default function Header() {
   };
 
   // Hide header on absolute public pages or when unauthenticated
-  if (publicRoutes.includes(pathname ?? "") || !isAuth) return null;
+  if (PUBLIC_ROUTES.includes(pathname ?? "") || !isAuth) return null;
 
   const handleProfileSaved = (updated: UserProfile) => {
     setUser(updated);
@@ -180,12 +192,16 @@ export default function Header() {
                     alt={user.name || "User"}
                     sizes="(max-width: 768px) 40px, 60px"
                     className="object-cover"
-                    onError={() => {
-                      // Use state-based approach instead of DOM manipulation
-                      // This will trigger a re-render with the fallback div
-                      setUser((prev) =>
-                        prev ? { ...prev, profileImage: undefined } : prev
-                      );
+                    onError={(e) => {
+                      // Prevent infinite error loops
+                      const target = e.target as HTMLImageElement;
+                      if (target.src === user?.profileImage) {
+                        // Use state-based approach instead of DOM manipulation
+                        // This will trigger a re-render with the fallback div
+                        setUser((prev) =>
+                          prev ? { ...prev, profileImage: undefined } : prev
+                        );
+                      }
                     }}
                   />
                   {/* Hidden fallback that will be shown if setUser triggers re-render */}

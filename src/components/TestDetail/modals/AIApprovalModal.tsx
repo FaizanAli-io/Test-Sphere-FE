@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Question } from "./types";
+import { Question } from "../types";
 
 interface AIApprovalModalProps {
   showAIApprovalModal: boolean;
@@ -18,7 +18,7 @@ export default function AIApprovalModal({
   onApproveAIQuestion,
   onApproveMultipleQuestions,
   onRejectAIQuestion,
-  loadingQuestions
+  loadingQuestions,
 }: AIApprovalModalProps) {
   const [selectedQuestions, setSelectedQuestions] = useState<number[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);

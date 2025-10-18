@@ -8,16 +8,16 @@ import { NotificationProvider } from "@/contexts/NotificationContext";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
-  variable: "--font-roboto-mono"
+  variable: "--font-roboto-mono",
 });
 
 export const metadata: Metadata = {
   title: "Education System",
-  description: "Professional education platform"
+  description: "Professional education platform",
 };
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {

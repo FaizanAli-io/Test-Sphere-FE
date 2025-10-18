@@ -1,42 +1,65 @@
 import React from "react";
+import { GraduationCap, BookOpen } from "lucide-react";
+
+import { BasePortalProps } from "./types";
 import BaseClassCard from "./BaseClassCard";
 import BaseQuickActionCard from "./BaseQuickActionCard";
-import { BasePortalProps } from "./types";
 
 export default function BasePortal({
-  title,
-  subtitle,
-  headerIcon,
+  role,
   quickActions,
   classes,
   loading,
   error,
   success,
   copiedCode,
-  classListTitle,
-  classListSubtitle,
-  primaryActionLabel,
   onPrimaryAction,
-  emptyStateTitle,
-  emptyStateSubtitle,
-  emptyStateIcon,
-  emptyStateActionLabel,
   onCopyCode,
   classCardActions,
-  children
+  onClassClick,
+  children,
 }: BasePortalProps) {
+  const isTeacher = role === "teacher";
+
+  const config = {
+    title: isTeacher ? "Teacher Portal" : "Student Portal",
+    subtitle: isTeacher
+      ? "Manage your classes, track student progress, and create engaging assessments"
+      : "Manage your classes and assignments",
+    headerIcon: isTeacher ? (
+      <GraduationCap className="w-10 h-10 text-white" />
+    ) : (
+      <BookOpen className="w-10 h-10 text-white" />
+    ),
+    classListTitle: "My Classes",
+    classListSubtitle: isTeacher
+      ? "Manage and monitor all your classes"
+      : "Access your enrolled classes and assignments",
+    primaryActionLabel: isTeacher ? "Create New Class" : "Join New Class",
+    emptyStateTitle: "No Classes Yet",
+    emptyStateSubtitle: isTeacher
+      ? "Start your teaching journey by creating your first class"
+      : "Join your first class using a code provided by your teacher",
+    emptyStateIcon: isTeacher ? "🏫" : "📚",
+    emptyStateActionLabel: isTeacher
+      ? "Create Your First Class"
+      : "Join Your First Class",
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
-            {headerIcon}
+            {config.headerIcon}
           </div>
           <h1 className="text-5xl font-bold text-gray-900 mb-3 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-600">
-            {title}
+            {config.title}
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{subtitle}</p>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            {config.subtitle}
+          </p>
         </div>
 
         {/* Success Message */}
@@ -73,24 +96,24 @@ export default function BasePortal({
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
               <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                {classListTitle}
+                {config.classListTitle}
               </h3>
-              <p className="text-gray-600">{classListSubtitle}</p>
+              <p className="text-gray-600">{config.classListSubtitle}</p>
             </div>
             <button
               onClick={onPrimaryAction}
               className="group px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 flex items-center gap-2"
             >
               <span className="text-xl">+</span>
-              <span>{primaryActionLabel}</span>
+              <span>{config.primaryActionLabel}</span>
             </button>
           </div>
 
           {loading && !classes.length ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="relative">
+              <div className="relative inline-flex">
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
-                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0"></div>
+                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0 left-0"></div>
               </div>
               <p className="text-gray-600 font-semibold mt-6 text-lg">
                 Loading your classes...
@@ -107,30 +130,32 @@ export default function BasePortal({
           ) : classes.length === 0 ? (
             <div className="text-center py-20 bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border-2 border-dashed border-gray-300">
               <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">
-                {emptyStateIcon}
+                {config.emptyStateIcon}
               </div>
               <h4 className="text-2xl font-bold text-gray-900 mb-3">
-                {emptyStateTitle}
+                {config.emptyStateTitle}
               </h4>
               <p className="text-gray-600 mb-8 text-lg max-w-md mx-auto">
-                {emptyStateSubtitle}
+                {config.emptyStateSubtitle}
               </p>
               <button
                 onClick={onPrimaryAction}
                 className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl hover:scale-105 text-lg"
               >
-                {emptyStateActionLabel}
+                {config.emptyStateActionLabel}
               </button>
             </div>
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {classes.map((cls) => (
                 <BaseClassCard
+                  role={role}
                   key={cls.id}
                   classData={cls}
                   copiedCode={copiedCode}
                   onCopyCode={onCopyCode}
                   actions={classCardActions}
+                  onClassClick={onClassClick}
                 />
               ))}
             </div>

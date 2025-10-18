@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Question } from "./types";
+import { Question } from "../types";
 
 interface EditQuestionModalProps {
   showEditQuestionModal: boolean;

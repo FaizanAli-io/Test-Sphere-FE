@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Test } from "./types";
+import { Test } from "../types";
 
 interface EditTestModalProps {
   showEditTestModal: boolean;
@@ -12,7 +12,7 @@ export default function EditTestModal({
   showEditTestModal,
   editingTest,
   onClose,
-  onUpdate
+  onUpdate,
 }: EditTestModalProps) {
   const [updatingTest, setUpdatingTest] = useState(false);
   const [localEditingTest, setLocalEditingTest] = useState<Test | null>(
@@ -31,9 +31,9 @@ export default function EditTestModal({
         duration: localEditingTest.duration,
         status: localEditingTest.status,
         startAt: localEditingTest.startAt,
-        endAt: localEditingTest.endAt
+        endAt: localEditingTest.endAt,
       };
-      
+
       const success = await onUpdate(updatePayload);
       if (success) {
         onClose();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { api } from "./useApi";
 
 interface UserProfile {
@@ -27,6 +27,7 @@ export function useProfileEditor(
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize form data when userProfile changes
   useEffect(() => {
@@ -44,12 +45,12 @@ export function useProfileEditor(
       const payload: Partial<UserProfile> = {
         name: name || undefined,
         profileImage: profileImage || undefined,
-        cnic: cnic || undefined
+        cnic: cnic || undefined,
       };
       const res = await api("/auth/me", {
         auth: true,
         method: "PATCH",
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "Failed to update");
@@ -60,13 +61,22 @@ export function useProfileEditor(
       setMsg({ type: "success", text: "Profile updated successfully" });
       setEditing(false);
       onSaved(updated);
+
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      // Set new timeout with cleanup
+      timeoutRef.current = setTimeout(() => {
+        setMsg(null);
+        timeoutRef.current = null;
+      }, 2500);
     } catch (err) {
       console.error(err);
       setMsg({ type: "error", text: "Network error while updating profile" });
     } finally {
       setSaving(false);
-      // clear success message after a moment
-      setTimeout(() => setMsg(null), 2500);
     }
   }, [name, cnic, profileImage, onSaved]);
 
@@ -82,6 +92,15 @@ export function useProfileEditor(
   const toggleEditing = useCallback(() => {
     setEditing(!editing);
   }, [editing]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   return {
     // Form state
@@ -101,6 +120,6 @@ export function useProfileEditor(
     handleSave,
     handleCancel,
     toggleEditing,
-    setEditing
+    setEditing,
   };
 }

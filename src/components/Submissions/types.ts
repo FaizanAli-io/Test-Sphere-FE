@@ -94,6 +94,8 @@ export interface SubmissionDetailProps {
   onBack?: () => void;
   submission: Submission | null;
   viewContext: ViewContext;
+  onUpdateStatus?: (id: number, newStatus: SubmissionStatus) => void;
+  onUpdateScores?: (id: number, updatedAnswers: Answer[]) => void;
 }
 
 export interface NotificationFunctions {

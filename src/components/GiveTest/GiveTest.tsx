@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { IKContext } from "imagekitio-react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 
 import {
@@ -8,8 +9,11 @@ import {
   useTestExam,
   QuestionRenderer,
   TestInstructions,
-  SubmitConfirmModal
+  SubmitConfirmModal,
 } from "./index";
+import { useTestMonitoring } from "./hooks/useTestMonitoring";
+import { useImageKitUploader } from "@/hooks/useImageKitUploader";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 export default function GiveTest() {
   const router = useRouter();
@@ -23,6 +27,7 @@ export default function GiveTest() {
   const testId = testIdParam ? Number(testIdParam) : null;
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [requireWebcam, setRequireWebcam] = useState(true);
 
   const {
     test,
@@ -32,16 +37,49 @@ export default function GiveTest() {
     error,
     testStarted,
     timeRemaining,
+    submissionId,
     answeredCount,
     totalQuestions,
     progress,
     startTest,
     updateAnswer,
     submitTest,
-    formatTime
+    formatTime,
   } = useTestExam(testId);
 
-  const handleStartTest = async () => {
+  const { config } = useImageKitUploader();
+  const notifications = useNotifications();
+
+  // Initialize monitoring hook with randomized intervals (5-10 seconds)
+  const {
+    videoRef,
+    canvasRef,
+    logs,
+    isCapturing,
+    requestScreenPermission,
+    checkWebcamAvailable,
+  } = useTestMonitoring({
+    submissionId,
+    isTestActive: testStarted,
+    requireWebcam,
+  });
+
+  const handleStartTest = async (opts?: { requireWebcam: boolean }) => {
+    const wantWebcam = opts?.requireWebcam ?? requireWebcam;
+    // If webcam is required, ensure it exists before starting
+    if (wantWebcam) {
+      const hasWebcam = await checkWebcamAvailable();
+      if (!hasWebcam) {
+        notifications.showError(
+          "No webcam detected. Please connect a camera or disable 'Require webcam' to start."
+        );
+        return;
+      }
+    }
+    // Request screen-capture permission once, before test begins (user gesture)
+    await requestScreenPermission();
+    // Update state to reflect final choice
+    setRequireWebcam(wantWebcam);
     await startTest();
   };
 
@@ -95,6 +133,8 @@ export default function GiveTest() {
       <TestInstructions
         test={test}
         onStartTest={handleStartTest}
+        requireWebcam={requireWebcam}
+        onToggleRequireWebcam={setRequireWebcam}
         onCancel={() => router.push("/student")}
       />
     );
@@ -102,6 +142,37 @@ export default function GiveTest() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
+      {/* Hidden webcam video and canvas for monitoring */}
+      <div style={{ display: "none" }}>
+        <video ref={videoRef} autoPlay playsInline muted />
+        <canvas ref={canvasRef} />
+      </div>
+
+      {/* Monitoring indicator */}
+      {testStarted && config && (
+        <IKContext
+          publicKey={config.publicKey}
+          urlEndpoint={config.urlEndpoint}
+          authenticator={async () => ({ signature: "", expire: 0, token: "" })}
+        >
+          <div className="fixed top-24 right-4 bg-white rounded-lg shadow-lg p-3 border border-gray-200 z-50">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
+                }`}
+              />
+              <span className="text-xs font-medium text-gray-700">
+                {isCapturing ? "Capturing..." : "Monitoring Active"}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {logs.length} snapshots taken
+            </p>
+          </div>
+        </IKContext>
+      )}
+
       <TestHeader
         testTitle={test.title}
         answeredCount={answeredCount}
