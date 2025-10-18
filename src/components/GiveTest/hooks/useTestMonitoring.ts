@@ -12,17 +12,13 @@ interface MonitoringLog {
 interface UseTestMonitoringProps {
   submissionId: number | null;
   isTestActive: boolean;
-  /**
-   * When false, the hook won't request camera permissions or capture webcam photos.
-   * Screenshots (screen share) will continue to work if permitted.
-   */
   requireWebcam?: boolean;
 }
 
 export const useTestMonitoring = ({
   submissionId,
   isTestActive,
-  requireWebcam = true,
+  requireWebcam = true
 }: UseTestMonitoringProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -34,24 +30,22 @@ export const useTestMonitoring = ({
   const [screenStream, setScreenStream] = useState<MediaStream | null>(null);
   const [logs, setLogs] = useState<MonitoringLog[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
-  const announcedNextRef = useRef(false); // control 'next capture' logging
-  const captureCountRef = useRef(0); // count successful captures
+  const announcedNextRef = useRef(false);
+  const captureCountRef = useRef(0);
 
   const { config, authenticator, handleUploadSuccess, handleUploadError } =
     useImageKitUploader();
 
-  // Generate random interval between 5-10 seconds
   const getRandomInterval = useCallback(() => {
-    return Math.floor(Math.random() * 6 + 5) * 1000; // 5000-10000ms
+    return Math.floor(Math.random() * 6 + 10) * 1000;
   }, []);
 
-  // Initialize webcam
   const initializeWebcam = useCallback(async () => {
     try {
-      if (!requireWebcam) return; // Do not initialize if not required
+      if (!requireWebcam) return;
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480 },
-        audio: false,
+        audio: false
       });
       webcamStreamRef.current = stream;
       setWebcamStream(stream);
@@ -60,14 +54,11 @@ export const useTestMonitoring = ({
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
-
-      // Webcam initialized
     } catch (err) {
       console.error("❌ Failed to initialize webcam:", err);
     }
   }, [requireWebcam]);
 
-  // Check if a webcam device is available without prompting for permission
   const checkWebcamAvailable = useCallback(async (): Promise<boolean> => {
     try {
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -77,34 +68,42 @@ export const useTestMonitoring = ({
     }
   }, []);
 
-  // Stop webcam
   const stopWebcam = useCallback(() => {
     if (webcamStreamRef.current) {
       webcamStreamRef.current.getTracks().forEach((track) => track.stop());
       webcamStreamRef.current = null;
       setWebcamStream(null);
-      // Webcam stopped
     }
   }, []);
 
-  // Request screen capture permission once and keep the stream alive
-  const requestScreenPermission = useCallback(async () => {
+  const requestScreenPermission = useCallback(async (): Promise<boolean> => {
     try {
-      // If already active, do nothing
       if (screenStreamRef.current && screenVideoRef.current) return true;
 
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: true,
-        audio: false,
+        audio: false
       });
+
+      const track = stream.getVideoTracks()[0];
+      const settings = track?.getSettings?.() as any;
+      const surface: string | undefined = settings?.displaySurface;
+      const isEntireScreen =
+        surface === "monitor" ||
+        (typeof track.label === "string" &&
+          /entire screen|screen 1|screen 2|whole screen/i.test(track.label));
+
+      if (!isEntireScreen) {
+        stream.getTracks().forEach((t) => t.stop());
+        return false;
+      }
 
       screenStreamRef.current = stream;
       setScreenStream(stream);
 
-      // Create and attach hidden video element to hold the stream
       const video = document.createElement("video");
       video.style.position = "fixed";
-      video.style.right = "-9999px"; // keep offscreen
+      video.style.right = "-9999px";
       video.style.bottom = "-9999px";
       video.muted = true;
       video.playsInline = true;
@@ -112,7 +111,6 @@ export const useTestMonitoring = ({
       await video.play().catch(() => {});
       screenVideoRef.current = video;
 
-      // When the user stops sharing, clean up
       stream.getVideoTracks().forEach((t) => {
         t.addEventListener("ended", () => {
           screenVideoRef.current = null;
@@ -131,7 +129,16 @@ export const useTestMonitoring = ({
     }
   }, []);
 
-  // Capture webcam photo
+  const requestWebcamPermission = useCallback(async (): Promise<boolean> => {
+    try {
+      await initializeWebcam();
+
+      return !!webcamStreamRef.current;
+    } catch {
+      return false;
+    }
+  }, [initializeWebcam]);
+
   const captureWebcamPhoto = useCallback((): Promise<Blob | null> => {
     return new Promise((resolve) => {
       if (!requireWebcam || !videoRef.current || !canvasRef.current) {
@@ -162,7 +169,6 @@ export const useTestMonitoring = ({
     });
   }, [requireWebcam]);
 
-  // Capture screenshot from the persistent screen video (if available)
   const captureScreenshot = useCallback(async (): Promise<Blob | null> => {
     try {
       const vid = screenVideoRef.current;
@@ -186,12 +192,11 @@ export const useTestMonitoring = ({
     }
   }, []);
 
-  // Upload image to ImageKit
   const uploadToImageKit = useCallback(
     async (
       blob: Blob,
       type: "webcam" | "screenshot"
-    ): Promise<string | null> => {
+    ): Promise<{ fileId: string; url: string } | null> => {
       if (!config) {
         console.error("❌ ImageKit config not loaded");
         return null;
@@ -204,7 +209,6 @@ export const useTestMonitoring = ({
         formData.append("fileName", fileName);
         formData.append("folder", "/test-monitoring");
 
-        // Get auth params
         const authParams = await authenticator();
         formData.append("signature", authParams.signature);
         formData.append("expire", authParams.expire.toString());
@@ -212,20 +216,24 @@ export const useTestMonitoring = ({
         formData.append("publicKey", config.publicKey);
 
         const response = await fetch(
-          `https://upload.imagekit.io/api/v1/files/upload`,
+          "https://upload.imagekit.io/api/v1/files/upload",
           {
             method: "POST",
-            body: formData,
+            body: formData
           }
         );
 
         if (!response.ok) {
-          throw new Error("Upload failed");
+          throw new Error(`Upload failed with status ${response.status}`);
         }
 
         const result = await response.json();
         handleUploadSuccess(result);
-        return result.url;
+
+        return {
+          fileId: result.fileId,
+          url: result.url
+        };
       } catch (err) {
         console.error(`❌ ${type} upload failed:`, err);
         handleUploadError(err);
@@ -235,57 +243,83 @@ export const useTestMonitoring = ({
     [config, authenticator, handleUploadSuccess, handleUploadError]
   );
 
-  // Single function: capture and upload both webcam and screenshot
   const captureAndUpload = useCallback(async () => {
     if (!submissionId || isCapturing) return;
 
     setIsCapturing(true);
 
     try {
-      // Capture in parallel
       const [webcamBlob, screenshotBlob] = await Promise.all([
         requireWebcam ? captureWebcamPhoto() : Promise.resolve(null),
-        captureScreenshot(),
+        captureScreenshot()
       ]);
 
-      // Upload whichever were captured
-      const [webcamUrl, screenshotUrl] = await Promise.all([
+      const [webcamData, screenshotData] = await Promise.all([
         webcamBlob
           ? uploadToImageKit(webcamBlob, "webcam")
           : Promise.resolve(null),
         screenshotBlob
           ? uploadToImageKit(screenshotBlob, "screenshot")
-          : Promise.resolve(null),
+          : Promise.resolve(null)
       ]);
 
       const timestamp = new Date().toISOString();
-      const newLogs: MonitoringLog[] = [];
-      if (webcamUrl) newLogs.push({ image: webcamUrl, takenAt: timestamp });
-      if (screenshotUrl)
-        newLogs.push({ image: screenshotUrl, takenAt: timestamp });
 
+      const newLogs: MonitoringLog[] = [];
+      if (webcamData)
+        newLogs.push({ image: webcamData.url, takenAt: timestamp });
+      if (screenshotData)
+        newLogs.push({ image: screenshotData.url, takenAt: timestamp });
       if (newLogs.length === 0) return;
 
-      // Update local logs state
       setLogs((prev) => [...prev, ...newLogs]);
 
-      // Build and send API payload
-      const apiPayload = {
-        submissionId,
-        logType: "SCREENSHOT",
-        meta: newLogs,
-      };
+      const apiCalls = [];
 
-      const response = await api("/proctoring-logs", {
-        method: "POST",
-        auth: true,
-        body: JSON.stringify(apiPayload),
-      });
+      if (screenshotData) {
+        apiCalls.push(
+          api("/proctoring-logs", {
+            auth: true,
+            method: "POST",
+            body: JSON.stringify({
+              submissionId,
+              logType: "SCREENSHOT",
+              meta: [
+                {
+                  fileId: screenshotData.fileId,
+                  image: screenshotData.url,
+                  takenAt: timestamp
+                }
+              ]
+            })
+          })
+        );
+      }
 
-      // Simple capture log
-      console.log("📸 Captured");
+      if (webcamData) {
+        apiCalls.push(
+          api("/proctoring-logs", {
+            auth: true,
+            method: "POST",
+            body: JSON.stringify({
+              submissionId,
+              logType: "WEBCAM_PHOTO",
+              meta: [
+                {
+                  fileId: webcamData.fileId,
+                  image: webcamData.url,
+                  takenAt: timestamp
+                }
+              ]
+            })
+          })
+        );
+      }
+
+      await Promise.all(apiCalls);
+
       captureCountRef.current += 1;
-      announcedNextRef.current = false; // allow next schedule to announce once if desired
+      announcedNextRef.current = false;
     } catch (err) {
       console.error("❌ Capture/upload cycle failed:", err);
     } finally {
@@ -297,45 +331,36 @@ export const useTestMonitoring = ({
     captureWebcamPhoto,
     captureScreenshot,
     uploadToImageKit,
-    requireWebcam,
+    requireWebcam
   ]);
 
-  // Set up randomized interval for automatic capture
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
-    // Initialize webcam when test starts
     initializeWebcam();
 
-    // Schedule next capture with random interval
     const scheduleNextCapture = () => {
       const nextInterval = getRandomInterval();
-      // Announce only before the first capture
+
       if (!announcedNextRef.current && captureCountRef.current === 0) {
-        console.log(
-          `⏰ Next capture in ${Math.floor(nextInterval / 1000)} seconds`
-        );
         announcedNextRef.current = true;
       }
 
       timeoutRef.current = setTimeout(() => {
         captureAndUpload().then(() => {
-          // Schedule the next capture after this one completes
           scheduleNextCapture();
         });
       }, nextInterval);
     };
 
-    // Start the first capture cycle
     scheduleNextCapture();
 
-    // Cleanup
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       stopWebcam();
-      // stop screen stream
+
       if (screenStreamRef.current) {
         screenStreamRef.current.getTracks().forEach((t) => t.stop());
       }
@@ -344,17 +369,17 @@ export const useTestMonitoring = ({
         screenVideoRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTestActive, submissionId]);
 
   return {
     videoRef,
     canvasRef,
     requestScreenPermission,
+    requestWebcamPermission,
     logs,
     isCapturing,
     webcamStream,
     checkWebcamAvailable,
-    captureAndUpload, // Manual trigger if needed
+    captureAndUpload
   };
 };

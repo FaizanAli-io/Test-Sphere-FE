@@ -20,7 +20,7 @@ export default function GoogleSignIn({
   setError,
   setSuccess,
   setLoading,
-  router,
+  router
 }: GoogleSignInProps) {
   const [showModal, setShowModal] = useState(false);
   const [pendingUser, setPendingUser] = useState<{
@@ -38,7 +38,6 @@ export default function GoogleSignIn({
     try {
       setLoading(true);
 
-      // Build payload per backend SignupDto (no uniqueIdentifier)
       const signupPayload = {
         email: pendingUser.email,
         firebaseId: pendingUser.uid,
@@ -46,24 +45,12 @@ export default function GoogleSignIn({
           pendingUser.displayName || pendingUser.email?.split("@")[0] || "User",
         role: details.role,
         cnic: details.cnic,
-        profileImage: pendingUser.photoURL || undefined,
+        profileImage: pendingUser.photoURL || undefined
       };
-
-      console.log("🚀 Google Signup Payload:", signupPayload);
-      console.log("✅ Payload validation:", {
-        hasEmail: !!signupPayload.email,
-        hasFirebaseId: !!signupPayload.firebaseId,
-        hasName: !!signupPayload.name,
-        hasRole: !!signupPayload.role,
-        cnicLength: signupPayload.cnic?.length,
-        cnicIsString: typeof signupPayload.cnic === "string",
-        cnicIsNumeric: /^\d+$/.test(signupPayload.cnic || ""),
-        noUniqueIdentifier: !("uniqueIdentifier" in signupPayload),
-      });
 
       const res = await api("/auth/signup", {
         method: "POST",
-        body: JSON.stringify(signupPayload),
+        body: JSON.stringify(signupPayload)
       });
 
       const data: {
@@ -105,38 +92,33 @@ export default function GoogleSignIn({
     setLoading(true);
 
     try {
-      // Configure the provider to avoid COOP issues
       googleProvider.setCustomParameters({
-        prompt: "select_account",
+        prompt: "select_account"
       });
 
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
       if (mode === "signup") {
-        // Show modal to collect role and CNIC (do not send uniqueIdentifier)
         setPendingUser({
           email: user.email,
           uid: user.uid,
           displayName: user.displayName,
-          photoURL: user.photoURL,
+          photoURL: user.photoURL
         });
         setShowModal(true);
-        setLoading(false); // stop spinner while modal is open
-        return; // wait for modal submit
+        setLoading(false);
+        return;
       }
 
-      // Google login payload - NO PASSWORD, only email and firebaseId
       const loginPayload = {
         email: user.email,
-        firebaseId: user.uid,
+        firebaseId: user.uid
       };
-
-      console.log("🔑 Google Login Payload:", loginPayload);
 
       const res = await api("/auth/login", {
         method: "POST",
-        body: JSON.stringify(loginPayload),
+        body: JSON.stringify(loginPayload)
       });
 
       const data: {
@@ -163,13 +145,12 @@ export default function GoogleSignIn({
     } catch (err: unknown) {
       const errorMessage = extractErrorMessage(err);
 
-      // Handle COOP errors gracefully
       if (
         errorMessage.includes("Cross-Origin-Opener-Policy") ||
         errorMessage.includes("window.close")
       ) {
         console.warn("COOP policy warning (non-blocking):", errorMessage);
-        // Don't show this as an error to the user as auth may have succeeded
+
         return;
       }
 

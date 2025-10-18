@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { IKContext } from "imagekitio-react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 
 import {
@@ -9,7 +8,7 @@ import {
   useTestExam,
   QuestionRenderer,
   TestInstructions,
-  SubmitConfirmModal,
+  SubmitConfirmModal
 } from "./index";
 import { useTestMonitoring } from "./hooks/useTestMonitoring";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
@@ -44,7 +43,7 @@ export default function GiveTest() {
     startTest,
     updateAnswer,
     submitTest,
-    formatTime,
+    formatTime
   } = useTestExam(testId);
 
   const { config } = useImageKitUploader();
@@ -57,28 +56,46 @@ export default function GiveTest() {
     logs,
     isCapturing,
     requestScreenPermission,
-    checkWebcamAvailable,
+    requestWebcamPermission,
+    checkWebcamAvailable
   } = useTestMonitoring({
     submissionId,
     isTestActive: testStarted,
-    requireWebcam,
+    requireWebcam
   });
 
   const handleStartTest = async (opts?: { requireWebcam: boolean }) => {
     const wantWebcam = opts?.requireWebcam ?? requireWebcam;
-    // If webcam is required, ensure it exists before starting
+
+    // 1) Require entire-screen share
+    const screenOk = await requestScreenPermission();
+    if (!screenOk) {
+      notifications.showError(
+        "Please share your entire screen to start the test. Window or tab sharing is not allowed."
+      );
+      return;
+    }
+
+    // 2) Webcam check and permission (before starting test)
     if (wantWebcam) {
       const hasWebcam = await checkWebcamAvailable();
       if (!hasWebcam) {
         notifications.showError(
-          "No webcam detected. Please connect a camera or disable 'Require webcam' to start."
+          "No webcam detected. Please connect a camera to start the test."
+        );
+        return;
+      }
+
+      const webcamOk = await requestWebcamPermission();
+      if (!webcamOk) {
+        notifications.showError(
+          "Webcam permission is required to start the test. Please allow webcam access."
         );
         return;
       }
     }
-    // Request screen-capture permission once, before test begins (user gesture)
-    await requestScreenPermission();
-    // Update state to reflect final choice
+
+    // Update state to reflect final choice and start the test
     setRequireWebcam(wantWebcam);
     await startTest();
   };
@@ -147,31 +164,6 @@ export default function GiveTest() {
         <video ref={videoRef} autoPlay playsInline muted />
         <canvas ref={canvasRef} />
       </div>
-
-      {/* Monitoring indicator */}
-      {testStarted && config && (
-        <IKContext
-          publicKey={config.publicKey}
-          urlEndpoint={config.urlEndpoint}
-          authenticator={async () => ({ signature: "", expire: 0, token: "" })}
-        >
-          <div className="fixed top-24 right-4 bg-white rounded-lg shadow-lg p-3 border border-gray-200 z-50">
-            <div className="flex items-center gap-2">
-              <div
-                className={`w-2 h-2 rounded-full ${
-                  isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
-                }`}
-              />
-              <span className="text-xs font-medium text-gray-700">
-                {isCapturing ? "Capturing..." : "Monitoring Active"}
-              </span>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {logs.length} snapshots taken
-            </p>
-          </div>
-        </IKContext>
-      )}
 
       <TestHeader
         testTitle={test.title}

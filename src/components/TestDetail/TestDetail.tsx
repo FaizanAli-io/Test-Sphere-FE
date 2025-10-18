@@ -14,12 +14,12 @@ import {
   AddQuestionModal,
   SubmissionsModal,
   EditQuestionModal,
+  ProctoringLogsModal
 } from "./modals";
-import ProctoringLogsModal from "../GiveTest/ProctoringLogsModal";
 import {
   HeaderSection,
   QuestionsSection,
-  SubmissionsSection,
+  SubmissionsSection
 } from "./components";
 import { Question, Test, QuestionUpdatePayload } from "./types";
 import { useQuestions, useTestDetail, useAIQuestions } from "./hooks";
@@ -135,7 +135,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     const updates: QuestionUpdatePayload = {
       text: question.text,
       type: question.type,
-      maxMarks: question.maxMarks,
+      maxMarks: question.maxMarks
     };
 
     if (question.type === "MULTIPLE_CHOICE" && question.options) {
@@ -184,7 +184,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         "This will permanently remove the student's submission. This action cannot be undone.",
       confirmText: "Delete",
       cancelText: "Cancel",
-      type: "danger",
+      type: "danger"
     });
 
     if (!confirmed) return;
@@ -210,11 +210,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     if (!loadingTest && !test) {
       setRedirecting(true);
       if (typeof window !== "undefined") {
-        if (window.history.length > 1) {
-          router.back();
-        } else {
-          router.push("/teacher");
-        }
+        router.push("/");
       }
     }
   }, [loadingTest, test, router]);

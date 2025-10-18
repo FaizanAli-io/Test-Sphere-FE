@@ -5,7 +5,7 @@ import React, {
   useEffect,
   ReactElement,
   useCallback,
-  useRef,
+  useRef
 } from "react";
 import { useRouter, useParams } from "next/navigation";
 
@@ -43,7 +43,7 @@ const BUTTON_STYLES = {
   primary:
     "px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl",
   secondary:
-    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl",
+    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
 };
 
 const getStatusColor = (status: Test["status"]) => {
@@ -51,7 +51,7 @@ const getStatusColor = (status: Test["status"]) => {
     DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
     ACTIVE: "bg-green-100 text-green-800 border-green-300",
     COMPLETED: "bg-blue-100 text-blue-800 border-blue-300",
-    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300",
+    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300"
   };
   return colors[status] || colors.DRAFT;
 };
@@ -94,7 +94,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const classRes = await api(`/classes/${classId}`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
       if (!classRes.ok) {
         const errorData = await classRes.json();
@@ -120,17 +120,17 @@ export default function ClassDetail(): ReactElement {
                 return {
                   id: Number(inner.id),
                   name: inner.name ?? "",
-                  email: inner.email ?? "",
+                  email: inner.email ?? ""
                 } as Student;
               }
               const flat = s as Partial<Student>;
               return {
                 id: Number(flat.id),
                 name: flat.name ?? "",
-                email: flat.email ?? "",
+                email: flat.email ?? ""
               } as Student;
             })
-          : [],
+          : []
       };
       setClassData(normalized);
     } catch (err) {
@@ -151,20 +151,20 @@ export default function ClassDetail(): ReactElement {
           try {
             const res = await api(`/tests/${test.id}/questions`, {
               method: "GET",
-              auth: true,
+              auth: true
             });
 
             if (res.ok) {
               const questions = await res.json();
               return {
                 ...test,
-                questionCount: Array.isArray(questions) ? questions.length : 0,
+                questionCount: Array.isArray(questions) ? questions.length : 0
               };
             }
 
             return { ...test, questionCount: 0 };
           } catch (error) {
-            console.log(error);
+            console.error(error);
             return { ...test, questionCount: 0 };
           }
         })
@@ -183,7 +183,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const testsRes = await api(`/tests/class/${classId}`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
       if (!testsRes.ok) {
         const errorData = await testsRes.json();
@@ -213,7 +213,7 @@ export default function ClassDetail(): ReactElement {
       message: `Are you sure you want to remove ${studentName} from this class? This action cannot be undone.`,
       confirmText: "Remove",
       cancelText: "Cancel",
-      type: "danger",
+      type: "danger"
     });
 
     if (!confirmed) return;
@@ -223,7 +223,7 @@ export default function ClassDetail(): ReactElement {
       const response = await api(`/classes/${classId}/remove`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ studentId }),
+        body: JSON.stringify({ studentId })
       });
 
       if (!response.ok) {
@@ -518,7 +518,7 @@ export default function ClassDetail(): ReactElement {
                                       month: "short",
                                       day: "numeric",
                                       hour: "2-digit",
-                                      minute: "2-digit",
+                                      minute: "2-digit"
                                     }
                                   )}
                                 </p>

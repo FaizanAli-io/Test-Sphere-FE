@@ -23,7 +23,7 @@ interface ProctoringLogsModalProps {
 const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
   open,
   submissionId,
-  onClose,
+  onClose
 }) => {
   const [logs, setLogs] = useState<ProctoringLog[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -74,29 +74,44 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
           {!loading && logs && logs.length === 0 && (
             <div className="text-gray-500 text-center py-4">No logs found.</div>
           )}
-          {!loading && logs && logs.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {logs.flatMap((log) =>
-                log.meta.map((meta, idx) => (
-                  <div
-                    key={`${log.id}-${idx}`}
-                    className="cursor-pointer border rounded-lg overflow-hidden hover:shadow-lg bg-white"
-                    onClick={() => setSelectedImage(meta.image)}
-                  >
-                    <img
-                      src={meta.image}
-                      alt={`Screenshot taken at ${meta.takenAt}`}
-                      className="object-cover w-full h-32 sm:h-36 md:h-40 transition-transform duration-200 hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="text-xs text-gray-500 p-1 truncate">
-                      {new Date(meta.takenAt).toLocaleString()}
+          {!loading &&
+            logs &&
+            logs.length > 0 &&
+            (() => {
+              const allMeta = logs.flatMap((log) =>
+                log.meta.map((meta) => ({
+                  ...meta,
+                  logId: log.id
+                }))
+              );
+
+              const sortedMeta = allMeta.sort(
+                (a, b) =>
+                  new Date(a.takenAt).getTime() - new Date(b.takenAt).getTime()
+              );
+
+              return (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {sortedMeta.map((meta, idx) => (
+                    <div
+                      key={`${meta.logId}-${idx}`}
+                      className="cursor-pointer border rounded-lg overflow-hidden hover:shadow-lg bg-white"
+                      onClick={() => setSelectedImage(meta.image)}
+                    >
+                      <img
+                        src={meta.image}
+                        alt={`Screenshot taken at ${meta.takenAt}`}
+                        className="object-cover w-full h-32 sm:h-36 md:h-40 transition-transform duration-200 hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="text-xs text-gray-500 p-1 truncate">
+                        {new Date(meta.takenAt).toLocaleString()}
+                      </div>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          )}
+                  ))}
+                </div>
+              );
+            })()}
         </div>
         {/* Large image modal */}
         {selectedImage && (

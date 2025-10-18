@@ -1,8 +1,8 @@
-// export const API_BASE_URL = !process.env.NEXT_PUBLIC_DEV_MODE
-//   ? "https://test-sphere-be.onrender.com"
-//   : "http://localhost:3000";
+import { debugLogger } from "@/utils/logger";
 
-export const API_BASE_URL = "https://s61qbtst-3000.inc1.devtunnels.ms";
+export const API_BASE_URL = !process.env.NEXT_PUBLIC_DEV_MODE
+  ? "https://test-sphere-be.onrender.com"
+  : "http://localhost:3000";
 
 export interface ExtendedRequestInit extends RequestInit {
   auth?: boolean;
@@ -21,19 +21,19 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   // Log base URL and auth header once (on first call)
   if (!(window as any)._apiBaseLogged) {
     (window as any)._apiBaseLogged = true;
-    console.log("API Base URL:", API_BASE_URL);
-    console.log("Auth Header:", token ? `Bearer ${token}` : "None");
+    debugLogger("API Base URL:", API_BASE_URL);
+    debugLogger("Auth Header:", token ? `Bearer ${token}` : "None");
   }
 
   let headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    "Content-Type": "application/json"
   };
 
   if (options?.headers) {
     if (options.headers instanceof Headers) {
       headers = {
         ...headers,
-        ...Object.fromEntries(Array.from(options.headers.entries())),
+        ...Object.fromEntries(Array.from(options.headers.entries()))
       };
     } else if (
       typeof options.headers === "object" &&
@@ -41,7 +41,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     ) {
       headers = {
         ...headers,
-        ...(options.headers as Record<string, string>),
+        ...(options.headers as Record<string, string>)
       };
     }
   }
@@ -50,7 +50,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   if (options?.auth && !token) {
     return new Response(JSON.stringify({ message: "Unauthorized" }), {
       headers: { "Content-Type": "application/json" },
-      status: 401,
+      status: 401
     });
   }
 
@@ -102,7 +102,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   const payload: RequestInit = {
     ...options,
     headers,
-    body: requestBody,
+    body: requestBody
   };
 
   const url = `${API_BASE_URL}${path}`;
@@ -111,7 +111,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   const cacheKey = `${options?.method || "GET"}:${url}:${JSON.stringify(payload.body || {})}`;
 
   // Log payload for every request
-  console.log("API Request Payload:", { path, payload });
+  debugLogger("API Request Payload:", { path, payload });
 
   const fetchPromise = fetch(url, payload);
 
@@ -136,11 +136,11 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
       : await cloned.text().catch(() => "⚠️ Failed to read text");
 
     // Log response for every request
-    console.log("API Response:", {
+    debugLogger("API Response:", {
       path,
       status: res.status,
       statusText: res.statusText,
-      data: responseData,
+      data: responseData
     });
   } catch (logError) {
     console.warn("⚠️ Failed to log response data:", logError);

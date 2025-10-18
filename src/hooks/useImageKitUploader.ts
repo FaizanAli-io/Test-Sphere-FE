@@ -25,19 +25,18 @@ export function useImageKitUploader() {
   const [uploadInfo, setUploadInfo] = useState<UploadResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 🔧 Load config once from backend
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const res = await api("/upload/signature", {
           method: "GET",
-          auth: true,
+          auth: true
         });
         if (!res.ok) throw new Error("Failed to load ImageKit config");
         const data = await res.json();
         setConfig({
           publicKey: data.publicKey,
-          urlEndpoint: data.urlEndpoint,
+          urlEndpoint: data.urlEndpoint
         });
       } catch (err: unknown) {
         console.error("⚠️ Failed to load ImageKit config:", err);
@@ -49,20 +48,17 @@ export function useImageKitUploader() {
     fetchConfig();
   }, []);
 
-  // 🔑 Authenticator function for IKContext
   const authenticator = useCallback(async () => {
     const res = await api("/upload/signature", {
       method: "GET",
-      auth: true,
+      auth: true
     });
     if (!res.ok) throw new Error("Failed to get signature");
     const { signature, expire, token } = await res.json();
     return { signature, expire, token };
   }, []);
 
-  // 📤 Track upload result
   const handleUploadSuccess = useCallback((res: UploadResponse) => {
-    console.log("✅ Uploaded:", res);
     setUploadInfo(res);
   }, []);
 
@@ -78,6 +74,6 @@ export function useImageKitUploader() {
     error,
     loading,
     handleUploadSuccess,
-    handleUploadError,
+    handleUploadError
   };
 }

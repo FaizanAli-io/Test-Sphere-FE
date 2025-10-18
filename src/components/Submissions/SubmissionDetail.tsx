@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import Image from "next/image";
+import React, { useState } from "react";
 
 import api from "@/hooks/useApi";
 import { useNotification } from "@/hooks/useNotification";
@@ -11,7 +11,7 @@ import {
   calculateTimeTaken,
   getCorrectAnswerText,
   calculateCurrentTotalMarks,
-  calculateTotalPossibleMarks,
+  calculateTotalPossibleMarks
 } from "./utils";
 
 export default function SubmissionDetail(props: SubmissionDetailProps) {
@@ -23,7 +23,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
     viewContext,
     onUpdateStatus,
     onUpdateScores,
-    topExtraContent,
+    topExtraContent
   } = props;
   const [gradingScores, setGradingScores] = useState<Record<string, number>>(
     {}
@@ -70,7 +70,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
       const response = await api(`/submissions/${submission.id}/grade`, {
         body: JSON.stringify({ answers }),
         method: "POST",
-        auth: true,
+        auth: true
       });
 
       if (!response.ok) {
@@ -115,7 +115,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
       const response = await api(`/submissions/${submission.id}/status`, {
         method: "PATCH",
         auth: true,
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus })
       });
 
       if (!response.ok) {

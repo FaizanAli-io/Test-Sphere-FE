@@ -14,7 +14,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
   onStartTest,
   onCancel,
   requireWebcam = true,
-  onToggleRequireWebcam,
+  onToggleRequireWebcam
 }) => {
   const totalMarks = test.questions.reduce((sum, q) => sum + q.maxMarks, 0);
 
@@ -100,6 +100,39 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 <li className="flex items-start gap-3">
                   <span className="text-indigo-600 font-bold mt-1">•</span>
                   <span>Once submitted, you cannot change your answers</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Security requirements info */}
+            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-6 mb-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-2xl">🔒</span>
+                Security requirements
+              </h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start gap-3">
+                  <span className="text-red-600 font-bold mt-1">•</span>
+                  <span>
+                    You must share your{" "}
+                    <span className="font-semibold">entire screen</span> when
+                    prompted. Window or tab sharing is not allowed.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-red-600 font-bold mt-1">•</span>
+                  <span>
+                    If enabled, you must also{" "}
+                    <span className="font-semibold">allow webcam access</span>{" "}
+                    before the test can begin.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-red-600 font-bold mt-1">•</span>
+                  <span>
+                    If you deny permissions, you will be asked again and will
+                    not be able to start the test until granted.
+                  </span>
                 </li>
               </ul>
             </div>

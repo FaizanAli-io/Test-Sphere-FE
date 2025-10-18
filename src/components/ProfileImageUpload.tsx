@@ -16,7 +16,7 @@ interface ProfileImageUploadProps {
 export default function ProfileImageUpload({
   profileImage,
   onImageChange,
-  className = "",
+  className = ""
 }: ProfileImageUploadProps) {
   const {
     config,
@@ -24,14 +24,13 @@ export default function ProfileImageUpload({
     error: uploadError,
     loading: configLoading,
     handleUploadSuccess,
-    handleUploadError,
+    handleUploadError
   } = useImageKitUploader();
 
   const [isUploading, setIsUploading] = useState(false);
 
   // Handle upload events
   const onUploadStart = useCallback(() => {
-    console.log("🚀 Upload started");
     setIsUploading(true);
   }, []);
 
@@ -46,7 +45,6 @@ export default function ProfileImageUpload({
       thumbnailUrl: string;
       filePath: string;
     }) => {
-      console.log("✅ Upload successful:", res);
       onImageChange(res.url);
       setIsUploading(false);
       handleUploadSuccess(res);
@@ -106,7 +104,7 @@ export default function ProfileImageUpload({
                     opacity: 0,
                     width: "100%",
                     height: "100%",
-                    cursor: "pointer",
+                    cursor: "pointer"
                   }}
                 />
                 <div className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow hover:bg-indigo-700 cursor-pointer transition-colors">
