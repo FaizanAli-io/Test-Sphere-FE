@@ -1,3 +1,5 @@
+import React from "react";
+
 export type QuestionType =
   | "TRUE_FALSE"
   | "MULTIPLE_CHOICE"
@@ -96,6 +98,7 @@ export interface SubmissionDetailProps {
   viewContext: ViewContext;
   onUpdateStatus?: (id: number, newStatus: SubmissionStatus) => void;
   onUpdateScores?: (id: number, updatedAnswers: Answer[]) => void;
+  topExtraContent?: React.ReactNode;
 }
 
 export interface NotificationFunctions {

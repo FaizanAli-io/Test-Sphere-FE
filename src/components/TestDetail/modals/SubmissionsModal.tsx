@@ -18,6 +18,7 @@ interface SubmissionsModalProps {
     id: number,
     updatedAnswers: Submission["answers"]
   ) => void;
+  topExtraContent?: React.ReactNode;
 }
 
 export default function SubmissionsModal({
@@ -27,6 +28,7 @@ export default function SubmissionsModal({
   preSelectedSubmissionId,
   onUpdateSubmissionStatus,
   onUpdateSubmissionScores,
+  topExtraContent,
 }: SubmissionsModalProps) {
   const [selectedSubmission, setSelectedSubmission] =
     useState<Submission | null>(null);
@@ -111,6 +113,7 @@ export default function SubmissionsModal({
         // propagate to parent so list and section update
         onUpdateSubmissionScores?.(id, updatedAnswers);
       }}
+      topExtraContent={topExtraContent}
     />
   );
 }

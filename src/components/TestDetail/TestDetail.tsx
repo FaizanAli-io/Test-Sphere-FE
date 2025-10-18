@@ -15,6 +15,7 @@ import {
   SubmissionsModal,
   EditQuestionModal,
 } from "./modals";
+import ProctoringLogsModal from "../GiveTest/ProctoringLogsModal";
 import {
   HeaderSection,
   QuestionsSection,
@@ -30,15 +31,17 @@ interface TestDetailProps {
 export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const params = useParams();
   const router = useRouter();
-  const testId = propTestId || (params?.testId as string);
-  const notifications = useNotifications();
   const confirmation = useConfirmation();
+  const notifications = useNotifications();
+  const testId = propTestId || (params?.testId as string);
 
+  const [redirecting, setRedirecting] = useState(false);
+  const [showLogsModal, setShowLogsModal] = useState(false);
   const [showEditTestModal, setShowEditTestModal] = useState(false);
   const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
   const [showEditQuestionModal, setShowEditQuestionModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [redirecting, setRedirecting] = useState(false);
+  const [logsSubmissionId, setLogsSubmissionId] = useState<number | null>(null);
 
   const testDetailHook = useTestDetail(
     testId,
@@ -337,7 +340,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           submissionsHook.setSubmissions((prev) =>
             prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
           );
-
           setSubmissionsState((prev) =>
             prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
           );
@@ -348,13 +350,32 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               s.id === id ? { ...s, answers: updatedAnswers } : s
             )
           );
-
           setSubmissionsState((prev) =>
             prev.map((s) =>
               s.id === id ? { ...s, answers: updatedAnswers } : s
             )
           );
         }}
+        topExtraContent={
+          <button
+            className="w-full text-sm px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-lg transition-all"
+            onClick={() => {
+              const subId = submissionsHook.selectedSubmission?.id;
+              if (subId) {
+                setLogsSubmissionId(subId);
+                setShowLogsModal(true);
+              }
+            }}
+          >
+            📸 View Logs
+          </button>
+        }
+      />
+
+      <ProctoringLogsModal
+        open={showLogsModal}
+        submissionId={logsSubmissionId}
+        onClose={() => setShowLogsModal(false)}
       />
 
       <ConfirmationModal

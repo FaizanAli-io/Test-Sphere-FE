@@ -23,6 +23,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
     viewContext,
     onUpdateStatus,
     onUpdateScores,
+    topExtraContent,
   } = props;
   const [gradingScores, setGradingScores] = useState<Record<string, number>>(
     {}
@@ -305,6 +306,11 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
                     <span className="text-gray-900 font-semibold">
                       {formatDate(submission.gradedAt)}
                     </span>
+                  </div>
+                )}
+                {topExtraContent && isTeacherView && (
+                  <div className="pt-2 border-t border-gray-300">
+                    {topExtraContent}
                   </div>
                 )}
               </div>
