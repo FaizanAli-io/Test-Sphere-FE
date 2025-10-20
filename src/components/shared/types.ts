@@ -1,5 +1,3 @@
-import { ReactNode } from "react";
-
 // Common types for both portals
 export interface BaseClass {
   id: number | string;

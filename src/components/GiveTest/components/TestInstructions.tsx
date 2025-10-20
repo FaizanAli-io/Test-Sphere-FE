@@ -14,7 +14,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
   onStartTest,
   onCancel,
   requireWebcam = true,
-  onToggleRequireWebcam
+  onToggleRequireWebcam,
 }) => {
   const totalMarks = test.questions.reduce((sum, q) => sum + q.maxMarks, 0);
 
@@ -117,6 +117,25 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                     You must share your{" "}
                     <span className="font-semibold">entire screen</span> when
                     prompted. Window or tab sharing is not allowed.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-red-600 font-bold mt-1">•</span>
+                  <span>
+                    The test will automatically enter{" "}
+                    <span className="font-semibold">fullscreen mode</span> once
+                    you start. Exiting fullscreen will be recorded as a
+                    violation.
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="text-red-600 font-bold mt-1">•</span>
+                  <span>
+                    <span className="font-semibold text-red-700">
+                      2 fullscreen violations
+                    </span>{" "}
+                    will result in automatic test submission and your teacher
+                    will be notified.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">

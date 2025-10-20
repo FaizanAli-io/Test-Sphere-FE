@@ -50,11 +50,13 @@ export const useTestExam = (testId: number | null) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [submissionId, setSubmissionId] = useState<number | null>(null);
 
+  // Common error message for missing testId
+  const MISSING_TEST_ID_ERROR =
+    "Missing test id. Open this page as /give-test/[id] or /give-test?testId=123";
+
   const fetchTestDetails = useCallback(async () => {
     if (!testId) {
-      setError(
-        "Missing test id. Open this page as /give-test/[id] or /give-test?testId=123"
-      );
+      setError(MISSING_TEST_ID_ERROR);
       setLoading(false);
       return;
     }
@@ -63,39 +65,38 @@ export const useTestExam = (testId: number | null) => {
     setError(null);
 
     try {
-      const res = await api(`/tests/${testId}`, { method: "GET", auth: true });
+      // Fetch test and questions in parallel for better performance
+      const [testRes, questionsRes] = await Promise.all([
+        api(`/tests/${testId}`, { method: "GET", auth: true }),
+        api(`/tests/${testId}/questions`, { method: "GET", auth: true }),
+      ]);
 
-      if (!res.ok) {
-        const errorData = await res.json();
+      if (!testRes.ok) {
+        const errorData = await testRes.json();
         throw new Error(errorData.message || "Failed to fetch test");
       }
-      const testData = await res.json();
-
-      const questionsRes = await api(`/tests/${testId}/questions`, {
-        method: "GET",
-        auth: true,
-      });
 
       if (!questionsRes.ok) {
         const errorData = await questionsRes.json();
         throw new Error(errorData.message || "Failed to fetch questions");
       }
-      const questionsData = await questionsRes.json();
 
-      const fullTest = { ...testData, questions: shuffleArray(questionsData) };
-      setTest(fullTest);
+      const [testData, questionsData] = await Promise.all([
+        testRes.json(),
+        questionsRes.json(),
+      ]);
+
+      setTest({ ...testData, questions: shuffleArray(questionsData) });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load test");
     } finally {
       setLoading(false);
     }
-  }, [testId]);
+  }, [testId, MISSING_TEST_ID_ERROR]);
 
   const startTest = useCallback(async () => {
     if (!testId) {
-      setError(
-        "Missing test id. Open this page as /give-test/[id] or /give-test?testId=123"
-      );
+      setError(MISSING_TEST_ID_ERROR);
       return;
     }
 
@@ -114,25 +115,20 @@ export const useTestExam = (testId: number | null) => {
       }
 
       const submissionData = await res.json();
+
+      // Update multiple states together
       setSubmissionId(submissionData.id || null);
-
       setTestStarted(true);
-
-      if (test) {
-        const timeInSeconds = test.duration * 60;
-        setTimeRemaining(timeInSeconds);
-      } else {
-        setTimeRemaining(30 * 60);
-      }
+      setTimeRemaining(test ? test.duration * 60 : 30 * 60);
     } catch (err) {
-      notifications.showError(
-        err instanceof Error ? err.message : "Error starting test"
-      );
-      setError(err instanceof Error ? err.message : "Failed to start test");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to start test";
+      notifications.showError(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [testId, test, notifications]);
+  }, [testId, test, notifications, MISSING_TEST_ID_ERROR]);
 
   const updateAnswer = (questionId: number, answer: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
@@ -158,8 +154,6 @@ export const useTestExam = (testId: number | null) => {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to submit test");
       }
-
-      await res.json();
 
       notifications.showSuccess("Test submitted successfully!");
       router.push("/student");
@@ -193,13 +187,6 @@ export const useTestExam = (testId: number | null) => {
     fetchTestDetails();
   }, [fetchTestDetails]);
 
-  const calculateProgress = () => {
-    if (!test) return 0;
-    const answered = Object.keys(answers).length;
-    const total = test.questions.length;
-    return total > 0 ? (answered / total) * 100 : 0;
-  };
-
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -209,10 +196,13 @@ export const useTestExam = (testId: number | null) => {
       .padStart(2, "0")}`;
   };
 
+  // Memoized calculations to avoid redundant computations
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = test?.questions.length || 0;
   const totalMarks =
     test?.questions.reduce((sum, q) => sum + q.maxMarks, 0) || 0;
+  const progress =
+    totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   return {
     test,
@@ -227,7 +217,7 @@ export const useTestExam = (testId: number | null) => {
     answeredCount,
     totalQuestions,
     totalMarks,
-    progress: calculateProgress(),
+    progress,
 
     startTest,
     updateAnswer,

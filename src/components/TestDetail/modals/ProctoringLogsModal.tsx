@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import api from "@/hooks/useApi";
 
 interface LogMeta {
@@ -23,7 +24,7 @@ interface ProctoringLogsModalProps {
 const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
   open,
   submissionId,
-  onClose
+  onClose,
 }) => {
   const [logs, setLogs] = useState<ProctoringLog[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,7 +82,7 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
               const allMeta = logs.flatMap((log) =>
                 log.meta.map((meta) => ({
                   ...meta,
-                  logId: log.id
+                  logId: log.id,
                 }))
               );
 
@@ -98,12 +99,16 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
                       className="cursor-pointer border rounded-lg overflow-hidden hover:shadow-lg bg-white"
                       onClick={() => setSelectedImage(meta.image)}
                     >
-                      <img
-                        src={meta.image}
-                        alt={`Screenshot taken at ${meta.takenAt}`}
-                        className="object-cover w-full h-32 sm:h-36 md:h-40 transition-transform duration-200 hover:scale-105"
-                        loading="lazy"
-                      />
+                      <div className="relative w-full h-32 sm:h-36 md:h-40">
+                        <Image
+                          src={meta.image}
+                          alt={`Screenshot taken at ${meta.takenAt}`}
+                          fill
+                          className="object-cover transition-transform duration-200 hover:scale-105"
+                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                          priority={false}
+                        />
+                      </div>
                       <div className="text-xs text-gray-500 p-1 truncate">
                         {new Date(meta.takenAt).toLocaleString()}
                       </div>
@@ -119,12 +124,16 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
             className="fixed inset-0 z-60 flex items-center justify-center bg-black bg-opacity-80"
             onClick={() => setSelectedImage(null)}
           >
-            <img
-              src={selectedImage}
-              alt="Screenshot"
-              className="max-h-[80vh] max-w-[90vw] rounded-lg border-4 border-white shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
+            <div className="relative max-h-[80vh] max-w-[90vw]">
+              <Image
+                src={selectedImage}
+                alt="Screenshot"
+                width={1600}
+                height={900}
+                className="h-auto w-auto max-h-[80vh] max-w-[90vw] rounded-lg border-4 border-white shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
           </div>
         )}
       </div>

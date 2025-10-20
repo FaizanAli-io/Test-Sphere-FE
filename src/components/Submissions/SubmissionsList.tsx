@@ -109,10 +109,7 @@ export default function SubmissionsList({
                   const totalPossible = calculateTotalPossibleMarks(
                     submission.answers
                   );
-                  const percentage =
-                    totalPossible > 0
-                      ? (currentScore / totalPossible) * 100
-                      : 0;
+                  // percentage intentionally unused; display raw marks instead
 
                   return (
                     <div

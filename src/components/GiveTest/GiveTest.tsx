@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { IKContext } from "imagekitio-react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 
 import {
@@ -8,7 +9,10 @@ import {
   useTestExam,
   QuestionRenderer,
   TestInstructions,
-  SubmitConfirmModal
+  SubmitConfirmModal,
+  useFullscreenMonitoring,
+  FullscreenViolationWarning,
+  FullscreenRequiredModal,
 } from "./index";
 import { useTestMonitoring } from "./hooks/useTestMonitoring";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
@@ -27,6 +31,7 @@ export default function GiveTest() {
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [requireWebcam, setRequireWebcam] = useState(true);
+  const [showFullscreenModal, setShowFullscreenModal] = useState(false);
 
   const {
     test,
@@ -43,7 +48,7 @@ export default function GiveTest() {
     startTest,
     updateAnswer,
     submitTest,
-    formatTime
+    formatTime,
   } = useTestExam(testId);
 
   const { config } = useImageKitUploader();
@@ -56,51 +61,99 @@ export default function GiveTest() {
     logs,
     isCapturing,
     requestScreenPermission,
-    requestWebcamPermission,
-    checkWebcamAvailable
+    checkWebcamAvailable,
   } = useTestMonitoring({
     submissionId,
     isTestActive: testStarted,
-    requireWebcam
+    requireWebcam,
+  });
+
+  // Initialize fullscreen monitoring
+  const {
+    isFullscreen,
+    violationCount,
+    showViolationWarning,
+    countdownSeconds,
+    maxViolations,
+    isFullscreenSupported,
+    enterFullscreen,
+    dismissWarning,
+  } = useFullscreenMonitoring({
+    submissionId,
+    isTestActive: testStarted,
+    onViolationLimit: async () => {
+      // Auto-submit test when violation limit is reached
+      notifications.showError(
+        `Test auto-submitted due to ${maxViolations} fullscreen violations.`
+      );
+
+      // Log violation data locally for reference (frontend only)
+
+      await submitTest();
+    },
   });
 
   const handleStartTest = async (opts?: { requireWebcam: boolean }) => {
     const wantWebcam = opts?.requireWebcam ?? requireWebcam;
 
-    // 1) Require entire-screen share
-    const screenOk = await requestScreenPermission();
-    if (!screenOk) {
+    // Check if fullscreen is supported
+    if (!isFullscreenSupported()) {
       notifications.showError(
-        "Please share your entire screen to start the test. Window or tab sharing is not allowed."
+        "Fullscreen mode is not supported in your browser. Please use a modern browser to take this test."
       );
       return;
     }
 
-    // 2) Webcam check and permission (before starting test)
+    // If webcam is required, ensure it exists before starting
     if (wantWebcam) {
       const hasWebcam = await checkWebcamAvailable();
       if (!hasWebcam) {
         notifications.showError(
-          "No webcam detected. Please connect a camera to start the test."
-        );
-        return;
-      }
-
-      const webcamOk = await requestWebcamPermission();
-      if (!webcamOk) {
-        notifications.showError(
-          "Webcam permission is required to start the test. Please allow webcam access."
+          "No webcam detected. Please connect a camera or disable 'Require webcam' to start."
         );
         return;
       }
     }
 
-    // Update state to reflect final choice and start the test
+    // Request screen-capture permission once, before test begins (user gesture)
+    const screenPermissionGranted = await requestScreenPermission();
+    if (!screenPermissionGranted) {
+      notifications.showError(
+        "Screen sharing permission is required to start the test. Please share your entire screen."
+      );
+      return;
+    }
+
+    // Try to enter fullscreen mode
+    const fullscreenEntered = await enterFullscreen();
+    if (!fullscreenEntered) {
+      setShowFullscreenModal(true);
+      return;
+    }
+
+    // Update state to reflect final choice
     setRequireWebcam(wantWebcam);
     await startTest();
   };
 
+  const handleRetryFullscreen = async () => {
+    setShowFullscreenModal(false);
+    const fullscreenEntered = await enterFullscreen();
+    if (fullscreenEntered) {
+      await startTest();
+    } else {
+      setShowFullscreenModal(true);
+    }
+  };
+
+  const handleCancelFullscreen = () => {
+    setShowFullscreenModal(false);
+    router.push("/student");
+  };
+
   const handleSubmitTest = async () => {
+    // Log violation data locally for reference (frontend only)
+
     await submitTest();
     setShowSubmitConfirm(false);
   };
@@ -165,6 +218,51 @@ export default function GiveTest() {
         <canvas ref={canvasRef} />
       </div>
 
+      {/* Monitoring indicator */}
+      {testStarted && config && (
+        <IKContext
+          publicKey={config.publicKey}
+          urlEndpoint={config.urlEndpoint}
+          authenticator={async () => ({ signature: "", expire: 0, token: "" })}
+        >
+          <div className="fixed top-24 right-4 space-y-2 z-50">
+            {/* Screen monitoring indicator */}
+            <div className="bg-white rounded-lg shadow-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
+                  }`}
+                />
+                <span className="text-xs font-medium text-gray-700">
+                  {isCapturing ? "Capturing..." : "Monitoring Active"}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {logs.length} snapshots taken
+              </p>
+            </div>
+
+            {/* Fullscreen status indicator */}
+            <div className="bg-white rounded-lg shadow-lg p-3 border border-gray-200">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    isFullscreen ? "bg-green-500" : "bg-red-500"
+                  }`}
+                />
+                <span className="text-xs font-medium text-gray-700">
+                  {isFullscreen ? "Fullscreen Active" : "Fullscreen Required"}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Violations: {violationCount}/{maxViolations}
+              </p>
+            </div>
+          </div>
+        </IKContext>
+      )}
+
       <TestHeader
         testTitle={test.title}
         answeredCount={answeredCount}
@@ -223,6 +321,23 @@ export default function GiveTest() {
         submitting={submitting}
         onConfirm={handleSubmitTest}
         onCancel={() => setShowSubmitConfirm(false)}
+      />
+
+      {/* Fullscreen violation warning */}
+      {showViolationWarning && (
+        <FullscreenViolationWarning
+          violationCount={violationCount}
+          maxViolations={maxViolations}
+          countdownSeconds={countdownSeconds}
+          onDismiss={dismissWarning}
+        />
+      )}
+
+      {/* Fullscreen required modal */}
+      <FullscreenRequiredModal
+        isOpen={showFullscreenModal}
+        onTryAgain={handleRetryFullscreen}
+        onCancel={handleCancelFullscreen}
       />
     </div>
   );

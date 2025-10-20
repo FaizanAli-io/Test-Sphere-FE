@@ -4,6 +4,9 @@ export const API_BASE_URL = !process.env.NEXT_PUBLIC_DEV_MODE
   ? "https://test-sphere-be.onrender.com"
   : "http://localhost:3000";
 
+// Log base URL and auth header once per runtime without touching window
+let apiBaseLogged = false;
+
 export interface ExtendedRequestInit extends RequestInit {
   auth?: boolean;
   date?: boolean;
@@ -19,21 +22,21 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   // Log base URL and auth header once (on first call)
-  if (!(window as any)._apiBaseLogged) {
-    (window as any)._apiBaseLogged = true;
+  if (!apiBaseLogged) {
+    apiBaseLogged = true;
     debugLogger("API Base URL:", API_BASE_URL);
     debugLogger("Auth Header:", token ? `Bearer ${token}` : "None");
   }
 
   let headers: Record<string, string> = {
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   };
 
   if (options?.headers) {
     if (options.headers instanceof Headers) {
       headers = {
         ...headers,
-        ...Object.fromEntries(Array.from(options.headers.entries()))
+        ...Object.fromEntries(Array.from(options.headers.entries())),
       };
     } else if (
       typeof options.headers === "object" &&
@@ -41,7 +44,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     ) {
       headers = {
         ...headers,
-        ...(options.headers as Record<string, string>)
+        ...(options.headers as Record<string, string>),
       };
     }
   }
@@ -50,7 +53,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   if (options?.auth && !token) {
     return new Response(JSON.stringify({ message: "Unauthorized" }), {
       headers: { "Content-Type": "application/json" },
-      status: 401
+      status: 401,
     });
   }
 
@@ -102,7 +105,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   const payload: RequestInit = {
     ...options,
     headers,
-    body: requestBody
+    body: requestBody,
   };
 
   const url = `${API_BASE_URL}${path}`;
@@ -140,7 +143,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
       path,
       status: res.status,
       statusText: res.statusText,
-      data: responseData
+      data: responseData,
     });
   } catch (logError) {
     console.warn("⚠️ Failed to log response data:", logError);

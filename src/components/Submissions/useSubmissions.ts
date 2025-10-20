@@ -135,7 +135,7 @@ export const useSubmissions = (
           try {
             const errorData = await response.json();
             errorMessage = errorData.message || errorMessage;
-          } catch (_) {
+          } catch {
             // ignore parse error (e.g., 204 No Content)
           }
           throw new Error(errorMessage);
