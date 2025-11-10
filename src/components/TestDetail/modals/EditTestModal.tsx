@@ -32,6 +32,7 @@ export default function EditTestModal({
         status: localEditingTest.status,
         startAt: localEditingTest.startAt,
         endAt: localEditingTest.endAt,
+        numQuestions: localEditingTest.numQuestions,
       };
 
       const success = await onUpdate(updatePayload);
@@ -120,6 +121,39 @@ export default function EditTestModal({
                 <option value="DRAFT">Draft</option>
               </select>
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+              <span className="text-lg">🎯</span>
+              Number of Questions to Display from Pool
+              <span className="text-xs text-gray-500 font-normal">
+                (Optional)
+              </span>
+            </label>
+            <input
+              type="number"
+              min="0"
+              placeholder="Leave empty to show all questions"
+              value={localEditingTest?.numQuestions || ""}
+              onChange={(e) =>
+                setLocalEditingTest((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        numQuestions: e.target.value
+                          ? Number(e.target.value)
+                          : undefined,
+                      }
+                    : null
+                )
+              }
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
+            />
+            <p className="mt-2 text-sm text-gray-600 flex items-center gap-2">
+              <span>💡</span>
+              Set the number of questions students will see from the total
+              question pool. Useful for randomized tests.
+            </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
