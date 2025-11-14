@@ -24,7 +24,6 @@ export interface Test {
   startAt: string;
   endAt: string;
   status: TestStatus;
-  numQuestions?: number; // Number of questions to show from the pool
   classId?: number;
   class?: {
     id: number;

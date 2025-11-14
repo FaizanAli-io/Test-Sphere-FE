@@ -58,7 +58,7 @@ export default function HeaderSection({
             </span>
           </div>
           <p className="text-gray-600 text-lg mb-4">{test.description}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="flex items-center gap-2">
               <span className="text-2xl">⏱️</span>
               <div>
@@ -80,15 +80,6 @@ export default function HeaderSection({
                 <p className="text-gray-600">{formatDate(test.endAt)}</p>
               </div>
             </div>
-            {test.numQuestions && test.numQuestions > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🎯</span>
-                <div>
-                  <p className="font-medium text-gray-900">Questions Shown</p>
-                  <p className="text-gray-600">{test.numQuestions} from pool</p>
-                </div>
-              </div>
-            )}
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">

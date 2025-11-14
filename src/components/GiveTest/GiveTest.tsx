@@ -13,8 +13,6 @@ import {
   useFullscreenMonitoring,
   FullscreenViolationWarning,
   FullscreenRequiredModal,
-  useScreenSharingMonitoring,
-  ScreenSharingViolationWarning,
 } from "./index";
 import { useTestMonitoring } from "./hooks/useTestMonitoring";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
@@ -57,12 +55,18 @@ export default function GiveTest() {
   const notifications = useNotifications();
 
   // Initialize monitoring hook with randomized intervals (5-10 seconds)
-  const { videoRef, canvasRef, logs, isCapturing, checkWebcamAvailable } =
-    useTestMonitoring({
-      submissionId,
-      isTestActive: testStarted,
-      requireWebcam,
-    });
+  const {
+    videoRef,
+    canvasRef,
+    logs,
+    isCapturing,
+    requestScreenPermission,
+    checkWebcamAvailable,
+  } = useTestMonitoring({
+    submissionId,
+    isTestActive: testStarted,
+    requireWebcam,
+  });
 
   // Initialize fullscreen monitoring
   const {
@@ -85,25 +89,6 @@ export default function GiveTest() {
 
       // Log violation data locally for reference (frontend only)
 
-      await submitTest();
-    },
-  });
-
-  // Initialize screen sharing monitoring
-  const {
-    isScreenSharing,
-    showViolationWarning: showScreenSharingWarning,
-    countdownSeconds: screenSharingCountdown,
-    requestScreenPermission: requestScreenSharingPermission,
-    handleReshareScreen,
-  } = useScreenSharingMonitoring({
-    submissionId,
-    isTestActive: testStarted,
-    onAutoSubmit: async () => {
-      // Auto-submit test when screen sharing is stopped
-      notifications.showError(
-        "Test auto-submitted due to screen sharing violation."
-      );
       await submitTest();
     },
   });
@@ -131,7 +116,7 @@ export default function GiveTest() {
     }
 
     // Request screen-capture permission once, before test begins (user gesture)
-    const screenPermissionGranted = await requestScreenSharingPermission();
+    const screenPermissionGranted = await requestScreenPermission();
     if (!screenPermissionGranted) {
       notifications.showError(
         "Screen sharing permission is required to start the test. Please share your entire screen."
@@ -274,25 +259,6 @@ export default function GiveTest() {
                 Violations: {violationCount}/{maxViolations}
               </p>
             </div>
-
-            {/* Screen sharing status indicator */}
-            <div className="bg-white rounded-lg shadow-lg p-3 border border-gray-200">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    isScreenSharing ? "bg-green-500" : "bg-red-500"
-                  }`}
-                />
-                <span className="text-xs font-medium text-gray-700">
-                  {isScreenSharing
-                    ? "Screen Sharing Active"
-                    : "Screen Sharing Required"}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Status: {isScreenSharing ? "Connected" : "Disconnected"}
-              </p>
-            </div>
           </div>
         </IKContext>
       )}
@@ -364,14 +330,6 @@ export default function GiveTest() {
           maxViolations={maxViolations}
           countdownSeconds={countdownSeconds}
           onDismiss={dismissWarning}
-        />
-      )}
-
-      {/* Screen sharing violation warning */}
-      {showScreenSharingWarning && (
-        <ScreenSharingViolationWarning
-          countdownSeconds={screenSharingCountdown}
-          onReshareScreen={handleReshareScreen}
         />
       )}
 

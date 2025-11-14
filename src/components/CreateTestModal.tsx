@@ -22,7 +22,6 @@ interface TestData {
   startAt: string;
   endAt: string;
   status: "DRAFT" | "ACTIVE" | "CLOSED";
-  numQuestions?: number;
 }
 
 interface CreateTestModalProps {
@@ -36,7 +35,7 @@ export default function CreateTestModal({
   isOpen,
   onClose,
   onTestCreated,
-  prefilledClassId,
+  prefilledClassId
 }: CreateTestModalProps) {
   const notifications = useNotifications();
   const [formData, setFormData] = useState<TestData>({
@@ -46,7 +45,7 @@ export default function CreateTestModal({
     duration: 60,
     startAt: "",
     endAt: "",
-    status: "DRAFT",
+    status: "DRAFT"
   });
 
   const [loading, setLoading] = useState(false);
@@ -161,7 +160,7 @@ export default function CreateTestModal({
       duration: 60,
       startAt: "",
       endAt: "",
-      status: "DRAFT",
+      status: "DRAFT"
     });
     setClasses([]);
     setClassesError(null);
@@ -213,25 +212,20 @@ export default function CreateTestModal({
 
     setLoading(true);
     try {
-      const payload: Record<string, unknown> = {
+      const payload = {
         classId: Number(formData.classId),
         title: formData.title.trim(),
         description: formData.description.trim(),
         duration: Number(formData.duration),
         startAt: formData.startAt,
         endAt: formData.endAt,
-        status: formData.status,
+        status: formData.status
       };
-
-      // Only include numQuestions if it's set
-      if (formData.numQuestions !== undefined && formData.numQuestions > 0) {
-        payload.numQuestions = Number(formData.numQuestions);
-      }
 
       const res = await api("/tests", {
         method: "POST",
         auth: true,
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
       if (!res.ok) {
@@ -416,178 +410,67 @@ export default function CreateTestModal({
           </div>
 
           {/* Date & Time */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
               <span className="text-lg">💡</span>
               <span className="font-medium">
-                Set when the test starts and ends - students can only take the
-                test during this time window
+                Set your test schedule (end time must be after start time)
               </span>
             </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                  <span className="text-lg">📅</span>
+                  Start Date & Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.startAt}
+                  onChange={(e) => handleChange("startAt", e.target.value)}
+                  className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-medium ${
+                    dateError
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:ring-purple-500 focus:border-purple-500"
+                  }`}
+                />
+              </div>
 
-            {/* Start Date & Time */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-2xl border-2 border-green-200">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">🚀</span>
-                <h3 className="text-lg font-bold text-gray-800">Test Start</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                    📅 Start Date
-                  </label>
-                  <input
-                    type="date"
-                    value={
-                      formData.startAt ? formData.startAt.split("T")[0] : ""
-                    }
-                    onChange={(e) => {
-                      const time = formData.startAt
-                        ? formData.startAt.split("T")[1]
-                        : "09:00";
-                      handleChange(
-                        "startAt",
-                        e.target.value ? `${e.target.value}T${time}` : ""
-                      );
-                    }}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
-                      dateError
-                        ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                        : "border-green-300 focus:ring-green-500 focus:border-green-500 bg-white"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                    🕐 Start Time
-                  </label>
-                  <input
-                    type="time"
-                    value={
-                      formData.startAt ? formData.startAt.split("T")[1] : ""
-                    }
-                    onChange={(e) => {
-                      const date = formData.startAt
-                        ? formData.startAt.split("T")[0]
-                        : "";
-                      if (date) {
-                        handleChange("startAt", `${date}T${e.target.value}`);
-                      }
-                    }}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
-                      dateError
-                        ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                        : "border-green-300 focus:ring-green-500 focus:border-green-500 bg-white"
-                    }`}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* End Date & Time */}
-            <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-5 rounded-2xl border-2 border-orange-200">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-2xl">🏁</span>
-                <h3 className="text-lg font-bold text-gray-800">Test End</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                    📅 End Date
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.endAt ? formData.endAt.split("T")[0] : ""}
-                    onChange={(e) => {
-                      const time = formData.endAt
-                        ? formData.endAt.split("T")[1]
-                        : "10:00";
-                      handleChange(
-                        "endAt",
-                        e.target.value ? `${e.target.value}T${time}` : ""
-                      );
-                    }}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
-                      dateError
-                        ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                        : "border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-white"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">
-                    🕐 End Time
-                  </label>
-                  <input
-                    type="time"
-                    value={formData.endAt ? formData.endAt.split("T")[1] : ""}
-                    onChange={(e) => {
-                      const date = formData.endAt
-                        ? formData.endAt.split("T")[0]
-                        : "";
-                      if (date) {
-                        handleChange("endAt", `${date}T${e.target.value}`);
-                      }
-                    }}
-                    className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
-                      dateError
-                        ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                        : "border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-white"
-                    }`}
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                  <span className="text-lg">📅</span>
+                  End Date & Time *
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.endAt}
+                  onChange={(e) => handleChange("endAt", e.target.value)}
+                  className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-medium ${
+                    dateError
+                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:ring-purple-500 focus:border-purple-500"
+                  }`}
+                />
               </div>
             </div>
 
             {/* Date Validation Messages */}
             {dateError ? (
-              <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-300 rounded-xl text-red-700 font-semibold shadow-sm">
-                <span className="text-2xl">⚠️</span>
-                <span>{dateError}</span>
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 font-medium">
+                <span className="text-lg">⚠️</span>
+                {dateError}
               </div>
             ) : formData.startAt && formData.endAt && !dateError ? (
-              <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-300 rounded-xl text-green-700 font-semibold shadow-sm">
-                <span className="text-2xl">✅</span>
-                <span>
-                  Perfect! Test window:{" "}
-                  {Math.round(
-                    (new Date(formData.endAt).getTime() -
-                      new Date(formData.startAt).getTime()) /
-                      (1000 * 60)
-                  )}{" "}
-                  minutes (Duration needed: {formData.duration} minutes)
-                </span>
+              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 font-medium">
+                <span className="text-lg">✅</span>
+                Test schedule is valid (
+                {Math.round(
+                  (new Date(formData.endAt).getTime() -
+                    new Date(formData.startAt).getTime()) /
+                    (1000 * 60)
+                )}{" "}
+                minutes available, {formData.duration} minutes required)
               </div>
             ) : null}
-          </div>
-
-          {/* Number of Questions from Pool */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-              <span className="text-lg">🎯</span>
-              Number of Questions to Display from Pool
-              <span className="text-xs text-gray-500 font-normal ml-1">
-                (Optional)
-              </span>
-            </label>
-            <input
-              type="number"
-              min="0"
-              value={formData.numQuestions || ""}
-              onChange={(e) =>
-                handleChange(
-                  "numQuestions",
-                  e.target.value ? Number(e.target.value) : undefined
-                )
-              }
-              placeholder="Leave empty to show all questions"
-              className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
-            />
-            <p className="mt-2 text-sm text-gray-600 flex items-center gap-2">
-              <span>💡</span>
-              Specify how many questions students will see from the total pool.
-              Useful for randomized tests where you have a large question bank.
-            </p>
           </div>
 
           {/* Status */}
