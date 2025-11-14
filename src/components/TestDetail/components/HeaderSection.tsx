@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouter } from "next/navigation";
 import type { Test } from "../types";
 
 interface HeaderSectionProps {
@@ -39,6 +40,12 @@ export default function HeaderSection({
   onEdit,
   onDelete,
 }: HeaderSectionProps) {
+  const router = useRouter();
+
+  const handleInvigilate = () => {
+    router.push(`/test/${test.id}/invigilate`);
+  };
+
   return (
     <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 relative">
       <button
@@ -83,6 +90,12 @@ export default function HeaderSection({
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={handleInvigilate}
+            className="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl"
+          >
+            📹 Invigilate
+          </button>
           <button
             onClick={onEdit}
             className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl"
