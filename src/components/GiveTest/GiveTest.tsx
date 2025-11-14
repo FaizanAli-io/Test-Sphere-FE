@@ -54,21 +54,7 @@ export default function GiveTest() {
   const { config } = useImageKitUploader();
   const notifications = useNotifications();
 
-  // Initialize monitoring hook with randomized intervals (5-10 seconds)
-  const {
-    videoRef,
-    canvasRef,
-    logs,
-    isCapturing,
-    requestScreenPermission,
-    checkWebcamAvailable,
-  } = useTestMonitoring({
-    submissionId,
-    isTestActive: testStarted,
-    requireWebcam,
-  });
-
-  // Initialize fullscreen monitoring
+  // Initialize fullscreen monitoring first (needed for useTestMonitoring)
   const {
     isFullscreen,
     violationCount,
@@ -91,6 +77,24 @@ export default function GiveTest() {
 
       await submitTest();
     },
+  });
+
+  // Initialize monitoring hook with randomized intervals (5-10 seconds)
+  // Pass isFullscreen to control capture behavior:
+  // - NOT in fullscreen: Take ONLY screenshots
+  // - IN fullscreen: Take ONLY webcam photos
+  const {
+    videoRef,
+    canvasRef,
+    logs,
+    isCapturing,
+    requestScreenPermission,
+    checkWebcamAvailable,
+  } = useTestMonitoring({
+    submissionId,
+    isTestActive: testStarted,
+    requireWebcam,
+    isFullscreen,
   });
 
   const handleStartTest = async (opts?: { requireWebcam: boolean }) => {

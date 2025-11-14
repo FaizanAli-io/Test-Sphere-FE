@@ -13,12 +13,14 @@ interface UseTestMonitoringProps {
   submissionId: number | null;
   isTestActive: boolean;
   requireWebcam?: boolean;
+  isFullscreen?: boolean;
 }
 
 export const useTestMonitoring = ({
   submissionId,
   isTestActive,
   requireWebcam = true,
+  isFullscreen = false,
 }: UseTestMonitoringProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -250,13 +252,26 @@ export const useTestMonitoring = ({
     }
 
     console.log("📸 Starting capture and upload process...");
+    console.log("🖥️ Fullscreen status:", isFullscreen);
     setIsCapturing(true);
 
     try {
-      const [webcamBlob, screenshotBlob] = await Promise.all([
-        requireWebcam ? captureWebcamPhoto() : Promise.resolve(null),
-        captureScreenshot(),
-      ]);
+      // Capture logic based on fullscreen status:
+      // - NOT in fullscreen: Take ONLY screenshots (no webcam)
+      // - IN fullscreen: Take ONLY webcam photos (no screenshots)
+
+      let webcamBlob: Blob | null = null;
+      let screenshotBlob: Blob | null = null;
+
+      if (isFullscreen) {
+        // In fullscreen: ONLY webcam photos
+        console.log("📷 Fullscreen mode: Capturing ONLY webcam photo");
+        webcamBlob = requireWebcam ? await captureWebcamPhoto() : null;
+      } else {
+        // Not in fullscreen: ONLY screenshots
+        console.log("🖥️ Not in fullscreen: Capturing ONLY screenshot");
+        screenshotBlob = await captureScreenshot();
+      }
 
       const [webcamData, screenshotData] = await Promise.all([
         webcamBlob
@@ -276,6 +291,7 @@ export const useTestMonitoring = ({
         newLogs.push({ image: screenshotData.url, takenAt: timestamp });
 
       console.log("📊 Captured data:", {
+        isFullscreen,
         webcamData: !!webcamData,
         screenshotData: !!screenshotData,
         newLogsCount: newLogs.length,
@@ -291,6 +307,7 @@ export const useTestMonitoring = ({
       const apiCalls = [];
 
       if (screenshotData) {
+        console.log("📤 Uploading screenshot to backend");
         apiCalls.push(
           api("/proctoring-logs", {
             auth: true,
@@ -311,6 +328,7 @@ export const useTestMonitoring = ({
       }
 
       if (webcamData) {
+        console.log("📤 Uploading webcam photo to backend");
         apiCalls.push(
           api("/proctoring-logs", {
             auth: true,
@@ -346,6 +364,7 @@ export const useTestMonitoring = ({
     captureScreenshot,
     uploadToImageKit,
     requireWebcam,
+    isFullscreen,
   ]);
 
   useEffect(() => {
