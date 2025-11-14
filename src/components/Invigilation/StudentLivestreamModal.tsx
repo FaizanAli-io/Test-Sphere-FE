@@ -1,56 +1,68 @@
 import React, { useEffect, useRef, useState } from "react";
-import { X, Camera, Mic } from "lucide-react";
+import { X, Camera, Mic, Loader2 } from "lucide-react";
 import type { InvigilatingStudent } from "@/hooks/useInvigilateStudents";
+import { useWebRTC } from "@/hooks/useWebRTC";
 
 interface StudentLivestreamModalProps {
   student: InvigilatingStudent | null;
+  teacherId: string;
+  testId: string;
   onClose: () => void;
 }
 
 export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
   student,
+  teacherId,
+  testId,
   onClose,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [connectionStatus, setConnectionStatus] = useState<
-    "connecting" | "connected" | "failed"
-  >("connecting");
+  const [isRequesting, setIsRequesting] = useState(false);
+
+  const {
+    isConnected,
+    isStreaming,
+    error,
+    connectionState,
+    remoteStream,
+    requestStream,
+    stopViewingStream,
+  } = useWebRTC({
+    userId: teacherId,
+    role: "teacher",
+    testId,
+    enabled: !!student,
+  });
 
   useEffect(() => {
-    if (!student) return;
+    if (!student || !isConnected) return;
 
-    // Placeholder WebRTC connection logic
-    const startWebRTCConnection = async (studentId: number) => {
-      console.log(`Starting WebRTC connection for student ${studentId}`);
-      setConnectionStatus("connecting");
-
-      // Simulate connection delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // TODO: Implement actual WebRTC signaling here
-      // This is where you would:
-      // 1. Create RTCPeerConnection
-      // 2. Exchange SDP offers/answers with the backend
-      // 3. Handle ICE candidates
-      // 4. Attach the remote stream to the video element
-
-      // For now, just simulate a connection
-      setConnectionStatus("connected");
-
-      // Example of how to attach a stream when implemented:
-      // if (videoRef.current && remoteStream) {
-      //   videoRef.current.srcObject = remoteStream;
-      // }
+    const initStream = async () => {
+      setIsRequesting(true);
+      try {
+        await requestStream(student.id.toString());
+      } catch (error) {
+        console.error("Failed to request stream:", error);
+      } finally {
+        setIsRequesting(false);
+      }
     };
 
-    startWebRTCConnection(student.id);
+    initStream();
 
-    // Cleanup function
     return () => {
-      console.log(`Cleaning up WebRTC connection for student ${student.id}`);
-      // TODO: Close peer connection and clean up resources
+      if (student) {
+        stopViewingStream(student.id.toString());
+      }
     };
-  }, [student]);
+  }, [student, isConnected]);
+
+  // Attach remote stream to video element
+  useEffect(() => {
+    if (videoRef.current && remoteStream) {
+      videoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   if (!student) return null;
 
@@ -93,24 +105,47 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
           />
 
           {/* Connection Status Overlay */}
-          {connectionStatus === "connecting" && (
+          {!isConnected && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-500 mx-auto mb-4"></div>
-                <p className="text-white text-lg">
-                  Connecting to livestream...
+                <Loader2 className="animate-spin h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                <p className="text-white text-lg">Connecting to server...</p>
+              </div>
+            </div>
+          )}
+
+          {isConnected && !isStreaming && !error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="text-center">
+                <Loader2 className="animate-spin h-16 w-16 text-yellow-500 mx-auto mb-4" />
+                <p className="text-white text-lg">Requesting stream...</p>
+                <p className="text-gray-300 text-sm mt-2">
+                  Waiting for student to accept
                 </p>
               </div>
             </div>
           )}
 
-          {connectionStatus === "failed" && (
+          {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
               <div className="text-center">
-                <p className="text-red-500 text-lg mb-2">Connection failed</p>
-                <p className="text-gray-400">
-                  Unable to connect to student stream
-                </p>
+                <p className="text-red-500 text-lg mb-2">Connection Error</p>
+                <p className="text-gray-400">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="mt-4 px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isStreaming && connectionState && (
+            <div className="absolute top-4 right-4 z-10">
+              <div className="flex items-center gap-2 bg-green-500 bg-opacity-90 text-white text-sm px-3 py-1 rounded-full">
+                <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                <span className="font-medium">Streaming</span>
               </div>
             </div>
           )}

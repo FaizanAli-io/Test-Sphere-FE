@@ -92,6 +92,12 @@ export default function InvigilatePage() {
         {/* Livestream Modal */}
         <StudentLivestreamModal
           student={selectedStudent}
+          teacherId={
+            typeof window !== "undefined"
+              ? localStorage.getItem("userId") || ""
+              : ""
+          }
+          testId={testId}
           onClose={handleCloseModal}
         />
       </div>
