@@ -1,4 +1,4 @@
-export { default as SubmissionDetail } from "./SubmissionDetail";
+export { default as SubmissionDetail } from "./SubmissionDetail/SubmissionDetail";
 export { default as SubmissionsList } from "./SubmissionsList";
 export { useSubmissions } from "./useSubmissions";
 

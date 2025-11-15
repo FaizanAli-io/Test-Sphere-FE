@@ -15,7 +15,7 @@ const formatDate = (dateString: string) => {
     month: "long",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit",
+    minute: "2-digit"
   });
 };
 
@@ -38,7 +38,7 @@ export default function HeaderSection({
   test,
   onBack,
   onEdit,
-  onDelete,
+  onDelete
 }: HeaderSectionProps) {
   const router = useRouter();
 
@@ -87,6 +87,15 @@ export default function HeaderSection({
                 <p className="text-gray-600">{formatDate(test.endAt)}</p>
               </div>
             </div>
+            {test.numQuestions && test.numQuestions > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🎯</span>
+                <div>
+                  <p className="font-medium text-gray-900">Questions Shown</p>
+                  <p className="text-gray-600">{test.numQuestions} from pool</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">

@@ -4,7 +4,7 @@ import api from "@/hooks/useApi";
 import { Question, NotificationFunctions } from "../types";
 
 export const useAIQuestions = (
-  testId: string,
+  testId?: string,
   onQuestionsCreated?: () => void,
   notifications?: NotificationFunctions,
   closeModal?: () => void

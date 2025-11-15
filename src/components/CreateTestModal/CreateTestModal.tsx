@@ -1,8 +1,11 @@
 "use client";
 
-import api from "../hooks/useApi";
 import React, { useState, useEffect } from "react";
-import { useNotifications } from "../contexts/NotificationContext";
+import api from "../../hooks/useApi";
+import { useNotifications } from "../../contexts/NotificationContext";
+import CreateTestModalHeader from "./Header";
+import ClassSelector from "./ClassSelector";
+import DateTimeWindow from "./DateTimeWindow";
 
 interface Class {
   id: string;
@@ -22,6 +25,7 @@ interface TestData {
   startAt: string;
   endAt: string;
   status: "DRAFT" | "ACTIVE" | "CLOSED";
+  numQuestions?: number;
 }
 
 interface CreateTestModalProps {
@@ -31,13 +35,14 @@ interface CreateTestModalProps {
   prefilledClassId?: number;
 }
 
-export default function CreateTestModal({
+const CreateTestModal: React.FC<CreateTestModalProps> = ({
   isOpen,
   onClose,
   onTestCreated,
   prefilledClassId
-}: CreateTestModalProps) {
+}) => {
   const notifications = useNotifications();
+
   const [formData, setFormData] = useState<TestData>({
     classId: prefilledClassId || 0,
     title: "",
@@ -85,13 +90,11 @@ export default function CreateTestModal({
       setDateError(null);
       return;
     }
-
     const startDate = new Date(startAt);
     const endDate = new Date(endAt);
     const requiredEndDate = new Date(
       startDate.getTime() + duration * 60 * 1000
     );
-
     if (endDate < requiredEndDate) {
       setDateError(
         `End date and time must be at least ${duration} minutes after start date and time`
@@ -107,42 +110,32 @@ export default function CreateTestModal({
   ) => {
     const newFormData = { ...formData, [key]: value };
 
-    // Auto-calculate end time when start time or duration changes
     if (key === "startAt" && value) {
       const startDate = new Date(value as string);
       const endDate = new Date(
         startDate.getTime() + newFormData.duration * 60 * 1000
       );
-
-      // Format the end date for datetime-local input using local time (YYYY-MM-DDTHH:mm)
       const year = endDate.getFullYear();
       const month = String(endDate.getMonth() + 1).padStart(2, "0");
       const day = String(endDate.getDate()).padStart(2, "0");
       const hours = String(endDate.getHours()).padStart(2, "0");
       const minutes = String(endDate.getMinutes()).padStart(2, "0");
-      const endDateString = `${year}-${month}-${day}T${hours}:${minutes}`;
-
-      newFormData.endAt = endDateString;
+      newFormData.endAt = `${year}-${month}-${day}T${hours}:${minutes}`;
     } else if (key === "duration" && newFormData.startAt) {
       const startDate = new Date(newFormData.startAt);
       const endDate = new Date(
         startDate.getTime() + (value as number) * 60 * 1000
       );
-
-      // Format the end date for datetime-local input using local time (YYYY-MM-DDTHH:mm)
       const year = endDate.getFullYear();
       const month = String(endDate.getMonth() + 1).padStart(2, "0");
       const day = String(endDate.getDate()).padStart(2, "0");
       const hours = String(endDate.getHours()).padStart(2, "0");
       const minutes = String(endDate.getMinutes()).padStart(2, "0");
-      const endDateString = `${year}-${month}-${day}T${hours}:${minutes}`;
-
-      newFormData.endAt = endDateString;
+      newFormData.endAt = `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
     setFormData(newFormData);
 
-    // Validate dates when start date, end date, or duration changes
     if (key === "startAt" || key === "endAt" || key === "duration") {
       validateDates(
         key === "startAt" ? (value as string) : newFormData.startAt,
@@ -174,35 +167,27 @@ export default function CreateTestModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!formData.title.trim()) {
       notifications.showError("Please enter a test title");
       return;
     }
-
     if (!formData.classId || formData.classId <= 0) {
       notifications.showError("Please select a class");
       return;
     }
-
     if (!formData.startAt || !formData.endAt) {
       notifications.showError("Please set both start and end date/time");
       return;
     }
-
-    // Check if there's a date validation error
     if (dateError) {
       notifications.showError(dateError);
       return;
     }
-
-    // Validate that end date meets the duration requirement (double-check)
     const startDate = new Date(formData.startAt);
     const endDate = new Date(formData.endAt);
     const requiredEndDate = new Date(
       startDate.getTime() + formData.duration * 60 * 1000
     );
-
     if (endDate < requiredEndDate) {
       notifications.showError(
         `End date and time must be at least ${formData.duration} minutes after start date and time`
@@ -212,7 +197,7 @@ export default function CreateTestModal({
 
     setLoading(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         classId: Number(formData.classId),
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -221,27 +206,25 @@ export default function CreateTestModal({
         endAt: formData.endAt,
         status: formData.status
       };
-
+      if (formData.numQuestions !== undefined && formData.numQuestions > 0) {
+        payload.numQuestions = Number(formData.numQuestions);
+      }
       const res = await api("/tests", {
+        body: JSON.stringify(payload),
         method: "POST",
-        auth: true,
-        body: JSON.stringify(payload)
+        auth: true
       });
-
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to create test");
       }
-
       const data = await res.json();
       notifications.showSuccess(
         `Test created successfully! Test ID: ${data.id}`
       );
-
       if (onTestCreated) {
         onTestCreated(data.id);
       }
-
       handleClose();
     } catch (err) {
       console.error("Failed to create test:", err);
@@ -258,111 +241,20 @@ export default function CreateTestModal({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
-        {/* Modal Header */}
-        <div className="px-8 py-6 bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-              <span className="text-3xl">📝</span>
-              Create New Test
-            </h2>
-            <p className="mt-1 text-purple-100">
-              Configure the basic details of your test
-            </p>
-          </div>
-          <button
-            onClick={handleClose}
-            className="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-xl flex items-center justify-center transition-colors text-white font-bold text-xl"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Modal Content */}
+        <CreateTestModalHeader onClose={handleClose} />
         <form onSubmit={handleSubmit} className="p-8 space-y-6">
-          {/* Class Selection */}
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-              <span className="text-lg">🏫</span>
-              Select Class *
-            </label>
-
-            {classesLoading ? (
-              <div className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl bg-gray-50 flex items-center gap-3">
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-purple-500 border-t-transparent"></div>
-                <span className="text-gray-600 font-medium">
-                  Loading classes...
-                </span>
-              </div>
-            ) : classesError ? (
-              <div className="space-y-3">
-                <div className="w-full px-4 py-3.5 border-2 border-red-300 rounded-xl bg-red-50 text-red-700 font-medium flex items-center gap-2">
-                  <span>⚠️</span>
-                  {classesError}
-                </div>
-                <button
-                  type="button"
-                  onClick={fetchClasses}
-                  className="px-4 py-2 bg-purple-100 text-purple-700 font-medium rounded-lg hover:bg-purple-200 transition-all flex items-center gap-2"
-                >
-                  <span>🔄</span>
-                  Retry
-                </button>
-              </div>
-            ) : (
-              <div>
-                <div className="relative">
-                  <select
-                    value={formData.classId || ""}
-                    onChange={(e) =>
-                      handleChange("classId", Number(e.target.value))
-                    }
-                    className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium appearance-none pr-12 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
-                    disabled={!!prefilledClassId}
-                  >
-                    <option value="">Choose a class...</option>
-                    {classes.map((cls) => (
-                      <option key={cls.id} value={Number(cls.id)}>
-                        {cls.name} ({cls.code})
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                {prefilledClassId && (
-                  <p className="mt-2 text-sm text-green-600 font-medium flex items-center gap-2">
-                    <span>✓</span> Using prefilled class:{" "}
-                    {classes.find((c) => Number(c.id) === prefilledClassId)
-                      ?.name || `ID: ${prefilledClassId}`}
-                  </p>
-                )}
-
-                {classes.length === 0 && !classesLoading && (
-                  <p className="mt-2 text-sm text-amber-600 font-medium flex items-center gap-2">
-                    <span>📝</span> No classes found. Create a class first to
-                    add tests.
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
+          <ClassSelector
+            classesLoading={classesLoading}
+            classesError={classesError}
+            classes={classes}
+            classId={formData.classId}
+            prefilledClassId={prefilledClassId}
+            onRetry={fetchClasses}
+            onSelect={(id) => handleChange("classId", id)}
+          />
 
           {/* Title & Description */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <span className="text-lg">📖</span>
@@ -376,7 +268,6 @@ export default function CreateTestModal({
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
               />
             </div>
-
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <span className="text-lg">⏱️</span>
@@ -390,6 +281,22 @@ export default function CreateTestModal({
                   handleChange("duration", Number(e.target.value))
                 }
                 placeholder="60"
+                className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                <span className="text-lg">❓</span>
+                Number of Questions
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.numQuestions || ""}
+                onChange={(e) =>
+                  handleChange("numQuestions", Number(e.target.value))
+                }
+                placeholder="e.g., 10"
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
               />
             </div>
@@ -409,71 +316,14 @@ export default function CreateTestModal({
             />
           </div>
 
-          {/* Date & Time */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="text-lg">💡</span>
-              <span className="font-medium">
-                Set your test schedule (end time must be after start time)
-              </span>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <span className="text-lg">📅</span>
-                  Start Date & Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  value={formData.startAt}
-                  onChange={(e) => handleChange("startAt", e.target.value)}
-                  className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-medium ${
-                    dateError
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                      : "border-gray-300 focus:ring-purple-500 focus:border-purple-500"
-                  }`}
-                />
-              </div>
+          <DateTimeWindow
+            startAt={formData.startAt}
+            endAt={formData.endAt}
+            duration={formData.duration}
+            dateError={dateError}
+            onChange={(k, v) => handleChange(k as any, v as any)}
+          />
 
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                  <span className="text-lg">📅</span>
-                  End Date & Time *
-                </label>
-                <input
-                  type="datetime-local"
-                  value={formData.endAt}
-                  onChange={(e) => handleChange("endAt", e.target.value)}
-                  className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-medium ${
-                    dateError
-                      ? "border-red-300 focus:ring-red-500 focus:border-red-500"
-                      : "border-gray-300 focus:ring-purple-500 focus:border-purple-500"
-                  }`}
-                />
-              </div>
-            </div>
-
-            {/* Date Validation Messages */}
-            {dateError ? (
-              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 font-medium">
-                <span className="text-lg">⚠️</span>
-                {dateError}
-              </div>
-            ) : formData.startAt && formData.endAt && !dateError ? (
-              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 font-medium">
-                <span className="text-lg">✅</span>
-                Test schedule is valid (
-                {Math.round(
-                  (new Date(formData.endAt).getTime() -
-                    new Date(formData.startAt).getTime()) /
-                    (1000 * 60)
-                )}{" "}
-                minutes available, {formData.duration} minutes required)
-              </div>
-            ) : null}
-          </div>
-
-          {/* Status */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
               <span className="text-lg">📊</span>
@@ -498,7 +348,6 @@ export default function CreateTestModal({
             </select>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-4 pt-4">
             <button
               type="button"
@@ -529,4 +378,6 @@ export default function CreateTestModal({
       </div>
     </div>
   );
-}
+};
+
+export default CreateTestModal;

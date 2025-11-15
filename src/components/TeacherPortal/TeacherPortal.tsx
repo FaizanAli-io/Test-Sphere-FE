@@ -3,12 +3,12 @@
 import React, { useState } from "react";
 import type { ReactElement } from "react";
 
-import { Class, KickConfirm, RequestAction } from "./types";
 import CreateTestModal from "../CreateTestModal";
-import { ConfirmationModal, ClassModal, RequestsModal } from "./modals";
 import { useTeacherPortal, useClassDetails } from "./hooks";
-import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
+import { Class, KickConfirm, RequestAction } from "./types";
 import { useNotifications } from "../../contexts/NotificationContext";
+import { ConfirmationModal, ClassModal, RequestsModal } from "./modals";
+import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 
 export default function TeacherPortal(): ReactElement {
   const notifications = useNotifications();
@@ -21,13 +21,13 @@ export default function TeacherPortal(): ReactElement {
     createClass,
     updateClass,
     deleteClass,
-    fetchClasses,
+    fetchClasses
   } = useTeacherPortal();
   const {
     kickStudent,
     handleStudentRequest,
     fetchClassDetails,
-    selectedClass,
+    selectedClass
   } = useClassDetails();
 
   // Modal states
@@ -126,8 +126,8 @@ export default function TeacherPortal(): ReactElement {
       .map((classStudent) => ({
         id: classStudent.student.id,
         name: classStudent.student.name,
-        email: classStudent.student.email,
-      })),
+        email: classStudent.student.email
+      }))
   }));
 
   // Quick actions configuration
@@ -139,7 +139,7 @@ export default function TeacherPortal(): ReactElement {
         "Set up a new class and generate a unique join code for your students",
       actionText: "Get Started",
       colorScheme: "indigo",
-      onClick: () => setShowCreateModal(true),
+      onClick: () => setShowCreateModal(true)
     },
     {
       icon: "📝",
@@ -148,8 +148,8 @@ export default function TeacherPortal(): ReactElement {
         "Design comprehensive assessments and schedule them for your classes",
       actionText: "Get Started",
       colorScheme: "orange",
-      onClick: () => setShowCreateTestModal(true),
-    },
+      onClick: () => setShowCreateTestModal(true)
+    }
   ];
 
   // Class card actions configuration
@@ -160,7 +160,7 @@ export default function TeacherPortal(): ReactElement {
         setEditClass(classData as Class);
         setShowEditModal(true);
       },
-      colorScheme: "green",
+      colorScheme: "green"
     },
     {
       label: "Requests",
@@ -177,7 +177,7 @@ export default function TeacherPortal(): ReactElement {
         const pendingCount =
           fullClass?.students?.filter((s) => !s.approved).length ?? 0;
         return pendingCount > 0 ? pendingCount : undefined;
-      },
+      }
     },
     {
       label: "Delete",
@@ -185,8 +185,8 @@ export default function TeacherPortal(): ReactElement {
         setDeleteConfirm(classData.id as string);
         setShowDeleteConfirm(true);
       },
-      colorScheme: "red",
-    },
+      colorScheme: "red"
+    }
   ];
 
   return (

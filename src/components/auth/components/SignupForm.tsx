@@ -1,4 +1,3 @@
-import router from "next/router";
 import { useState } from "react";
 import { Mail, Lock, User, Eye, EyeOff, CreditCard } from "lucide-react";
 
@@ -33,6 +32,7 @@ export default function SignupForm({
   setSuccess,
   setLoading,
   setOtpSent,
+  router
 }: SignupFormProps) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
@@ -56,12 +56,12 @@ export default function SignupForm({
         name,
         role,
         cnic,
-        profileImage: profileImage || undefined,
+        profileImage: profileImage || undefined
       };
 
       const res = await api("/auth/signup", {
         method: "POST",
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(requestBody)
       });
 
       const data: { message?: string } = await res.json();

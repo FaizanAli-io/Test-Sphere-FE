@@ -6,7 +6,6 @@ import { calculateCurrentTotalMarks } from "../../Submissions/utils";
 interface SubmissionsSectionProps {
   submissions: Submission[];
   loadingSubmissions: boolean;
-  totalMarks: number;
   onViewSubmissions: () => void;
   onViewIndividualSubmission: (id: number) => void;
   onDeleteSubmission?: (id: number) => void | Promise<void>;
@@ -62,10 +61,9 @@ const countAnsweredQuestions = (submission: Submission) => {
 export default function SubmissionsSection({
   submissions,
   loadingSubmissions,
-  totalMarks,
   onViewSubmissions,
   onViewIndividualSubmission,
-  onDeleteSubmission,
+  onDeleteSubmission
 }: SubmissionsSectionProps) {
   return (
     <div className="bg-white rounded-3xl shadow-xl p-8">
@@ -134,8 +132,11 @@ export default function SubmissionsSection({
                 const currentTotal = calculateCurrentTotalMarks(
                   submission.answers
                 );
-                const finalTotal = submission.totalMarks ?? currentTotal;
-                const percentage = calculatePercentage(finalTotal, totalMarks);
+                const totalMarks = objectiveMarks.total + subjectiveMarks.total;
+                const percentage = calculatePercentage(
+                  currentTotal,
+                  totalMarks
+                );
                 const gradingStatus = submission.status;
 
                 return (
@@ -194,7 +195,7 @@ export default function SubmissionsSection({
                     <td className="p-4 text-center border-r border-gray-200">
                       <div className="flex flex-col items-center">
                         <span className="font-bold text-xl text-indigo-600">
-                          {finalTotal}/{totalMarks}
+                          {currentTotal}/{totalMarks}
                         </span>
                         <span className="text-xs text-gray-600">
                           {countAnsweredQuestions(submission)} questions

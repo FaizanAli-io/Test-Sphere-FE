@@ -1,8 +1,10 @@
 ﻿import React, { useState } from "react";
+
 import api from "@/hooks/useApi";
-import { signInWithPopup } from "firebase/auth";
 import { extractErrorMessage } from "@/utils/error";
 import { auth, googleProvider } from "@/utils/firebase";
+
+import { signInWithPopup } from "firebase/auth";
 import GoogleSignupModal from "./GoogleSignupModal";
 
 interface GoogleSignInProps {

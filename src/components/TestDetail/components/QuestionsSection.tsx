@@ -4,7 +4,6 @@ import type { Question } from "../types";
 
 interface QuestionsSectionProps {
   questions: Question[];
-  totalMarks: number;
   loadingQuestions: boolean;
   onAddQuestion: () => void;
   onEditQuestion: (q: Question) => void;
@@ -13,11 +12,10 @@ interface QuestionsSectionProps {
 
 export default function QuestionsSection({
   questions,
-  totalMarks,
   loadingQuestions,
   onAddQuestion,
   onEditQuestion,
-  onDeleteQuestion,
+  onDeleteQuestion
 }: QuestionsSectionProps) {
   const [isSectionOpen, setIsSectionOpen] = React.useState(true);
   // Track which questions are expanded without using hooks inside a loop
@@ -53,9 +51,6 @@ export default function QuestionsSection({
               ▼
             </span>
           </div>
-          <h3 className="text-lg font-semibold text-gray-700 mt-1">
-            Total Marks: {totalMarks}
-          </h3>
         </div>
 
         <button

@@ -43,19 +43,25 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [logsSubmissionId, setLogsSubmissionId] = useState<number | null>(null);
 
+  const testIdOrNull = redirecting ? undefined : testId;
+
   const testDetailHook = useTestDetail(
-    testId,
+    testIdOrNull,
     notifications,
     confirmation.confirm
   );
   const questionsHook = useQuestions(
-    testId,
+    testIdOrNull,
     notifications,
     confirmation.confirm
   );
-  const submissionsHook = useSubmissions(testId, "teacher", notifications);
+  const submissionsHook = useSubmissions(
+    testIdOrNull,
+    "teacher",
+    notifications
+  );
   const aiQuestionsHook = useAIQuestions(
-    testId,
+    testIdOrNull,
     questionsHook.refreshQuestions,
     notifications,
     () => setShowAddQuestionModal(false)
@@ -72,18 +78,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       ? submissionsState
       : submissionsHook.submissions;
 
-  const totalMarks = questions.reduce((sum, q) => sum + q.maxMarks, 0);
-
   const handleEditTest = () => {
     setShowEditTestModal(true);
   };
 
   const handleBackToClass = () => {
-    if (typeof window !== "undefined" && window.history.length > 1) {
-      router.back();
-      return;
-    }
-    const classId = test?.class?.id ?? test?.classId;
+    console.log("Navigating back to class:", test);
+    const classId = test?.classId;
     if (classId) {
       router.push(`/class/${classId}`);
     } else {
@@ -102,13 +103,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
     if (result !== false) {
       setRedirecting(true);
-      if (typeof window !== "undefined") {
-        if (window.history.length > 1) {
-          router.back();
-        } else {
-          router.push("/teacher");
-        }
-      }
+      router.replace("/teacher");
     }
   };
 
@@ -209,9 +204,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   useEffect(() => {
     if (!loadingTest && !test) {
       setRedirecting(true);
-      if (typeof window !== "undefined") {
-        router.push("/");
-      }
+      router.replace("/teacher");
     }
   }, [loadingTest, test, router]);
 
@@ -257,7 +250,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         {/* Questions Section */}
         <QuestionsSection
           questions={questions}
-          totalMarks={totalMarks}
           loadingQuestions={loadingQuestions}
           onAddQuestion={handleAddQuestion}
           onEditQuestion={handleEditQuestion}
@@ -267,7 +259,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         <SubmissionsSection
           submissions={submissions}
           loadingSubmissions={loadingSubmissions}
-          totalMarks={totalMarks}
           onViewSubmissions={handleViewSubmissions}
           onViewIndividualSubmission={handleViewIndividualSubmission}
           onDeleteSubmission={handleDeleteSubmission}

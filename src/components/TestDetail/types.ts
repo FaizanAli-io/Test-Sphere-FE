@@ -24,6 +24,7 @@ export interface Test {
   startAt: string;
   endAt: string;
   status: TestStatus;
+  numQuestions?: number;
   classId?: number;
   class?: {
     id: number;

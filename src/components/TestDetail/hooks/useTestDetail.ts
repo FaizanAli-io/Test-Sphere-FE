@@ -2,11 +2,8 @@ import { useState, useCallback, useEffect } from "react";
 import api from "../../../hooks/useApi";
 import { Test, NotificationFunctions, ConfirmationFunction } from "../types";
 
-/**
- * Hook for managing test details CRUD operations
- */
 export const useTestDetail = (
-  testId: string,
+  testId?: string,
   notifications?: NotificationFunctions,
   confirm?: ConfirmationFunction
 ) => {
@@ -22,7 +19,7 @@ export const useTestDetail = (
     try {
       const testRes = await api(`/tests/${testId}`, {
         method: "GET",
-        auth: true,
+        auth: true
       });
 
       if (!testRes.ok) {
@@ -50,7 +47,7 @@ export const useTestDetail = (
         const response = await api(`/tests/${testId}`, {
           method: "PATCH",
           auth: true,
-          body: JSON.stringify(updates),
+          body: JSON.stringify(updates)
         });
 
         if (!response.ok) {
@@ -80,7 +77,7 @@ export const useTestDetail = (
       message:
         "Are you sure you want to delete this test? This action cannot be undone.",
       confirmText: "Delete",
-      type: "danger",
+      type: "danger"
     });
 
     if (!confirmed) return false;
@@ -88,7 +85,7 @@ export const useTestDetail = (
     try {
       const response = await api(`/tests/${testId}`, {
         method: "DELETE",
-        auth: true,
+        auth: true
       });
 
       if (!response.ok) {
@@ -123,6 +120,6 @@ export const useTestDetail = (
     setTestData,
     // Backward compatibility aliases
     handleUpdateTest: updateTest,
-    handleDeleteTest: deleteTest,
+    handleDeleteTest: deleteTest
   };
 };

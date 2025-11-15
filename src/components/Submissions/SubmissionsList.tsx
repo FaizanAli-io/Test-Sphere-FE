@@ -6,7 +6,7 @@ import {
   getSubmissionStatus,
   getSubmissionStatusColor,
   calculateTotalPossibleMarks,
-  calculateCurrentTotalMarks,
+  calculateCurrentTotalMarks
 } from "./utils";
 
 interface SubmissionsListProps {
@@ -26,7 +26,7 @@ export default function SubmissionsList({
   viewContext = "teacher",
   loading = false,
   error = null,
-  classFilter = null,
+  classFilter = null
 }: SubmissionsListProps) {
   const isStudentView = viewContext === "student";
 
@@ -109,7 +109,12 @@ export default function SubmissionsList({
                   const totalPossible = calculateTotalPossibleMarks(
                     submission.answers
                   );
-                  // percentage intentionally unused; display raw marks instead
+                  const percent =
+                    totalPossible > 0
+                      ? Number(
+                          ((currentScore / totalPossible) * 100).toFixed(1)
+                        )
+                      : null;
 
                   return (
                     <div
@@ -152,9 +157,24 @@ export default function SubmissionsList({
                           </span>
                           {(submission.gradedAt ||
                             submission.status === "GRADED") && (
-                            <p className="text-lg font-bold text-gray-900 mt-2">
-                              {currentScore}/{totalPossible} marks
-                            </p>
+                            <div className="mt-2 flex items-center gap-2 justify-end">
+                              <p className="text-lg font-bold text-gray-900">
+                                {currentScore}/{totalPossible} marks
+                              </p>
+                              <span
+                                className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold ${
+                                  percent === null
+                                    ? "bg-gray-400 text-white"
+                                    : percent >= 80
+                                      ? "bg-green-500 text-white"
+                                      : percent >= 60
+                                        ? "bg-yellow-500 text-white"
+                                        : "bg-red-500 text-white"
+                                }`}
+                              >
+                                {percent === null ? "---%" : `${percent}%`}
+                              </span>
+                            </div>
                           )}
                         </div>
                       </div>

@@ -12,7 +12,7 @@ import {
  * Hook for managing questions CRUD operations
  */
 export const useQuestions = (
-  testId: string,
+  testId?: string,
   notifications?: NotificationFunctions,
   confirm?: ConfirmationFunction
 ) => {
