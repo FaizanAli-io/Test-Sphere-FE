@@ -6,32 +6,36 @@ interface StreamingIndicatorProps {
   userId: string;
   testId: string;
   enabled: boolean;
+  initialStream?: MediaStream;
+  initialScreenStream?: MediaStream;
 }
 
 export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
   userId,
   testId,
   enabled,
+  initialStream,
+  initialScreenStream,
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
 
-  const { isConnected, isStreaming, error, localStream, startStreaming, stopStreaming } = useWebRTC(
-    {
-      userId,
-      role: "student",
-      testId,
-      enabled,
-    },
-  );
+  const { isConnected, isStreaming, error, localStream, stopStreaming } = useWebRTC({
+    userId,
+    role: "student",
+    testId,
+    enabled,
+    initialStream,
+    initialScreenStream,
+  });
 
-  // Auto-start streaming when connected
+  // Stop streaming when component unmounts (leaving the test)
   useEffect(() => {
-    if (isConnected && !isStreaming && !localStream && enabled) {
-      startStreaming().catch((err) => {
-        console.error("Failed to start streaming:", err);
-      });
-    }
-  }, [isConnected, isStreaming, localStream, enabled, startStreaming]);
+    return () => {
+      try {
+        stopStreaming();
+      } catch {}
+    };
+  }, [stopStreaming]);
 
   if (!enabled) return null;
 
@@ -65,9 +69,9 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
               )}
 
               {isConnected && !isStreaming && !error && (
-                <div className="flex items-center gap-2 text-blue-500 text-sm">
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Initializing camera...</span>
+                <div className="flex items-center gap-2 text-green-500 text-sm">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="font-medium">Ready</span>
                 </div>
               )}
 
@@ -88,20 +92,20 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
 
             {/* Info */}
             <div className="text-gray-400 text-xs space-y-1">
-              <p>• Your test session is being monitored</p>
-              <p>• Camera and screen are being recorded</p>
-              <p>• Do not close this window</p>
+              {isStreaming ? (
+                <>
+                  <p>• Your test session is being monitored</p>
+                  <p>• Camera/screen may be viewed by teacher</p>
+                  <p>• Do not close this window</p>
+                </>
+              ) : (
+                <>
+                  <p>• Ready for proctoring</p>
+                  <p>• Teacher can request camera or screen view</p>
+                  <p>• You will be notified when streaming starts</p>
+                </>
+              )}
             </div>
-
-            {/* Retry Button */}
-            {error && (
-              <button
-                onClick={() => startStreaming()}
-                className="mt-3 w-full px-3 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                Retry Connection
-              </button>
-            )}
           </div>
         </div>
       ) : (

@@ -4,7 +4,7 @@ import { debugLogger } from "@/utils/logger";
 // 1. Prefer explicit NEXT_PUBLIC_API_BASE_URL (set in .env.local)
 // 2. Fallback to localhost:3000 (current backend dev port)
 // This removes reliance on a boolean dev flag and guarantees port 3000 locally.
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+export const API_BASE_URL = "http://localhost:5000";
 
 // Log base URL and auth header once per runtime without touching window
 let apiBaseLogged = false;

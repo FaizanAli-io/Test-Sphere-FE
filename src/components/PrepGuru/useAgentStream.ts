@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api } from "./useApi";
+import { api } from "../../hooks/useApi";
 
 interface StreamChunkChoiceDelta {
   content?: string;

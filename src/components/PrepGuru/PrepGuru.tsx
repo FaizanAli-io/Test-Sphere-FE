@@ -6,7 +6,7 @@ import rehypeHighlight from "rehype-highlight";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { useAgentStream } from "@/hooks/useAgentStream";
+import { useAgentStream } from "./useAgentStream";
 
 interface ChatMessage {
   id: string;

@@ -13,7 +13,7 @@ import { TestsModal, JoinClassModal, ClassDetailsModal } from "./modals";
 import { ClassData } from "./types";
 import { Submission } from "../Submissions/types";
 import { useSubmissions, SubmissionDetail, SubmissionsList } from "../Submissions";
-import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
+import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../SharedPortal";
 
 export default function StudentPortal() {
   const {

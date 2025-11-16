@@ -15,6 +15,7 @@ interface UseTestMonitoringProps {
   isTestActive: boolean;
   requireWebcam?: boolean;
   isFullscreen?: boolean;
+  initialScreenStream?: MediaStream;
 }
 
 export const useTestMonitoring = ({
@@ -22,6 +23,7 @@ export const useTestMonitoring = ({
   isTestActive,
   requireWebcam = true,
   isFullscreen = false,
+  initialScreenStream,
 }: UseTestMonitoringProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -76,12 +78,26 @@ export const useTestMonitoring = ({
 
   const requestScreenPermission = useCallback(async (): Promise<boolean> => {
     try {
-      if (screenStreamRef.current && screenVideoRef.current) return true;
+      // If we already have a video element set up, we're good
+      if (screenStreamRef.current && screenVideoRef.current) {
+        console.log("[TestMonitoring] Screen stream already set up");
+        return true;
+      }
 
-      const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: false,
-      });
+      // Use initialScreenStream if provided and still active
+      let stream: MediaStream;
+      if (initialScreenStream && initialScreenStream.active) {
+        console.log("[TestMonitoring] Reusing initial screen stream for screenshots");
+        stream = initialScreenStream;
+      } else {
+        console.log("[TestMonitoring] Requesting new screen share (fallback - should not happen)");
+        stream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+            displaySurface: "monitor", // Request entire screen
+          },
+          audio: false,
+        });
+      }
 
       const track = stream.getVideoTracks()[0];
       const settings = track?.getSettings?.();
@@ -125,7 +141,33 @@ export const useTestMonitoring = ({
       screenVideoRef.current = null;
       return false;
     }
-  }, []);
+  }, [initialScreenStream]);
+
+  // Initialize screen stream from initialScreenStream prop
+  useEffect(() => {
+    if (!initialScreenStream || !initialScreenStream.active) return;
+    if (screenStreamRef.current) return; // Already initialized
+
+    console.log("[TestMonitoring] Initializing screen stream from initial permission check");
+    screenStreamRef.current = initialScreenStream;
+
+    const video = document.createElement("video");
+    video.style.position = "fixed";
+    video.style.right = "-9999px";
+    video.style.bottom = "-9999px";
+    video.muted = true;
+    video.playsInline = true;
+    video.srcObject = initialScreenStream;
+    video.play().catch(() => {});
+    screenVideoRef.current = video;
+
+    initialScreenStream.getVideoTracks().forEach((t) => {
+      t.addEventListener("ended", () => {
+        screenVideoRef.current = null;
+        screenStreamRef.current = null;
+      });
+    });
+  }, [initialScreenStream]);
 
   const requestWebcamPermission = useCallback(async (): Promise<boolean> => {
     try {

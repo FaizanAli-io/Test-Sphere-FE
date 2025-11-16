@@ -9,6 +9,10 @@ interface TestHeaderProps {
   progress: number;
   onSubmitTest: () => void;
   submitting: boolean;
+  isCapturing?: boolean;
+  logsCount?: number;
+  isFullscreen?: boolean;
+  violationCount?: number;
 }
 
 export const TestHeader: React.FC<TestHeaderProps> = ({
@@ -20,9 +24,13 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
   progress,
   onSubmitTest,
   submitting,
+  isCapturing,
+  logsCount = 0,
+  isFullscreen,
+  violationCount = 0,
 }) => {
   return (
-    <div className="sticky top-0 z-40 bg-white shadow-lg border-b-2 border-gray-200">
+    <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b-2 border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
@@ -33,6 +41,41 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
+            {/* Monitoring indicators stacked vertically */}
+            {(isCapturing !== undefined || isFullscreen !== undefined) && (
+              <div className="flex flex-col gap-2">
+                {isCapturing !== undefined && (
+                  <div className="bg-gray-50 border-2 border-gray-200 rounded-lg px-3 py-1.5">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
+                        }`}
+                      />
+                      <span className="text-xs font-medium text-gray-700">
+                        Captures: {logsCount}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {isFullscreen !== undefined && (
+                  <div className="bg-gray-50 border-2 border-gray-200 rounded-lg px-3 py-1.5">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-2 h-2 rounded-full ${
+                          violationCount === 0 ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      />
+                      <span className="text-xs font-medium text-gray-700">
+                        Violations: {violationCount}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl px-6 py-3">
               <p className="text-xs font-bold text-gray-600 mb-1">Time Remaining</p>
               <p

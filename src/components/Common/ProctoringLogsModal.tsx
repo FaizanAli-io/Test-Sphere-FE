@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
-import Image from "next/image";
 import { Camera, Monitor } from "lucide-react";
+import Image from "next/image";
+
 import api from "@/hooks/useApi";
 
 interface LogMeta {
@@ -24,7 +25,7 @@ interface ProctoringLogsModalProps {
 
 type FilterType = "ALL" | "SCREENSHOT" | "WEBCAM_PHOTO";
 
-const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
+export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
   open,
   submissionId,
   onClose,
@@ -283,5 +284,3 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
     </div>
   );
 };
-
-export default ProctoringLogsModal;

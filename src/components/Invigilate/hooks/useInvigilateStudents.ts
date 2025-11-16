@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import api from "./useApi";
+import api from "@/hooks/useApi";
 
 export interface InvigilatingStudent {
   id: number;

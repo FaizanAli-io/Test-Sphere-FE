@@ -11,7 +11,7 @@ interface AIApprovalModalProps {
   loadingQuestions: boolean;
 }
 
-export default function AIApprovalModal({
+export function AIApprovalModal({
   showAIApprovalModal,
   pendingAIQuestions,
   onClose,

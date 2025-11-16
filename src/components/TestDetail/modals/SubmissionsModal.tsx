@@ -14,7 +14,7 @@ interface SubmissionsModalProps {
   topExtraContent?: React.ReactNode;
 }
 
-export default function SubmissionsModal({
+export function SubmissionsModal({
   showSubmissionsModal,
   submissions,
   onClose,

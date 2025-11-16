@@ -8,7 +8,7 @@ import { useTeacherPortal, useClassDetails } from "./hooks";
 import { Class, KickConfirm, RequestAction } from "./types";
 import { useNotifications } from "../../contexts/NotificationContext";
 import { ConfirmationModal, ClassModal, RequestsModal } from "./modals";
-import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
+import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../SharedPortal";
 
 export default function TeacherPortal(): ReactElement {
   const notifications = useNotifications();

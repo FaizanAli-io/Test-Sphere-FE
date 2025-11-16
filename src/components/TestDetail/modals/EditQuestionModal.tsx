@@ -9,7 +9,7 @@ interface EditQuestionModalProps {
   loadingQuestions: boolean;
 }
 
-export default function EditQuestionModal({
+export function EditQuestionModal({
   showEditQuestionModal,
   editingQuestion,
   onClose,

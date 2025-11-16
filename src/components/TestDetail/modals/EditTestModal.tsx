@@ -8,7 +8,7 @@ interface EditTestModalProps {
   onUpdate: (test: Partial<Test>) => Promise<boolean>;
 }
 
-export default function EditTestModal({
+export function EditTestModal({
   showEditTestModal,
   editingTest,
   onClose,

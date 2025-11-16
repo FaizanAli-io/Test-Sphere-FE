@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IKContext } from "imagekitio-react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 
@@ -11,6 +11,7 @@ import {
   SubmitConfirmModal,
   FullscreenRequiredModal,
   FullscreenViolationWarning,
+  StreamingIndicator,
 } from "./components";
 
 import { useTestExam, useTestMonitoring, useFullscreenMonitoring } from "./hooks";
@@ -18,6 +19,7 @@ import { useTestExam, useTestMonitoring, useFullscreenMonitoring } from "./hooks
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 import { TEST_SECURITY_CONFIG } from "./constants";
+import api from "@/hooks/useApi";
 
 export default function GiveTest() {
   const router = useRouter();
@@ -34,6 +36,9 @@ export default function GiveTest() {
   const [requireWebcam, setRequireWebcam] = useState(true);
   const [showFullscreenModal, setShowFullscreenModal] = useState(false);
   const [startErrors, setStartErrors] = useState<string[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [initialWebcamStream, setInitialWebcamStream] = useState<MediaStream | undefined>();
+  const [initialScreenStream, setInitialScreenStream] = useState<MediaStream | undefined>();
 
   const {
     test,
@@ -55,6 +60,25 @@ export default function GiveTest() {
 
   const { config } = useImageKitUploader();
   const notifications = useNotifications();
+
+  useEffect(() => {
+    let ignore = false;
+    const fetchMe = async () => {
+      try {
+        const res = await api("/auth/me", { auth: true, method: "GET" });
+        if (!ignore && res.ok) {
+          const me = await res.json();
+          setCurrentUserId(String(me.id));
+        }
+      } catch {
+        // ignore
+      }
+    };
+    fetchMe();
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   // Initialize fullscreen monitoring first (needed for useTestMonitoring)
   const {
@@ -97,6 +121,7 @@ export default function GiveTest() {
       isTestActive: testStarted,
       requireWebcam,
       isFullscreen,
+      initialScreenStream,
     });
 
   // Detect multiple displays using the Window Management API when available
@@ -146,11 +171,23 @@ export default function GiveTest() {
     }
   };
 
-  const handleStartTest = async (opts?: { requireWebcam: boolean }) => {
+  const handleStartTest = async (opts?: {
+    requireWebcam: boolean;
+    initialStream?: MediaStream;
+    initialScreenStream?: MediaStream;
+  }) => {
     // Reset previous persistent errors
     setStartErrors([]);
 
     const wantWebcam = opts?.requireWebcam ?? requireWebcam;
+
+    // Store the initial streams if provided
+    if (opts?.initialStream) {
+      setInitialWebcamStream(opts.initialStream);
+    }
+    if (opts?.initialScreenStream) {
+      setInitialScreenStream(opts.initialScreenStream);
+    }
 
     // Check if fullscreen is supported
     if (!isFullscreenSupported()) {
@@ -181,13 +218,20 @@ export default function GiveTest() {
     }
 
     // Request screen-capture permission once, before test begins (user gesture)
-    const screenPermissionGranted = await requestScreenPermission();
-    if (!screenPermissionGranted) {
-      setStartErrors((prev) => [
-        ...prev,
-        "Screen sharing permission is required to start the test. Please share your entire screen.",
-      ]);
-      return;
+    // Skip if initialScreenStream already provided from TestInstructions
+    if (!initialScreenStream) {
+      const screenPermissionGranted = await requestScreenPermission();
+      if (!screenPermissionGranted) {
+        setStartErrors((prev) => [
+          ...prev,
+          "Screen sharing permission is required to start the test. Please share your entire screen.",
+        ]);
+        return;
+      }
+    } else {
+      console.log(
+        "[GiveTest] Using initial screen stream from permission check, skipping requestScreenPermission",
+      );
     }
 
     // Try to enter fullscreen mode
@@ -279,45 +323,6 @@ export default function GiveTest() {
         <canvas ref={canvasRef} />
       </div>
 
-      {/* Monitoring indicator */}
-      {testStarted && config && (
-        <IKContext
-          publicKey={config.publicKey}
-          urlEndpoint={config.urlEndpoint}
-          authenticator={async () => ({ signature: "", expire: 0, token: "" })}
-        >
-          <div className="fixed top-24 right-4 space-y-2 z-50">
-            {/* Screen monitoring indicator */}
-            <div className="bg-white rounded-lg shadow-lg p-3 border border-gray-200">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
-                  }`}
-                />
-                <span className="text-xs font-medium text-gray-700">
-                  {isCapturing ? "Capturing..." : "Monitoring Active"}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">{logs.length} snapshots taken</p>
-            </div>
-
-            {/* Fullscreen status indicator */}
-            <div className="bg-white rounded-lg shadow-lg p-3 border border-gray-200">
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${isFullscreen ? "bg-green-500" : "bg-red-500"}`}
-                />
-                <span className="text-xs font-medium text-gray-700">
-                  {isFullscreen ? "Fullscreen Active" : "Fullscreen Required"}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-1">Violations: {violationCount}</p>
-            </div>
-          </div>
-        </IKContext>
-      )}
-
       <TestHeader
         testTitle={test.title}
         answeredCount={answeredCount}
@@ -327,6 +332,10 @@ export default function GiveTest() {
         progress={progress}
         onSubmitTest={() => setShowSubmitConfirm(true)}
         submitting={submitting}
+        isCapturing={testStarted ? isCapturing : undefined}
+        logsCount={testStarted ? logs.length : undefined}
+        isFullscreen={testStarted ? isFullscreen : undefined}
+        violationCount={testStarted ? violationCount : undefined}
       />
 
       {/* Questions */}
@@ -393,6 +402,17 @@ export default function GiveTest() {
         onTryAgain={handleRetryFullscreen}
         onCancel={handleCancelFullscreen}
       />
+
+      {/* WebRTC Streaming Indicator - This enables live viewing by teachers */}
+      {testStarted && currentUserId && (
+        <StreamingIndicator
+          userId={currentUserId}
+          testId={testId?.toString() || ""}
+          enabled={testStarted && requireWebcam}
+          initialStream={initialWebcamStream}
+          initialScreenStream={initialScreenStream}
+        />
+      )}
     </div>
   );
 }

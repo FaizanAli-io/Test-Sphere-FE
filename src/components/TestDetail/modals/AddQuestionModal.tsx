@@ -15,7 +15,7 @@ interface AddQuestionModalProps {
   loadingQuestions: boolean;
 }
 
-export default function AddQuestionModal({
+export function AddQuestionModal({
   showAddQuestionModal,
   onClose,
   onAdd,
