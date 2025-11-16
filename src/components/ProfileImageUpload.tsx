@@ -16,7 +16,7 @@ interface ProfileImageUploadProps {
 export default function ProfileImageUpload({
   profileImage,
   onImageChange,
-  className = ""
+  className = "",
 }: ProfileImageUploadProps) {
   const {
     config,
@@ -24,7 +24,7 @@ export default function ProfileImageUpload({
     error: uploadError,
     loading: configLoading,
     handleUploadSuccess,
-    handleUploadError
+    handleUploadError,
   } = useImageKitUploader();
 
   const [isUploading, setIsUploading] = useState(false);
@@ -49,7 +49,7 @@ export default function ProfileImageUpload({
       setIsUploading(false);
       handleUploadSuccess(res);
     },
-    [onImageChange, handleUploadSuccess]
+    [onImageChange, handleUploadSuccess],
   );
 
   const onUploadError = useCallback(
@@ -58,7 +58,7 @@ export default function ProfileImageUpload({
       setIsUploading(false);
       handleUploadError(err);
     },
-    [handleUploadError]
+    [handleUploadError],
   );
 
   return (
@@ -104,7 +104,7 @@ export default function ProfileImageUpload({
                     opacity: 0,
                     width: "100%",
                     height: "100%",
-                    cursor: "pointer"
+                    cursor: "pointer",
                   }}
                 />
                 <div className="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow hover:bg-indigo-700 cursor-pointer transition-colors">
@@ -160,9 +160,7 @@ export default function ProfileImageUpload({
           <AlertCircle className="w-3 h-3" /> {uploadError}
         </p>
       )}
-      {isUploading && (
-        <p className="text-xs text-indigo-500 mt-1">Uploading image...</p>
-      )}
+      {isUploading && <p className="text-xs text-indigo-500 mt-1">Uploading image...</p>}
     </div>
   );
 }

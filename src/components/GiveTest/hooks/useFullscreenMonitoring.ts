@@ -23,13 +23,13 @@ export const useFullscreenMonitoring = ({
   submissionId: _,
   isTestActive,
   onViolationLimit,
-  onExtendedFullscreenExit
+  onExtendedFullscreenExit,
 }: UseFullscreenMonitoringProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [violationCount, setViolationCount] = useState(0);
   const [showViolationWarning, setShowViolationWarning] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState<number>(
-    TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS
+    TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS,
   );
   const [violationLogs, setViolationLogs] = useState<ViolationLog[]>([]);
   const hasEnteredFullscreen = useRef(false);
@@ -194,17 +194,13 @@ export const useFullscreenMonitoring = ({
           setTimeout(() => onExtendedFullscreenExit(), 0);
         }
       },
-      TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS * 1000 + 500
+      TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS * 1000 + 500,
     );
   }, [enterFullscreen, onExtendedFullscreenExit]);
 
   // Handle fullscreen exit violation
   const handleFullscreenViolation = useCallback(async () => {
-    if (
-      !isTestActive ||
-      !hasEnteredFullscreen.current ||
-      isProcessingViolation.current
-    ) {
+    if (!isTestActive || !hasEnteredFullscreen.current || isProcessingViolation.current) {
       return;
     }
 
@@ -214,7 +210,7 @@ export const useFullscreenMonitoring = ({
     const violationLog: ViolationLog = {
       type: "FULLSCREEN_EXIT",
       timestamp: new Date().toISOString(),
-      details: `User exited fullscreen mode. Violation ${newViolationCount}/${MAX_VIOLATIONS}`
+      details: `User exited fullscreen mode. Violation ${newViolationCount}/${MAX_VIOLATIONS}`,
     };
 
     setViolationCount(newViolationCount);
@@ -230,13 +226,7 @@ export const useFullscreenMonitoring = ({
       // Start countdown warning with auto-submission
       startViolationCountdown();
     }
-  }, [
-    isTestActive,
-    violationCount,
-    logViolation,
-    onViolationLimit,
-    startViolationCountdown
-  ]);
+  }, [isTestActive, violationCount, logViolation, onViolationLimit, startViolationCountdown]);
 
   // Dismiss violation warning manually and re-enter fullscreen
   const dismissWarning = useCallback(() => {
@@ -264,12 +254,7 @@ export const useFullscreenMonitoring = ({
     setIsFullscreen(isCurrentlyFullscreen);
 
     // If we were in fullscreen and now we're not - immediate action
-    if (
-      wasFullscreen &&
-      !isCurrentlyFullscreen &&
-      hasEnteredFullscreen.current &&
-      isTestActive
-    ) {
+    if (wasFullscreen && !isCurrentlyFullscreen && hasEnteredFullscreen.current && isTestActive) {
       // 1. Immediately try to re-enter fullscreen
       forceFullscreenReentry();
 
@@ -283,7 +268,7 @@ export const useFullscreenMonitoring = ({
     handleFullscreenViolation,
     checkFullscreenStatus,
     isTestActive,
-    forceFullscreenReentry
+    forceFullscreenReentry,
   ]);
 
   // Initialize fullscreen status when test becomes active
@@ -302,22 +287,18 @@ export const useFullscreenMonitoring = ({
       "fullscreenchange",
       "webkitfullscreenchange",
       "mozfullscreenchange",
-      "msfullscreenchange"
+      "msfullscreenchange",
     ];
 
     events.forEach((event) => {
       document.addEventListener(event, handleFullscreenChange, {
-        passive: true
+        passive: true,
       });
     });
 
     // Backup monitoring strategies
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === "Escape" &&
-        isTestActive &&
-        hasEnteredFullscreen.current
-      ) {
+      if (event.key === "Escape" && isTestActive && hasEnteredFullscreen.current) {
         setTimeout(() => {
           const currentStatus = checkFullscreenStatus();
           if (!currentStatus) {
@@ -351,7 +332,7 @@ export const useFullscreenMonitoring = ({
     handleFullscreenChange,
     isFullscreen,
     checkFullscreenStatus,
-    forceFullscreenReentry
+    forceFullscreenReentry,
   ]);
 
   // Clean up timers on unmount
@@ -380,6 +361,6 @@ export const useFullscreenMonitoring = ({
     enterFullscreen,
     exitFullscreen,
     dismissWarning,
-    hasEnteredFullscreen: hasEnteredFullscreen.current
+    hasEnteredFullscreen: hasEnteredFullscreen.current,
   };
 };

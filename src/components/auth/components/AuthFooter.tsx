@@ -4,11 +4,7 @@ interface AuthFooterProps {
   onSwitchMode: (mode: "login" | "signup" | "forgot" | "reset") => void;
 }
 
-export default function AuthFooter({
-  authMode,
-  loading,
-  onSwitchMode
-}: AuthFooterProps) {
+export default function AuthFooter({ authMode, loading, onSwitchMode }: AuthFooterProps) {
   return (
     <div className="mt-6 text-center">
       <p className="text-sm text-gray-600">

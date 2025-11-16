@@ -39,8 +39,7 @@ export const useTeacherPortal = () => {
                   : 0,
               // Count only approved students for the display count
               studentCount: Array.isArray(c.students)
-                ? c.students.filter((student) => student.approved === true)
-                    .length
+                ? c.students.filter((student) => student.approved === true).length
                 : typeof c.studentCount === "number"
                   ? c.studentCount
                   : 0,
@@ -76,14 +75,12 @@ export const useTeacherPortal = () => {
 
       const data = await response.json();
       notifications.showSuccess(
-        `Class created successfully! Class Code: ${data.code} - Share this code with your students to join the class.`
+        `Class created successfully! Class Code: ${data.code} - Share this code with your students to join the class.`,
       );
       await fetchClasses();
       return true;
     } catch (err) {
-      notifications.showError(
-        err instanceof Error ? err.message : "Failed to create class"
-      );
+      notifications.showError(err instanceof Error ? err.message : "Failed to create class");
       return false;
     } finally {
       setLoading(false);
@@ -115,9 +112,7 @@ export const useTeacherPortal = () => {
       await fetchClasses();
       return true;
     } catch (err) {
-      notifications.showError(
-        err instanceof Error ? err.message : "Failed to update class"
-      );
+      notifications.showError(err instanceof Error ? err.message : "Failed to update class");
       return false;
     } finally {
       setLoading(false);
@@ -140,9 +135,7 @@ export const useTeacherPortal = () => {
       notifications.showSuccess("Class deleted successfully!");
       await fetchClasses();
     } catch (err) {
-      notifications.showError(
-        err instanceof Error ? err.message : "Failed to delete class"
-      );
+      notifications.showError(err instanceof Error ? err.message : "Failed to delete class");
     } finally {
       setLoading(false);
     }
@@ -195,9 +188,7 @@ export const useClassDetails = () => {
       setSelectedClass(normalized);
       return normalized;
     } catch (err) {
-      notifications.showError(
-        err instanceof Error ? err.message : "Failed to fetch class details"
-      );
+      notifications.showError(err instanceof Error ? err.message : "Failed to fetch class details");
       return null;
     } finally {
       setLoading(false);
@@ -218,17 +209,13 @@ export const useClassDetails = () => {
         throw new Error(errorData.message || "Failed to remove student");
       }
 
-      notifications.showSuccess(
-        `${kickConfirm.studentName} has been removed from the class`
-      );
+      notifications.showSuccess(`${kickConfirm.studentName} has been removed from the class`);
 
       // Refresh class details
       await fetchClassDetails(kickConfirm.classId);
       return true;
     } catch (err) {
-      notifications.showError(
-        err instanceof Error ? err.message : "Failed to remove student"
-      );
+      notifications.showError(err instanceof Error ? err.message : "Failed to remove student");
       return false;
     } finally {
       setLoading(false);
@@ -239,9 +226,7 @@ export const useClassDetails = () => {
     setSelectedClass(null);
   };
 
-  const handleStudentRequest = async (
-    action: RequestAction
-  ): Promise<boolean> => {
+  const handleStudentRequest = async (action: RequestAction): Promise<boolean> => {
     setLoading(true);
     try {
       // Based on the user's requirements, both endpoints are /classes/{id}/remove
@@ -259,9 +244,7 @@ export const useClassDetails = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.message || `Failed to ${action.action} student`
-        );
+        throw new Error(errorData.message || `Failed to ${action.action} student`);
       }
 
       const actionText = action.action === "approve" ? "approved" : "rejected";
@@ -272,9 +255,7 @@ export const useClassDetails = () => {
       return true;
     } catch (err) {
       notifications.showError(
-        err instanceof Error
-          ? err.message
-          : `Failed to ${action.action} student`
+        err instanceof Error ? err.message : `Failed to ${action.action} student`,
       );
       return false;
     } finally {

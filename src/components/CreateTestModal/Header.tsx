@@ -14,9 +14,7 @@ export const CreateTestModalHeader: React.FC<HeaderProps> = ({ onClose }) => {
           <span className="text-3xl">📝</span>
           Create New Test
         </h2>
-        <p className="mt-1 text-purple-100">
-          Configure the basic details of your test
-        </p>
+        <p className="mt-1 text-purple-100">Configure the basic details of your test</p>
       </div>
       <button
         onClick={onClose}

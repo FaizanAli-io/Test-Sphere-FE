@@ -15,8 +15,7 @@ export default function Invigilate() {
   const testId = params?.testId as string;
 
   const { students, loading, error, refetch } = useInvigilateStudents(testId);
-  const [selectedStudent, setSelectedStudent] =
-    useState<InvigilatingStudent | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<InvigilatingStudent | null>(null);
 
   const handleStudentClick = (student: InvigilatingStudent) => {
     setSelectedStudent(student);
@@ -79,12 +78,10 @@ export default function Invigilate() {
               <span>Refresh</span>
             </button>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Test Invigilation
-          </h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Test Invigilation</h1>
           <p className="text-gray-400">
-            {students.length} {students.length === 1 ? "student" : "students"}{" "}
-            currently taking the test
+            {students.length} {students.length === 1 ? "student" : "students"} currently taking the
+            test
           </p>
         </div>
 
@@ -94,11 +91,7 @@ export default function Invigilate() {
         {/* Livestream Modal */}
         <StudentLivestreamModal
           student={selectedStudent}
-          teacherId={
-            typeof window !== "undefined"
-              ? localStorage.getItem("userId") || ""
-              : ""
-          }
+          teacherId={typeof window !== "undefined" ? localStorage.getItem("userId") || "" : ""}
           testId={testId}
           onClose={handleCloseModal}
         />

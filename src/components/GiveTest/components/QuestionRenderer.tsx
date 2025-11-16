@@ -13,7 +13,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   question,
   index,
   answer,
-  onAnswerChange
+  onAnswerChange,
 }) => {
   const renderQuestionInput = () => {
     switch (question.type) {
@@ -137,9 +137,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               {question.maxMarks} {question.maxMarks === 1 ? "mark" : "marks"}
             </span>
           </div>
-          <p className="text-gray-900 font-semibold text-xl leading-relaxed">
-            {question.text}
-          </p>
+          <p className="text-gray-900 font-semibold text-xl leading-relaxed">{question.text}</p>
         </div>
       </div>
 

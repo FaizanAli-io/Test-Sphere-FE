@@ -13,9 +13,7 @@ import ForgotPasswordForm from "./components/ForgotPasswordForm";
 
 export default function Auth() {
   const router = useRouter();
-  const [authMode, setAuthMode] = useState<
-    "login" | "signup" | "forgot" | "reset"
-  >("login");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | "forgot" | "reset">("login");
   const [otpSent, setOtpSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,9 +47,7 @@ export default function Auth() {
             authMode={authMode}
             otpSent={otpSent}
             onBack={handleBackButton}
-            showBackButton={
-              authMode === "forgot" || authMode === "reset" || otpSent
-            }
+            showBackButton={authMode === "forgot" || authMode === "reset" || otpSent}
           />
 
           <div className="p-8">
@@ -125,11 +121,7 @@ export default function Auth() {
             )}
 
             {!otpSent && (
-              <AuthFooter
-                authMode={authMode}
-                loading={loading}
-                onSwitchMode={switchMode}
-              />
+              <AuthFooter authMode={authMode} loading={loading} onSwitchMode={switchMode} />
             )}
           </div>
         </div>

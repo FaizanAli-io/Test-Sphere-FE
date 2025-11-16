@@ -10,14 +10,10 @@ import {
   TestInstructions,
   SubmitConfirmModal,
   FullscreenRequiredModal,
-  FullscreenViolationWarning
+  FullscreenViolationWarning,
 } from "./components";
 
-import {
-  useTestExam,
-  useTestMonitoring,
-  useFullscreenMonitoring
-} from "./hooks";
+import { useTestExam, useTestMonitoring, useFullscreenMonitoring } from "./hooks";
 
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
@@ -54,7 +50,7 @@ export default function GiveTest() {
     startTest,
     updateAnswer,
     submitTest,
-    formatTime
+    formatTime,
   } = useTestExam(testId);
 
   const { config } = useImageKitUploader();
@@ -69,15 +65,13 @@ export default function GiveTest() {
     maxViolations,
     isFullscreenSupported,
     enterFullscreen,
-    dismissWarning
+    dismissWarning,
   } = useFullscreenMonitoring({
     submissionId,
     isTestActive: testStarted,
     onViolationLimit: async () => {
       // Auto-submit test when violation limit is reached
-      notifications.showError(
-        "Test auto-submitted due to multiple fullscreen violations."
-      );
+      notifications.showError("Test auto-submitted due to multiple fullscreen violations.");
 
       // Log violation data locally for reference (frontend only)
 
@@ -85,33 +79,25 @@ export default function GiveTest() {
     },
     onExtendedFullscreenExit: async () => {
       // Auto-submit test when user stays out of fullscreen for too long
-      notifications.showError(
-        "Test auto-submitted due to extended fullscreen violation."
-      );
+      notifications.showError("Test auto-submitted due to extended fullscreen violation.");
 
       // Log violation data locally for reference (frontend only)
 
       await submitTest();
-    }
+    },
   });
 
   // Initialize monitoring hook with randomized intervals (5-10 seconds)
   // Pass isFullscreen to control capture behavior:
   // - NOT in fullscreen: Take ONLY screenshots
   // - IN fullscreen: Take ONLY webcam photos
-  const {
-    videoRef,
-    canvasRef,
-    logs,
-    isCapturing,
-    requestScreenPermission,
-    checkWebcamAvailable
-  } = useTestMonitoring({
-    submissionId,
-    isTestActive: testStarted,
-    requireWebcam,
-    isFullscreen
-  });
+  const { videoRef, canvasRef, logs, isCapturing, requestScreenPermission, checkWebcamAvailable } =
+    useTestMonitoring({
+      submissionId,
+      isTestActive: testStarted,
+      requireWebcam,
+      isFullscreen,
+    });
 
   // Detect multiple displays using the Window Management API when available
   const detectMultipleDisplays = async (): Promise<string | null> => {
@@ -136,7 +122,7 @@ export default function GiveTest() {
           const status = await anyNav.permissions.query({
             // TS doesn't know this permission name yet
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            name: "window-management" as any
+            name: "window-management" as any,
           });
 
           if (status.state === "denied") {
@@ -148,9 +134,7 @@ export default function GiveTest() {
       }
 
       const details = await anyWin.getScreenDetails();
-      const count = Array.isArray(details?.screens)
-        ? details.screens.length
-        : 1;
+      const count = Array.isArray(details?.screens) ? details.screens.length : 1;
 
       if (count > 1) {
         return "Multiple displays detected. Disconnect external monitors and use a single display to start the test.";
@@ -172,7 +156,7 @@ export default function GiveTest() {
     if (!isFullscreenSupported()) {
       setStartErrors((prev) => [
         ...prev,
-        "Fullscreen mode is not supported in your browser. Please use a modern browser to take this test."
+        "Fullscreen mode is not supported in your browser. Please use a modern browser to take this test.",
       ]);
       return;
     }
@@ -190,7 +174,7 @@ export default function GiveTest() {
       if (!hasWebcam) {
         setStartErrors((prev) => [
           ...prev,
-          "No webcam detected. Please connect a camera or disable 'Require webcam' to start."
+          "No webcam detected. Please connect a camera or disable 'Require webcam' to start.",
         ]);
         return;
       }
@@ -201,7 +185,7 @@ export default function GiveTest() {
     if (!screenPermissionGranted) {
       setStartErrors((prev) => [
         ...prev,
-        "Screen sharing permission is required to start the test. Please share your entire screen."
+        "Screen sharing permission is required to start the test. Please share your entire screen.",
       ]);
       return;
     }
@@ -248,9 +232,7 @@ export default function GiveTest() {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0"></div>
           </div>
-          <p className="mt-6 text-gray-600 font-semibold text-lg">
-            Loading test...
-          </p>
+          <p className="mt-6 text-gray-600 font-semibold text-lg">Loading test...</p>
         </div>
       </div>
     );
@@ -263,12 +245,8 @@ export default function GiveTest() {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">⚠️</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Error Loading Test
-          </h2>
-          <p className="text-gray-600 mb-8 text-lg">
-            {error || "Test not found"}
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Error Loading Test</h2>
+          <p className="text-gray-600 mb-8 text-lg">{error || "Test not found"}</p>
           <button
             onClick={() => router.push("/student")}
             className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
@@ -321,26 +299,20 @@ export default function GiveTest() {
                   {isCapturing ? "Capturing..." : "Monitoring Active"}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                {logs.length} snapshots taken
-              </p>
+              <p className="text-xs text-gray-500 mt-1">{logs.length} snapshots taken</p>
             </div>
 
             {/* Fullscreen status indicator */}
             <div className="bg-white rounded-lg shadow-lg p-3 border border-gray-200">
               <div className="flex items-center gap-2">
                 <div
-                  className={`w-2 h-2 rounded-full ${
-                    isFullscreen ? "bg-green-500" : "bg-red-500"
-                  }`}
+                  className={`w-2 h-2 rounded-full ${isFullscreen ? "bg-green-500" : "bg-red-500"}`}
                 />
                 <span className="text-xs font-medium text-gray-700">
                   {isFullscreen ? "Fullscreen Active" : "Fullscreen Required"}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Violations: {violationCount}
-              </p>
+              <p className="text-xs text-gray-500 mt-1">Violations: {violationCount}</p>
             </div>
           </div>
         </IKContext>

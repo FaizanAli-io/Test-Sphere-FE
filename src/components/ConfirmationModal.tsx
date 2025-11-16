@@ -19,7 +19,7 @@ export default function ConfirmationModal({
   cancelText = "Cancel",
   onConfirm,
   onCancel,
-  type = "warning"
+  type = "warning",
 }: ConfirmationModalProps) {
   if (!isOpen) return null;
 
@@ -29,25 +29,25 @@ export default function ConfirmationModal({
         return {
           header: "bg-gradient-to-r from-red-500 to-red-600",
           confirmButton: "bg-red-500 hover:bg-red-600",
-          icon: "⚠️"
+          icon: "⚠️",
         };
       case "warning":
         return {
           header: "bg-gradient-to-r from-yellow-500 to-orange-500",
           confirmButton: "bg-yellow-500 hover:bg-yellow-600",
-          icon: "⚠️"
+          icon: "⚠️",
         };
       case "info":
         return {
           header: "bg-gradient-to-r from-blue-500 to-indigo-500",
           confirmButton: "bg-blue-500 hover:bg-blue-600",
-          icon: "ℹ️"
+          icon: "ℹ️",
         };
       default:
         return {
           header: "bg-gradient-to-r from-gray-500 to-gray-600",
           confirmButton: "bg-gray-500 hover:bg-gray-600",
-          icon: "❓"
+          icon: "❓",
         };
     }
   };
@@ -67,9 +67,7 @@ export default function ConfirmationModal({
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-gray-700 text-lg leading-relaxed mb-6">
-            {message}
-          </p>
+          <p className="text-gray-700 text-lg leading-relaxed mb-6">{message}</p>
 
           {/* Buttons */}
           <div className="flex gap-3">

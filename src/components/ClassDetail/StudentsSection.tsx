@@ -18,13 +18,11 @@ const StudentsSection: React.FC<StudentsSectionProps> = ({
   students,
   kickingStudent,
   onKick,
-  classCode
+  classCode,
 }) => {
   return (
     <div>
-      <h3 className="text-2xl font-bold text-gray-900 mb-6">
-        Enrolled Students
-      </h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-6">Enrolled Students</h3>
       {students?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {students.map((student, index) => (
@@ -37,12 +35,8 @@ const StudentsSection: React.FC<StudentsSectionProps> = ({
                   {index + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-gray-900 text-lg truncate">
-                    {student.name}
-                  </h4>
-                  <p className="text-sm text-gray-600 truncate">
-                    {student.email}
-                  </p>
+                  <h4 className="font-bold text-gray-900 text-lg truncate">{student.name}</h4>
+                  <p className="text-sm text-gray-600 truncate">{student.email}</p>
                 </div>
               </div>
               <button
@@ -73,12 +67,9 @@ const StudentsSection: React.FC<StudentsSectionProps> = ({
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
             👥
           </div>
-          <p className="text-gray-600 font-bold text-lg">
-            No students enrolled yet
-          </p>
+          <p className="text-gray-600 font-bold text-lg">No students enrolled yet</p>
           <p className="text-gray-500 mt-2">
-            Share class code:{" "}
-            <span className="font-bold text-indigo-600">{classCode}</span>
+            Share class code: <span className="font-bold text-indigo-600">{classCode}</span>
           </p>
         </div>
       )}

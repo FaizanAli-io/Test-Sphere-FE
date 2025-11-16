@@ -6,11 +6,7 @@ interface GoogleSignupModalProps {
   onSubmit: (details: { role: "STUDENT" | "TEACHER"; cnic: string }) => void;
 }
 
-export default function GoogleSignupModal({
-  open,
-  onClose,
-  onSubmit,
-}: GoogleSignupModalProps) {
+export default function GoogleSignupModal({ open, onClose, onSubmit }: GoogleSignupModalProps) {
   const [role, setRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
   const [cnic, setCnic] = useState("");
   const [errors, setErrors] = useState<{ cnic?: string }>({});
@@ -69,24 +65,15 @@ export default function GoogleSignupModal({
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all animate-in zoom-in-95 duration-200">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">
-              Complete Your Signup
-            </h2>
-            <p className="text-sm text-gray-500">
-              Just a few more details to get started
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Complete Your Signup</h2>
+            <p className="text-sm text-gray-500">Just a few more details to get started</p>
           </div>
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-1.5 transition-all duration-200"
             aria-label="Close modal"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -99,10 +86,7 @@ export default function GoogleSignupModal({
 
         <div className="space-y-5">
           <div>
-            <label
-              htmlFor="role"
-              className="block text-sm font-semibold text-gray-700 mb-2"
-            >
+            <label htmlFor="role" className="block text-sm font-semibold text-gray-700 mb-2">
               Select Your Role
             </label>
             <select
@@ -117,14 +101,9 @@ export default function GoogleSignupModal({
           </div>
 
           <div>
-            <label
-              htmlFor="cnic"
-              className="block text-sm font-semibold text-gray-700 mb-2"
-            >
+            <label htmlFor="cnic" className="block text-sm font-semibold text-gray-700 mb-2">
               CNIC Number
-              <span className="text-gray-400 font-normal ml-1">
-                (13 digits)
-              </span>
+              <span className="text-gray-400 font-normal ml-1">(13 digits)</span>
             </label>
             <input
               id="cnic"
@@ -157,9 +136,7 @@ export default function GoogleSignupModal({
                     clipRule="evenodd"
                   />
                 </svg>
-                <p className="text-sm text-red-600 font-medium">
-                  {errors.cnic}
-                </p>
+                <p className="text-sm text-red-600 font-medium">{errors.cnic}</p>
               </div>
             )}
           </div>

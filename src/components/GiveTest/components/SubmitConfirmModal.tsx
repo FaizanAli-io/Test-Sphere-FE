@@ -15,7 +15,7 @@ export const SubmitConfirmModal: React.FC<SubmitConfirmModalProps> = ({
   totalQuestions,
   submitting,
   onConfirm,
-  onCancel
+  onCancel,
 }) => {
   if (!isOpen) return null;
 
@@ -36,10 +36,8 @@ export const SubmitConfirmModal: React.FC<SubmitConfirmModalProps> = ({
               Are you sure you want to submit?
             </p>
             <p className="text-gray-600 mb-4">
-              You have answered{" "}
-              <span className="font-bold text-indigo-600">{answeredCount}</span>{" "}
-              out of <span className="font-bold">{totalQuestions}</span>{" "}
-              questions.
+              You have answered <span className="font-bold text-indigo-600">{answeredCount}</span>{" "}
+              out of <span className="font-bold">{totalQuestions}</span> questions.
             </p>
             {unansweredCount > 0 && (
               <p className="text-red-600 font-medium text-sm">
@@ -51,8 +49,8 @@ export const SubmitConfirmModal: React.FC<SubmitConfirmModalProps> = ({
 
           <div className="bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4 mb-6">
             <p className="text-sm text-gray-700">
-              <span className="font-bold">Note:</span> Once submitted, you
-              cannot change your answers.
+              <span className="font-bold">Note:</span> Once submitted, you cannot change your
+              answers.
             </p>
           </div>
 

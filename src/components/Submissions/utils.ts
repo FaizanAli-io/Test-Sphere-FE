@@ -11,17 +11,14 @@ export const formatDate = (dateString: string | undefined): string => {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit"
+    second: "2-digit",
   });
 };
 
 /**
  * Calculate time taken between two timestamps in minutes
  */
-export const calculateTimeTaken = (
-  startTime?: string,
-  endTime?: string
-): number => {
+export const calculateTimeTaken = (startTime?: string, endTime?: string): number => {
   if (!startTime || !endTime) return 0;
   const start = new Date(startTime);
   const end = new Date(endTime);
@@ -31,9 +28,7 @@ export const calculateTimeTaken = (
 /**
  * Calculate total possible marks for a submission
  */
-export const calculateTotalPossibleMarks = (
-  answers: Answer[] | undefined
-): number => {
+export const calculateTotalPossibleMarks = (answers: Answer[] | undefined): number => {
   if (!answers) return 0;
   return answers.reduce((total, answer) => {
     const maxMarks = answer.maxMarks || answer.question?.maxMarks || 0;
@@ -44,14 +39,9 @@ export const calculateTotalPossibleMarks = (
 /**
  * Calculate current total obtained marks for a submission
  */
-export const calculateCurrentTotalMarks = (
-  answers: Answer[] | undefined
-): number => {
+export const calculateCurrentTotalMarks = (answers: Answer[] | undefined): number => {
   if (!answers) return 0;
-  return answers.reduce(
-    (total, answer) => total + (answer.obtainedMarks || 0),
-    0
-  );
+  return answers.reduce((total, answer) => total + (answer.obtainedMarks || 0), 0);
 };
 
 /**
@@ -60,7 +50,7 @@ export const calculateCurrentTotalMarks = (
 export const formatAnswerText = (
   answer: string | undefined,
   questionType?: string,
-  options?: string[]
+  options?: string[],
 ): string => {
   if (!answer) return "No answer provided";
 
@@ -80,7 +70,7 @@ export const formatAnswerText = (
 export const getCorrectAnswerText = (
   correctAnswer: number | undefined,
   questionType?: string,
-  options?: string[]
+  options?: string[],
 ): string => {
   if (questionType === "MULTIPLE_CHOICE" || questionType === "TRUE_FALSE") {
     if (
@@ -130,7 +120,7 @@ export const getSubmissionStatusColor = (status: string): string => {
 export const isAnswerCorrect = (
   answer: Answer,
   questionType?: string,
-  correctAnswer?: number
+  correctAnswer?: number,
 ): boolean => {
   if (!questionType || correctAnswer === undefined || correctAnswer === null) {
     const maxMarks = answer.maxMarks || answer.question?.maxMarks || 0;
@@ -150,7 +140,7 @@ export const isAnswerCorrect = (
  * Get answer status (correct, incorrect, pending, etc.)
  */
 export const getAnswerStatus = (
-  answer: Answer
+  answer: Answer,
 ): {
   status: "correct" | "incorrect" | "pending" | "partial";
   color: string;
@@ -162,14 +152,13 @@ export const getAnswerStatus = (
   const isPending =
     answer.gradingStatus === "PENDING" ||
     (answer.obtainedMarks === null &&
-      (answer.question?.type === "SHORT_ANSWER" ||
-        answer.question?.type === "LONG_ANSWER"));
+      (answer.question?.type === "SHORT_ANSWER" || answer.question?.type === "LONG_ANSWER"));
 
   if (isPending) {
     return {
       status: "pending",
       color: "border-yellow-200 bg-yellow-50",
-      icon: "⏳"
+      icon: "⏳",
     };
   }
 
@@ -177,7 +166,7 @@ export const getAnswerStatus = (
     return {
       status: "correct",
       color: "border-green-200 bg-green-50",
-      icon: "✅"
+      icon: "✅",
     };
   }
 
@@ -185,14 +174,14 @@ export const getAnswerStatus = (
     return {
       status: "incorrect",
       color: "border-red-200 bg-red-50",
-      icon: "❌"
+      icon: "❌",
     };
   }
 
   return {
     status: "partial",
     color: "border-blue-200 bg-blue-50",
-    icon: "📝"
+    icon: "📝",
   };
 };
 
@@ -253,20 +242,15 @@ interface RawTestLike {
 const normalizeTest = (t: unknown): Test | undefined => {
   if (!isObject(t)) return undefined;
   const rt = t as RawTestLike;
-  const cls = isObject(rt.class)
-    ? (rt.class as Record<string, unknown>)
-    : undefined;
+  const cls = isObject(rt.class) ? (rt.class as Record<string, unknown>) : undefined;
   const classIdFromClass =
-    cls && (typeof cls.id === "string" || typeof cls.id === "number")
-      ? Number(cls.id)
-      : undefined;
+    cls && (typeof cls.id === "string" || typeof cls.id === "number") ? Number(cls.id) : undefined;
 
   return {
     id: Number(rt.id),
     classId: Number(rt.classId ?? classIdFromClass ?? 0),
     title: String(rt.title || ""),
-    description:
-      typeof rt.description === "string" ? rt.description : undefined,
+    description: typeof rt.description === "string" ? rt.description : undefined,
     duration: Number(rt.duration || 0),
     startAt: String(rt.startAt || ""),
     endAt: String(rt.endAt || ""),
@@ -276,14 +260,13 @@ const normalizeTest = (t: unknown): Test | undefined => {
     class: cls
       ? {
           id: classIdFromClass ?? 0,
-          name: typeof cls.name === "string" ? cls.name : ""
+          name: typeof cls.name === "string" ? cls.name : "",
         }
-      : undefined
+      : undefined,
   } as Test;
 };
 
-const isObject = (v: unknown): v is Record<string, unknown> =>
-  typeof v === "object" && v !== null;
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
 
 export const normalizeSubmission = (raw: unknown): Submission => {
   const r: RawSubmission = isObject(raw) ? (raw as RawSubmission) : {};
@@ -292,23 +275,14 @@ export const normalizeSubmission = (raw: unknown): Submission => {
     userId: Number(r.userId),
     testId: Number(r.testId),
     status:
-      r.status === "IN_PROGRESS" ||
-      r.status === "SUBMITTED" ||
-      r.status === "GRADED"
+      r.status === "IN_PROGRESS" || r.status === "SUBMITTED" || r.status === "GRADED"
         ? r.status
         : "SUBMITTED",
     startedAt: typeof r.startedAt === "string" ? r.startedAt : undefined,
     submittedAt: typeof r.submittedAt === "string" ? r.submittedAt : "",
-    gradedAt:
-      typeof r.gradedAt === "string"
-        ? r.gradedAt
-        : r.gradedAt === null
-          ? null
-          : undefined,
+    gradedAt: typeof r.gradedAt === "string" ? r.gradedAt : r.gradedAt === null ? null : undefined,
     totalMarks:
-      typeof r.totalMarks === "number" || r.totalMarks === null
-        ? r.totalMarks
-        : undefined,
+      typeof r.totalMarks === "number" || r.totalMarks === null ? r.totalMarks : undefined,
     createdAt: typeof r.createdAt === "string" ? r.createdAt : "",
     updatedAt: typeof r.updatedAt === "string" ? r.updatedAt : "",
 
@@ -317,7 +291,7 @@ export const normalizeSubmission = (raw: unknown): Submission => {
         ? {
             id: Number((r.user || r.student)?.id),
             name: String((r.user || r.student)?.name || ""),
-            email: String((r.user || r.student)?.email || "")
+            email: String((r.user || r.student)?.email || ""),
           }
         : undefined,
     test: normalizeTest(r.test),
@@ -326,38 +300,25 @@ export const normalizeSubmission = (raw: unknown): Submission => {
           const question = isObject(a.question)
             ? {
                 id: Number((a.question as Record<string, unknown>).id),
-                testId: Number(
-                  (a.question as Record<string, unknown>).testId || 0
-                ),
-                text: String(
-                  (a.question as Record<string, unknown>).text || ""
-                ),
+                testId: Number((a.question as Record<string, unknown>).testId || 0),
+                text: String((a.question as Record<string, unknown>).text || ""),
                 type: String(
-                  (a.question as Record<string, unknown>).type ||
-                    "MULTIPLE_CHOICE"
+                  (a.question as Record<string, unknown>).type || "MULTIPLE_CHOICE",
                 ) as QuestionType,
-                options: Array.isArray(
-                  (a.question as Record<string, unknown>).options
-                )
-                  ? (
-                      (a.question as Record<string, unknown>)
-                        .options as unknown[]
-                    ).map((o) => String(o))
+                options: Array.isArray((a.question as Record<string, unknown>).options)
+                  ? ((a.question as Record<string, unknown>).options as unknown[]).map((o) =>
+                      String(o),
+                    )
                   : [],
                 correctAnswer:
-                  typeof (a.question as Record<string, unknown>)
-                    .correctAnswer === "number"
-                    ? ((a.question as Record<string, unknown>)
-                        .correctAnswer as number)
+                  typeof (a.question as Record<string, unknown>).correctAnswer === "number"
+                    ? ((a.question as Record<string, unknown>).correctAnswer as number)
                     : undefined,
-                maxMarks: Number(
-                  (a.question as Record<string, unknown>).maxMarks || 0
-                ),
+                maxMarks: Number((a.question as Record<string, unknown>).maxMarks || 0),
                 image:
-                  typeof (a.question as Record<string, unknown>).image ===
-                  "string"
+                  typeof (a.question as Record<string, unknown>).image === "string"
                     ? ((a.question as Record<string, unknown>).image as string)
-                    : undefined
+                    : undefined,
               }
             : undefined;
           return {
@@ -379,9 +340,9 @@ export const normalizeSubmission = (raw: unknown): Submission => {
             createdAt: typeof a.createdAt === "string" ? a.createdAt : "",
             updatedAt: typeof a.updatedAt === "string" ? a.updatedAt : "",
             question,
-            maxMarks: Number((question && question.maxMarks) || a.maxMarks || 0)
+            maxMarks: Number((question && question.maxMarks) || a.maxMarks || 0),
           } as Answer;
         })
-      : []
+      : [],
   };
 };

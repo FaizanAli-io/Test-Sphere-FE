@@ -19,7 +19,7 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
   formatTime,
   progress,
   onSubmitTest,
-  submitting
+  submitting,
 }) => {
   return (
     <div className="sticky top-0 z-40 bg-white shadow-lg border-b-2 border-gray-200">
@@ -34,9 +34,7 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
 
           <div className="flex items-center gap-4">
             <div className="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl px-6 py-3">
-              <p className="text-xs font-bold text-gray-600 mb-1">
-                Time Remaining
-              </p>
+              <p className="text-xs font-bold text-gray-600 mb-1">Time Remaining</p>
               <p
                 className={`text-2xl font-bold ${
                   timeRemaining < 300 ? "text-red-600" : "text-gray-900"

@@ -26,7 +26,7 @@ interface TestsSectionProps {
 
 const BUTTON_STYLES = {
   secondary:
-    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
+    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl",
 };
 
 const getStatusColor = (status: Test["status"]) => {
@@ -34,7 +34,7 @@ const getStatusColor = (status: Test["status"]) => {
     DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
     ACTIVE: "bg-green-100 text-green-800 border-green-300",
     COMPLETED: "bg-blue-100 text-blue-800 border-blue-300",
-    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300"
+    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300",
   };
   return colors[status] || colors.DRAFT;
 };
@@ -45,8 +45,7 @@ const getTimeStatus = (startAt: string, endAt: string): TimeStatus => {
   const end = new Date(endAt);
   if (now >= start && now <= end)
     return { text: "LIVE NOW", color: "bg-red-500 text-white animate-pulse" };
-  if (start > now)
-    return { text: "UPCOMING", color: "bg-yellow-500 text-white" };
+  if (start > now) return { text: "UPCOMING", color: "bg-yellow-500 text-white" };
   if (now > end) return { text: "ENDED", color: "bg-gray-500 text-white" };
   return { text: "DRAFT", color: "bg-gray-400 text-white" };
 };
@@ -55,7 +54,7 @@ const TestsSection: React.FC<TestsSectionProps> = ({
   tests,
   loadingQuestionCounts,
   onCreateTest,
-  onNavigate
+  onNavigate,
 }) => {
   return (
     <div>
@@ -82,9 +81,7 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                   >
                     {test.status}
                   </span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-bold ${timeStatus.color}`}
-                  >
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${timeStatus.color}`}>
                     {timeStatus.text}
                   </span>
                 </div>
@@ -100,13 +97,9 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                       <span className="text-white text-sm">❓</span>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 uppercase font-semibold">
-                        Questions
-                      </p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">Questions</p>
                       <p className="text-lg font-bold text-gray-900">
-                        {loadingQuestionCounts
-                          ? "..."
-                          : test.questionCount || 0}
+                        {loadingQuestionCounts ? "..." : test.questionCount || 0}
                       </p>
                     </div>
                   </div>
@@ -115,12 +108,8 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                       <span className="text-white text-sm">⏱</span>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 uppercase font-semibold">
-                        Duration
-                      </p>
-                      <p className="text-lg font-bold text-gray-900">
-                        {test.duration} min
-                      </p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">Duration</p>
+                      <p className="text-lg font-bold text-gray-900">{test.duration} min</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -128,15 +117,13 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                       <span className="text-white text-sm">📅</span>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 uppercase font-semibold">
-                        Schedule
-                      </p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">Schedule</p>
                       <p className="text-sm font-semibold text-gray-900">
                         {new Date(test.startAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
                           hour: "2-digit",
-                          minute: "2-digit"
+                          minute: "2-digit",
                         })}
                       </p>
                     </div>
@@ -159,12 +146,8 @@ const TestsSection: React.FC<TestsSectionProps> = ({
           <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
             📝
           </div>
-          <p className="text-gray-600 font-bold text-lg">
-            No tests created yet
-          </p>
-          <p className="text-gray-500 mt-2 mb-6">
-            Create your first test to get started
-          </p>
+          <p className="text-gray-600 font-bold text-lg">No tests created yet</p>
+          <p className="text-gray-500 mt-2 mb-6">Create your first test to get started</p>
           <button onClick={onCreateTest} className={BUTTON_STYLES.secondary}>
             Create First Test
           </button>

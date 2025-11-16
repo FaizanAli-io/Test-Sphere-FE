@@ -30,13 +30,13 @@ export function useImageKitUploader() {
       try {
         const res = await api("/upload/signature", {
           method: "GET",
-          auth: true
+          auth: true,
         });
         if (!res.ok) throw new Error("Failed to load ImageKit config");
         const data = await res.json();
         setConfig({
           publicKey: data.publicKey,
-          urlEndpoint: data.urlEndpoint
+          urlEndpoint: data.urlEndpoint,
         });
       } catch (err: unknown) {
         console.error("⚠️ Failed to load ImageKit config:", err);
@@ -51,7 +51,7 @@ export function useImageKitUploader() {
   const authenticator = useCallback(async () => {
     const res = await api("/upload/signature", {
       method: "GET",
-      auth: true
+      auth: true,
     });
     if (!res.ok) throw new Error("Failed to get signature");
     const { signature, expire, token } = await res.json();
@@ -74,6 +74,6 @@ export function useImageKitUploader() {
     error,
     loading,
     handleUploadSuccess,
-    handleUploadError
+    handleUploadError,
   };
 }

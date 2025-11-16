@@ -13,15 +13,12 @@ interface BaseClassCardProps {
 }
 
 const colorSchemes = {
-  green:
-    "from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700",
+  green: "from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700",
   blue: "from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700",
-  yellow:
-    "from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600",
+  yellow: "from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600",
   red: "from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700",
   orange: "from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600",
-  indigo:
-    "from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700",
+  indigo: "from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700",
 };
 
 export default function BaseClassCard({
@@ -61,10 +58,7 @@ export default function BaseClassCard({
                 className="p-1.5 hover:bg-indigo-100 rounded-lg transition-colors"
                 title="Copy Class Code"
               >
-                <Copy
-                  size={16}
-                  className={isCopied ? "text-green-500" : "text-gray-600"}
-                />
+                <Copy size={16} className={isCopied ? "text-green-500" : "text-gray-600"} />
               </button>
               <span className="text-xs font-mono text-gray-500 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
                 #{classData.id}
@@ -85,9 +79,7 @@ export default function BaseClassCard({
               </h4>
             )}
             {classData.statusLabel && (
-              <p className="text-yellow-600 font-semibold mt-1">
-                {classData.statusLabel}
-              </p>
+              <p className="text-yellow-600 font-semibold mt-1">{classData.statusLabel}</p>
             )}
             <p className="text-gray-600 line-clamp-2 leading-relaxed">
               {classData.description || "No description provided"}
@@ -100,9 +92,7 @@ export default function BaseClassCard({
             {classData.studentCount !== undefined && (
               <div className="flex items-center gap-2 text-gray-700">
                 <span className="text-xl">👥</span>
-                <span className="font-bold text-lg">
-                  {classData.studentCount || 0}
-                </span>
+                <span className="font-bold text-lg">{classData.studentCount || 0}</span>
                 <span className="text-sm font-semibold">
                   {classData.studentCount === 1 ? "Student" : "Students"}
                 </span>
@@ -110,9 +100,7 @@ export default function BaseClassCard({
             )}
             <div className="flex items-center gap-2 text-gray-700">
               <span className="text-xl">📝</span>
-              <span className="font-bold text-lg">
-                {classData.testCount || 0}
-              </span>
+              <span className="font-bold text-lg">{classData.testCount || 0}</span>
               <span className="text-sm font-semibold">
                 {classData.testCount === 1 ? "Test" : "Tests"}
               </span>
@@ -130,9 +118,7 @@ export default function BaseClassCard({
           className={`grid gap-3 ${actions.length === 3 ? "grid-cols-3" : actions.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}
         >
           {actions.map((action, index) => {
-            const badgeCount = action.badge
-              ? action.badge(classData)
-              : undefined;
+            const badgeCount = action.badge ? action.badge(classData) : undefined;
             return (
               <button
                 key={index}

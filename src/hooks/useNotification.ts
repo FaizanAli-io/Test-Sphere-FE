@@ -10,25 +10,22 @@ export const useNotification = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  const addNotification = useCallback(
-    (type: Notification["type"], message: string) => {
-      const id = Date.now().toString();
-      const newNotification: Notification = { id, type, message };
+  const addNotification = useCallback((type: Notification["type"], message: string) => {
+    const id = Date.now().toString();
+    const newNotification: Notification = { id, type, message };
 
-      setNotifications((prev) => [...prev, newNotification]);
+    setNotifications((prev) => [...prev, newNotification]);
 
-      // Auto remove after 5 seconds with cleanup
-      const timeoutId = setTimeout(() => {
-        setNotifications((prev) => prev.filter((n) => n.id !== id));
-        timeoutsRef.current.delete(id);
-      }, 5000);
+    // Auto remove after 5 seconds with cleanup
+    const timeoutId = setTimeout(() => {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      timeoutsRef.current.delete(id);
+    }, 5000);
 
-      timeoutsRef.current.set(id, timeoutId);
+    timeoutsRef.current.set(id, timeoutId);
 
-      return id;
-    },
-    []
-  );
+    return id;
+  }, []);
 
   const removeNotification = useCallback((id: string) => {
     // Clear the timeout if manually removing notification
@@ -44,28 +41,28 @@ export const useNotification = () => {
     (message: string) => {
       return addNotification("success", message);
     },
-    [addNotification]
+    [addNotification],
   );
 
   const showError = useCallback(
     (message: string) => {
       return addNotification("error", message);
     },
-    [addNotification]
+    [addNotification],
   );
 
   const showWarning = useCallback(
     (message: string) => {
       return addNotification("warning", message);
     },
-    [addNotification]
+    [addNotification],
   );
 
   const showInfo = useCallback(
     (message: string) => {
       return addNotification("info", message);
     },
-    [addNotification]
+    [addNotification],
   );
 
   // Cleanup all timeouts on unmount

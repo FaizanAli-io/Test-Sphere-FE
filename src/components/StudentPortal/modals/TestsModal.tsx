@@ -36,13 +36,9 @@ export default function TestsModal({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">
-                {testsForClass
-                  ? `Class #${testsForClass} Tests`
-                  : "Available Tests"}
+                {testsForClass ? `Class #${testsForClass} Tests` : "Available Tests"}
               </h2>
-              <p className="text-orange-100 mt-1">
-                Choose a test to take or view results
-              </p>
+              <p className="text-orange-100 mt-1">Choose a test to take or view results</p>
             </div>
             <button
               onClick={onClose}
@@ -68,7 +64,7 @@ export default function TestsModal({
           ) : (
             (() => {
               const filteredTests = tests.filter((t) =>
-                t.status ? t.status.toUpperCase() !== "DRAFT" : true
+                t.status ? t.status.toUpperCase() !== "DRAFT" : true,
               );
               if (filteredTests.length === 0) {
                 return (
@@ -97,9 +93,7 @@ export default function TestsModal({
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <h3 className="text-lg font-bold text-gray-900">
-                            {test.title}
-                          </h3>
+                          <h3 className="text-lg font-bold text-gray-900">{test.title}</h3>
                           {test.status && (
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(test.status)}`}
@@ -123,9 +117,7 @@ export default function TestsModal({
                             }
                             return (
                               <button
-                                onClick={() =>
-                                  router.push(`/give-test/${test.id}`)
-                                }
+                                onClick={() => router.push(`/give-test/${test.id}`)}
                                 className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
                               >
                                 Take Test
@@ -136,9 +128,7 @@ export default function TestsModal({
                       </div>
 
                       {test.className && (
-                        <p className="text-sm text-blue-600 font-medium">
-                          Class: {test.className}
-                        </p>
+                        <p className="text-sm text-blue-600 font-medium">Class: {test.className}</p>
                       )}
 
                       {test.description && (
@@ -150,19 +140,13 @@ export default function TestsModal({
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                         {typeof test.duration === "number" && (
                           <div className="bg-white/70 rounded-lg p-3">
-                            <span className="font-bold text-gray-700">
-                              Duration:
-                            </span>
-                            <div className="text-gray-900">
-                              {test.duration} min
-                            </div>
+                            <span className="font-bold text-gray-700">Duration:</span>
+                            <div className="text-gray-900">{test.duration} min</div>
                           </div>
                         )}
                         {test.startAt && (
                           <div className="bg-white/70 rounded-lg p-3">
-                            <span className="font-bold text-gray-700">
-                              Starts:
-                            </span>
+                            <span className="font-bold text-gray-700">Starts:</span>
                             <div className="text-gray-900">
                               {new Date(test.startAt).toLocaleString()}
                             </div>
@@ -170,9 +154,7 @@ export default function TestsModal({
                         )}
                         {test.endAt && (
                           <div className="bg-white/70 rounded-lg p-3">
-                            <span className="font-bold text-gray-700">
-                              Finishes:
-                            </span>
+                            <span className="font-bold text-gray-700">Finishes:</span>
                             <div className="text-gray-900">
                               {new Date(test.endAt).toLocaleString()}
                             </div>

@@ -22,7 +22,7 @@ export default function GoogleSignIn({
   setError,
   setSuccess,
   setLoading,
-  router
+  router,
 }: GoogleSignInProps) {
   const [showModal, setShowModal] = useState(false);
   const [pendingUser, setPendingUser] = useState<{
@@ -32,10 +32,7 @@ export default function GoogleSignIn({
     photoURL: string | null;
   } | null>(null);
 
-  const completeSignup = async (details: {
-    role: "STUDENT" | "TEACHER";
-    cnic: string;
-  }) => {
+  const completeSignup = async (details: { role: "STUDENT" | "TEACHER"; cnic: string }) => {
     if (!pendingUser) return;
     try {
       setLoading(true);
@@ -43,16 +40,15 @@ export default function GoogleSignIn({
       const signupPayload = {
         email: pendingUser.email,
         firebaseId: pendingUser.uid,
-        name:
-          pendingUser.displayName || pendingUser.email?.split("@")[0] || "User",
+        name: pendingUser.displayName || pendingUser.email?.split("@")[0] || "User",
         role: details.role,
         cnic: details.cnic,
-        profileImage: pendingUser.photoURL || undefined
+        profileImage: pendingUser.photoURL || undefined,
       };
 
       const res = await api("/auth/signup", {
         method: "POST",
-        body: JSON.stringify(signupPayload)
+        body: JSON.stringify(signupPayload),
       });
 
       const data: {
@@ -95,7 +91,7 @@ export default function GoogleSignIn({
 
     try {
       googleProvider.setCustomParameters({
-        prompt: "select_account"
+        prompt: "select_account",
       });
 
       const result = await signInWithPopup(auth, googleProvider);
@@ -106,7 +102,7 @@ export default function GoogleSignIn({
           email: user.email,
           uid: user.uid,
           displayName: user.displayName,
-          photoURL: user.photoURL
+          photoURL: user.photoURL,
         });
         setShowModal(true);
         setLoading(false);
@@ -115,12 +111,12 @@ export default function GoogleSignIn({
 
       const loginPayload = {
         email: user.email,
-        firebaseId: user.uid
+        firebaseId: user.uid,
       };
 
       const res = await api("/auth/login", {
         method: "POST",
-        body: JSON.stringify(loginPayload)
+        body: JSON.stringify(loginPayload),
       });
 
       const data: {
@@ -170,12 +166,7 @@ export default function GoogleSignIn({
         onClick={handleGoogleSignIn}
         className="w-full py-3 px-4 border border-gray-300 rounded-xl text-gray-700 font-medium flex items-center justify-center space-x-2 hover:bg-gray-50 transition duration-200"
       >
-        <svg
-          className="w-5 h-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M23.766 12.2764C23.766 11.4607 23.6999 10.6406 23.5588 9.83807H12.24V14.4591H18.7217C18.4528 15.9494 17.5885 17.2678 16.323 18.1056V21.1039H20.19C22.4608 19.0139 23.766 15.9274 23.766 12.2764Z"
             fill="#4285F4"
@@ -193,9 +184,7 @@ export default function GoogleSignIn({
             fill="#EA4335"
           />
         </svg>
-        <span>
-          {mode === "login" ? "Login with Google" : "Sign up with Google"}
-        </span>
+        <span>{mode === "login" ? "Login with Google" : "Sign up with Google"}</span>
       </button>
 
       <GoogleSignupModal

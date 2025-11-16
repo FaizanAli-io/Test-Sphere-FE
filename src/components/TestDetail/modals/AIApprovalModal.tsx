@@ -29,7 +29,7 @@ export default function AIApprovalModal({
 
   const handleToggleSelection = (index: number) => {
     setSelectedQuestions((prev) =>
-      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
     );
   };
 
@@ -56,9 +56,7 @@ export default function AIApprovalModal({
           </h3>
           <div className="mt-3 flex gap-3 items-center">
             <button
-              onClick={() =>
-                setSelectedQuestions(pendingAIQuestions.map((_, i) => i))
-              }
+              onClick={() => setSelectedQuestions(pendingAIQuestions.map((_, i) => i))}
               disabled={isDisabled}
               className="px-3 py-1.5 bg-white/20 text-white text-sm rounded-lg hover:bg-white/30 transition-all disabled:opacity-40"
             >
@@ -71,9 +69,7 @@ export default function AIApprovalModal({
             >
               Deselect All
             </button>
-            <span className="text-white/80 text-sm">
-              {selectedQuestions.length} selected
-            </span>
+            <span className="text-white/80 text-sm">{selectedQuestions.length} selected</span>
           </div>
         </div>
 
@@ -96,9 +92,7 @@ export default function AIApprovalModal({
                   onChange={() => handleToggleSelection(index)}
                   className="w-5 h-5 text-blue-600"
                 />
-                <span className="text-sm font-medium">
-                  Max Marks: {q.maxMarks}
-                </span>
+                <span className="text-sm font-medium">Max Marks: {q.maxMarks}</span>
               </div>
               <h4 className="text-lg font-semibold mt-3">{q.text}</h4>
               {q.type === "MULTIPLE_CHOICE" &&
@@ -107,8 +101,7 @@ export default function AIApprovalModal({
                     key={i}
                     className={`p-3 mt-2 rounded-lg border ${q.correctAnswer === i ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"}`}
                   >
-                    {String.fromCharCode(65 + i)}. {opt}{" "}
-                    {q.correctAnswer === i && "✓"}
+                    {String.fromCharCode(65 + i)}. {opt} {q.correctAnswer === i && "✓"}
                   </div>
                 ))}
 
@@ -121,10 +114,7 @@ export default function AIApprovalModal({
                         : "bg-gray-50 border-gray-200 text-gray-900"
                     }`}
                   >
-                    True{" "}
-                    {q.correctAnswer === 1 && (
-                      <span className="font-bold">✓</span>
-                    )}
+                    True {q.correctAnswer === 1 && <span className="font-bold">✓</span>}
                   </div>
                   <div
                     className={`p-3 rounded-lg border ${
@@ -133,10 +123,7 @@ export default function AIApprovalModal({
                         : "bg-gray-50 border-gray-200 text-gray-900"
                     }`}
                   >
-                    False{" "}
-                    {q.correctAnswer === 0 && (
-                      <span className="font-bold">✓</span>
-                    )}
+                    False {q.correctAnswer === 0 && <span className="font-bold">✓</span>}
                   </div>
                 </div>
               )}
@@ -152,11 +139,7 @@ export default function AIApprovalModal({
           <div className="flex gap-3 pt-4 border-t border-gray-200">
             <button
               disabled={isDisabled || selectedQuestions.length === 0}
-              onClick={() =>
-                handleBulkAction(
-                  selectedQuestions.map((i) => pendingAIQuestions[i])
-                )
-              }
+              onClick={() => handleBulkAction(selectedQuestions.map((i) => pendingAIQuestions[i]))}
               className="flex-1 py-4 bg-blue-600 text-white font-bold rounded-xl disabled:opacity-50"
             >
               Add Selected ({selectedQuestions.length})

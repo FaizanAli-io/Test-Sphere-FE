@@ -56,22 +56,17 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
   const filteredLogs = useMemo(() => {
     if (!logs) return [];
 
-    const filtered =
-      filterType === "ALL"
-        ? logs
-        : logs.filter((log) => log.logType === filterType);
+    const filtered = filterType === "ALL" ? logs : logs.filter((log) => log.logType === filterType);
 
     const allMeta = filtered.flatMap((log) =>
       log.meta.map((meta) => ({
         ...meta,
         logId: log.id,
         logType: log.logType,
-      }))
+      })),
     );
 
-    return allMeta.sort(
-      (a, b) => new Date(a.takenAt).getTime() - new Date(b.takenAt).getTime()
-    );
+    return allMeta.sort((a, b) => new Date(a.takenAt).getTime() - new Date(b.takenAt).getTime());
   }, [logs, filterType]);
 
   // Count logs by type
@@ -89,7 +84,7 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
         acc.total += metaCount;
         return acc;
       },
-      { screenshot: 0, webcam: 0, total: 0 }
+      { screenshot: 0, webcam: 0, total: 0 },
     );
 
     return counts;
@@ -186,9 +181,7 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
           {!loading && logs && logs.length === 0 && (
             <div className="flex justify-center items-center min-h-[200px]">
               <div className="text-center">
-                <p className="text-gray-500 text-lg">
-                  No proctoring logs found
-                </p>
+                <p className="text-gray-500 text-lg">No proctoring logs found</p>
                 <p className="text-gray-400 text-sm mt-2">
                   Logs will appear here once the student starts the test
                 </p>
@@ -202,9 +195,7 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
                 <p className="text-gray-500 text-lg">
                   No {filterType.toLowerCase().replace("_", " ")} found
                 </p>
-                <p className="text-gray-400 text-sm mt-2">
-                  Try selecting a different filter
-                </p>
+                <p className="text-gray-400 text-sm mt-2">Try selecting a different filter</p>
               </div>
             </div>
           )}
@@ -232,9 +223,7 @@ const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
                         ) : (
                           <Camera size={12} />
                         )}
-                        <span>
-                          {meta.logType === "SCREENSHOT" ? "Screen" : "Webcam"}
-                        </span>
+                        <span>{meta.logType === "SCREENSHOT" ? "Screen" : "Webcam"}</span>
                       </div>
                     </div>
 

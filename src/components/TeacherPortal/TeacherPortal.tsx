@@ -14,21 +14,9 @@ export default function TeacherPortal(): ReactElement {
   const notifications = useNotifications();
 
   // Hooks
-  const {
-    classes,
-    loading,
-    error,
-    createClass,
-    updateClass,
-    deleteClass,
-    fetchClasses
-  } = useTeacherPortal();
-  const {
-    kickStudent,
-    handleStudentRequest,
-    fetchClassDetails,
-    selectedClass
-  } = useClassDetails();
+  const { classes, loading, error, createClass, updateClass, deleteClass, fetchClasses } =
+    useTeacherPortal();
+  const { kickStudent, handleStudentRequest, fetchClassDetails, selectedClass } = useClassDetails();
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -45,10 +33,7 @@ export default function TeacherPortal(): ReactElement {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Event handlers
-  const handleCreateClass = async (newClass: {
-    name: string;
-    description: string;
-  }) => {
+  const handleCreateClass = async (newClass: { name: string; description: string }) => {
     const success = await createClass(newClass);
     if (success) {
       setShowCreateModal(false);
@@ -56,9 +41,7 @@ export default function TeacherPortal(): ReactElement {
     return success;
   };
 
-  const handleEditClass = async (
-    updatedClass: Class | { name: string; description: string }
-  ) => {
+  const handleEditClass = async (updatedClass: Class | { name: string; description: string }) => {
     const success = await updateClass(updatedClass as Class);
     if (success) {
       setShowEditModal(false);
@@ -116,18 +99,15 @@ export default function TeacherPortal(): ReactElement {
     id: cls.id as string,
     testCount: cls.testCount ?? cls.tests?.length ?? 0,
     // Use approved student count for display
-    studentCount:
-      cls.studentCount ??
-      cls.students?.filter((s) => s.approved === true).length ??
-      0,
+    studentCount: cls.studentCount ?? cls.students?.filter((s) => s.approved === true).length ?? 0,
     // Convert ClassStudent[] to simple student array for BaseClass (only approved students)
     students: cls.students
       ?.filter((s) => s.approved === true)
       .map((classStudent) => ({
         id: classStudent.student.id,
         name: classStudent.student.name,
-        email: classStudent.student.email
-      }))
+        email: classStudent.student.email,
+      })),
   }));
 
   // Quick actions configuration
@@ -135,21 +115,19 @@ export default function TeacherPortal(): ReactElement {
     {
       icon: "🏫",
       title: "Create New Class",
-      description:
-        "Set up a new class and generate a unique join code for your students",
+      description: "Set up a new class and generate a unique join code for your students",
       actionText: "Get Started",
       colorScheme: "indigo",
-      onClick: () => setShowCreateModal(true)
+      onClick: () => setShowCreateModal(true),
     },
     {
       icon: "📝",
       title: "Create a Test",
-      description:
-        "Design comprehensive assessments and schedule them for your classes",
+      description: "Design comprehensive assessments and schedule them for your classes",
       actionText: "Get Started",
       colorScheme: "orange",
-      onClick: () => setShowCreateTestModal(true)
-    }
+      onClick: () => setShowCreateTestModal(true),
+    },
   ];
 
   // Class card actions configuration
@@ -160,7 +138,7 @@ export default function TeacherPortal(): ReactElement {
         setEditClass(classData as Class);
         setShowEditModal(true);
       },
-      colorScheme: "green"
+      colorScheme: "green",
     },
     {
       label: "Requests",
@@ -174,10 +152,9 @@ export default function TeacherPortal(): ReactElement {
       colorScheme: "blue",
       badge: (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
-        const pendingCount =
-          fullClass?.students?.filter((s) => !s.approved).length ?? 0;
+        const pendingCount = fullClass?.students?.filter((s) => !s.approved).length ?? 0;
         return pendingCount > 0 ? pendingCount : undefined;
-      }
+      },
     },
     {
       label: "Delete",
@@ -185,8 +162,8 @@ export default function TeacherPortal(): ReactElement {
         setDeleteConfirm(classData.id as string);
         setShowDeleteConfirm(true);
       },
-      colorScheme: "red"
-    }
+      colorScheme: "red",
+    },
   ];
 
   return (

@@ -20,8 +20,7 @@ export default function RequestsModal({
 
   // Filter only pending requests (students who are not approved)
   const pendingStudents =
-    selectedClass.students?.filter((classStudent) => !classStudent.approved) ||
-    [];
+    selectedClass.students?.filter((classStudent) => !classStudent.approved) || [];
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
@@ -31,9 +30,7 @@ export default function RequestsModal({
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-3xl">
             <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-orange-600 mb-4"></div>
-              <p className="text-lg font-semibold text-gray-900">
-                Processing request...
-              </p>
+              <p className="text-lg font-semibold text-gray-900">Processing request...</p>
               <p className="text-sm text-gray-600 mt-2">Please wait</p>
             </div>
           </div>
@@ -45,9 +42,7 @@ export default function RequestsModal({
               📋
             </div>
             <div>
-              <h3 className="text-3xl font-bold text-gray-900">
-                {selectedClass.name} - Requests
-              </h3>
+              <h3 className="text-3xl font-bold text-gray-900">{selectedClass.name} - Requests</h3>
               <p className="text-gray-600 mt-1">
                 {pendingStudents.length} pending{" "}
                 {pendingStudents.length === 1 ? "request" : "requests"}
@@ -74,15 +69,10 @@ export default function RequestsModal({
                     {index + 1}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 text-lg">
-                      {classStudent.student.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {classStudent.student.email}
-                    </p>
+                    <p className="font-bold text-gray-900 text-lg">{classStudent.student.name}</p>
+                    <p className="text-sm text-gray-600">{classStudent.student.email}</p>
                     <p className="text-xs text-orange-600 font-medium">
-                      Requested:{" "}
-                      {new Date(classStudent.joinedAt).toLocaleDateString()}
+                      Requested: {new Date(classStudent.joinedAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -124,9 +114,7 @@ export default function RequestsModal({
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
               ✅
             </div>
-            <p className="text-gray-600 font-semibold text-lg">
-              No pending requests
-            </p>
+            <p className="text-gray-600 font-semibold text-lg">No pending requests</p>
             <p className="text-gray-500 text-sm mt-2">
               All students have been approved or no requests yet
             </p>

@@ -16,18 +16,14 @@ export const metadata: Metadata = {
   description: "Professional education platform",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
         <NotificationProvider>
           <AuthGuard>
             <Header />
-            <main className="pt-20">{children}</main>
+            <main>{children}</main>
           </AuthGuard>
         </NotificationProvider>
       </body>

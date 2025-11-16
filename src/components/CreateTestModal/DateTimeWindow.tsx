@@ -8,7 +8,7 @@ interface DateTimeWindowProps {
   dateError: string | null;
   onChange: <K extends "startAt" | "endAt" | "duration">(
     key: K,
-    value: K extends "duration" ? number : string | number
+    value: K extends "duration" ? number : string | number,
   ) => void;
 }
 
@@ -17,7 +17,7 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
   endAt,
   duration,
   dateError,
-  onChange
+  onChange,
 }) => {
   const startDatePart = startAt ? startAt.split("T")[0] : "";
   const startTimePart = startAt ? startAt.split("T")[1] : "";
@@ -29,8 +29,7 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
       <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
         <span className="text-lg">💡</span>
         <span className="font-medium">
-          Set when the test starts and ends — students can only take the test
-          during this window
+          Set when the test starts and ends — students can only take the test during this window
         </span>
       </div>
 
@@ -50,10 +49,7 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
               value={startDatePart}
               onChange={(e) => {
                 const time = startTimePart || "09:00";
-                onChange(
-                  "startAt",
-                  e.target.value ? `${e.target.value}T${time}` : ""
-                );
+                onChange("startAt", e.target.value ? `${e.target.value}T${time}` : "");
               }}
               className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
                 dateError
@@ -100,10 +96,7 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
               value={endDatePart}
               onChange={(e) => {
                 const time = endTimePart || "10:00";
-                onChange(
-                  "endAt",
-                  e.target.value ? `${e.target.value}T${time}` : ""
-                );
+                onChange("endAt", e.target.value ? `${e.target.value}T${time}` : "");
               }}
               className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
                 dateError
@@ -145,10 +138,7 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
           <span className="text-2xl">✅</span>
           <span>
             Perfect! Test window:{" "}
-            {Math.round(
-              (new Date(endAt).getTime() - new Date(startAt).getTime()) /
-                (1000 * 60)
-            )}{" "}
+            {Math.round((new Date(endAt).getTime() - new Date(startAt).getTime()) / (1000 * 60))}{" "}
             minutes (Duration needed: {duration} minutes)
           </span>
         </div>

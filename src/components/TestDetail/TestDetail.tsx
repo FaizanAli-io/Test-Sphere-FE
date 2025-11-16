@@ -14,13 +14,9 @@ import {
   AddQuestionModal,
   SubmissionsModal,
   EditQuestionModal,
-  ProctoringLogsModal
+  ProctoringLogsModal,
 } from "./modals";
-import {
-  HeaderSection,
-  QuestionsSection,
-  SubmissionsSection
-} from "./components";
+import { HeaderSection, QuestionsSection, SubmissionsSection } from "./components";
 import { Question, Test, QuestionUpdatePayload } from "./types";
 import { useQuestions, useTestDetail, useAIQuestions } from "./hooks";
 
@@ -45,26 +41,14 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
   const testIdOrNull = redirecting ? undefined : testId;
 
-  const testDetailHook = useTestDetail(
-    testIdOrNull,
-    notifications,
-    confirmation.confirm
-  );
-  const questionsHook = useQuestions(
-    testIdOrNull,
-    notifications,
-    confirmation.confirm
-  );
-  const submissionsHook = useSubmissions(
-    testIdOrNull,
-    "teacher",
-    notifications
-  );
+  const testDetailHook = useTestDetail(testIdOrNull, notifications, confirmation.confirm);
+  const questionsHook = useQuestions(testIdOrNull, notifications, confirmation.confirm);
+  const submissionsHook = useSubmissions(testIdOrNull, "teacher", notifications);
   const aiQuestionsHook = useAIQuestions(
     testIdOrNull,
     questionsHook.refreshQuestions,
     notifications,
-    () => setShowAddQuestionModal(false)
+    () => setShowAddQuestionModal(false),
   );
 
   const test = testDetailHook.testData;
@@ -74,9 +58,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const loadingSubmissions = submissionsHook.submissionsLoading;
   const [submissionsState, setSubmissionsState] = useState<Submission[]>([]);
   const submissions: Submission[] =
-    submissionsState.length > 0
-      ? submissionsState
-      : submissionsHook.submissions;
+    submissionsState.length > 0 ? submissionsState : submissionsHook.submissions;
 
   const handleEditTest = () => {
     setShowEditTestModal(true);
@@ -130,7 +112,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     const updates: QuestionUpdatePayload = {
       text: question.text,
       type: question.type,
-      maxMarks: question.maxMarks
+      maxMarks: question.maxMarks,
     };
 
     if (question.type === "MULTIPLE_CHOICE" && question.options) {
@@ -179,7 +161,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         "This will permanently remove the student's submission. This action cannot be undone.",
       confirmText: "Delete",
       cancelText: "Cancel",
-      type: "danger"
+      type: "danger",
     });
 
     if (!confirmed) return;
@@ -227,9 +209,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">
-              {redirecting ? "Redirecting..." : "Loading..."}
-            </p>
+            <p className="mt-4 text-gray-600">{redirecting ? "Redirecting..." : "Loading..."}</p>
           </div>
         </div>
       </div>
@@ -325,22 +305,18 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         preSelectedSubmissionId={submissionsHook.selectedSubmission?.id}
         onUpdateSubmissionStatus={(id: number, newStatus) => {
           submissionsHook.setSubmissions((prev) =>
-            prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
+            prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s)),
           );
           setSubmissionsState((prev) =>
-            prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s))
+            prev.map((s) => (s.id === id ? { ...s, status: newStatus } : s)),
           );
         }}
         onUpdateSubmissionScores={(id: number, updatedAnswers) => {
           submissionsHook.setSubmissions((prev) =>
-            prev.map((s) =>
-              s.id === id ? { ...s, answers: updatedAnswers } : s
-            )
+            prev.map((s) => (s.id === id ? { ...s, answers: updatedAnswers } : s)),
           );
           setSubmissionsState((prev) =>
-            prev.map((s) =>
-              s.id === id ? { ...s, answers: updatedAnswers } : s
-            )
+            prev.map((s) => (s.id === id ? { ...s, answers: updatedAnswers } : s)),
           );
         }}
         topExtraContent={

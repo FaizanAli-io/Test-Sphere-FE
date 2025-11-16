@@ -9,7 +9,7 @@ type Props = {
 export default function GradingActions({
   gradingScores,
   handleBulkUpdateScores,
-  loadingBulkUpdate
+  loadingBulkUpdate,
 }: Props) {
   const pending = Object.keys(gradingScores).length;
   if (pending === 0) return null;
@@ -18,12 +18,8 @@ export default function GradingActions({
     <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-2xl p-6 border border-green-200">
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="text-lg font-bold text-gray-900 mb-2">
-            📝 Update Scores
-          </h4>
-          <p className="text-gray-700">
-            You have {pending} pending score update(s).
-          </p>
+          <h4 className="text-lg font-bold text-gray-900 mb-2">📝 Update Scores</h4>
+          <p className="text-gray-700">You have {pending} pending score update(s).</p>
         </div>
         <button
           onClick={handleBulkUpdateScores}

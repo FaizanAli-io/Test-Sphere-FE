@@ -12,11 +12,7 @@ import {
 import { TestsModal, JoinClassModal, ClassDetailsModal } from "./modals";
 import { ClassData } from "./types";
 import { Submission } from "../Submissions/types";
-import {
-  useSubmissions,
-  SubmissionDetail,
-  SubmissionsList,
-} from "../Submissions";
+import { useSubmissions, SubmissionDetail, SubmissionsList } from "../Submissions";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../shared";
 
 export default function StudentPortal() {
@@ -45,14 +41,8 @@ export default function StudentPortal() {
     setError: setTestsError,
   } = useTestsForClass();
 
-  const {
-    allTests,
-    allTestsLoading,
-    allTestsError,
-    fetchAllTests,
-    setAllTests,
-    setAllTestsError,
-  } = useAllTests();
+  const { allTests, allTestsLoading, allTestsError, fetchAllTests, setAllTests, setAllTestsError } =
+    useAllTests();
 
   const {
     success,
@@ -71,7 +61,7 @@ export default function StudentPortal() {
       showWarning: showError,
       showInfo: showSuccess,
     }),
-    [showSuccess, showError]
+    [showSuccess, showError],
   );
 
   const {
@@ -90,11 +80,8 @@ export default function StudentPortal() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showTestsModal, setShowTestsModal] = useState(false);
   const [testsForClass, setTestsForClass] = useState<number | null>(null);
-  const [showSubmissionsListModal, setShowSubmissionsListModal] =
-    useState(false);
-  const [submissionsForClass, setSubmissionsForClass] = useState<number | null>(
-    null
-  );
+  const [showSubmissionsListModal, setShowSubmissionsListModal] = useState(false);
+  const [submissionsForClass, setSubmissionsForClass] = useState<number | null>(null);
 
   const handleJoinClass = async () => {
     if (!classCode.trim()) {
@@ -114,18 +101,14 @@ export default function StudentPortal() {
         fetchClasses();
       }, 2000);
     } catch (err: unknown) {
-      showError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      showError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setJoining(false);
     }
   };
 
   const handleLeaveClass = async (id: number, name: string) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to leave "${name}"?`
-    );
+    const confirmed = window.confirm(`Are you sure you want to leave "${name}"?`);
     if (!confirmed) return;
 
     clearError();
@@ -133,9 +116,7 @@ export default function StudentPortal() {
       await leaveClass(id);
       showSuccess("Successfully left the class");
     } catch (err: unknown) {
-      showError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      showError(err instanceof Error ? err.message : "An unexpected error occurred");
     }
   };
 
@@ -149,9 +130,7 @@ export default function StudentPortal() {
     try {
       await fetchTestsForClass(cls.id);
     } catch (err: unknown) {
-      showError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      showError(err instanceof Error ? err.message : "An unexpected error occurred");
     }
   };
 
@@ -184,9 +163,7 @@ export default function StudentPortal() {
       }
       setShowDetailsModal(true);
     } catch (err) {
-      showError(
-        err instanceof Error ? err.message : "Failed to load class details"
-      );
+      showError(err instanceof Error ? err.message : "Failed to load class details");
     }
   };
 
@@ -200,11 +177,7 @@ export default function StudentPortal() {
   }));
 
   const displayError =
-    notificationError ||
-    classesError ||
-    detailsError ||
-    testsError ||
-    allTestsError;
+    notificationError || classesError || detailsError || testsError || allTestsError;
 
   const quickActions: QuickAction[] = [
     {
@@ -242,8 +215,7 @@ export default function StudentPortal() {
     },
     {
       label: "Leave",
-      onClick: (classData) =>
-        handleLeaveClass(Number(classData.id), classData.name),
+      onClick: (classData) => handleLeaveClass(Number(classData.id), classData.name),
       colorScheme: "red",
     },
   ];

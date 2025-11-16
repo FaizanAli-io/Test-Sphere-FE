@@ -6,7 +6,7 @@ import {
   getSubmissionStatus,
   getSubmissionStatusColor,
   calculateTotalPossibleMarks,
-  calculateCurrentTotalMarks
+  calculateCurrentTotalMarks,
 } from "./utils";
 
 interface SubmissionsListProps {
@@ -26,7 +26,7 @@ export default function SubmissionsList({
   viewContext = "teacher",
   loading = false,
   error = null,
-  classFilter = null
+  classFilter = null,
 }: SubmissionsListProps) {
   const isStudentView = viewContext === "student";
 
@@ -65,9 +65,7 @@ export default function SubmissionsList({
           {loading && (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">
-                Loading {isStudentView ? "your" : ""} submissions...
-              </p>
+              <p className="text-gray-600">Loading {isStudentView ? "your" : ""} submissions...</p>
             </div>
           )}
 
@@ -86,9 +84,7 @@ export default function SubmissionsList({
           {!loading && !error && filteredSubmissions.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📝</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No Submissions Yet
-              </h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Submissions Yet</h3>
               <p className="text-gray-600">
                 {isStudentView
                   ? classFilter
@@ -103,17 +99,11 @@ export default function SubmissionsList({
               <div className="space-y-4">
                 {filteredSubmissions.map((submission) => {
                   const status = getSubmissionStatus(submission);
-                  const currentScore = calculateCurrentTotalMarks(
-                    submission.answers
-                  );
-                  const totalPossible = calculateTotalPossibleMarks(
-                    submission.answers
-                  );
+                  const currentScore = calculateCurrentTotalMarks(submission.answers);
+                  const totalPossible = calculateTotalPossibleMarks(submission.answers);
                   const percent =
                     totalPossible > 0
-                      ? Number(
-                          ((currentScore / totalPossible) * 100).toFixed(1)
-                        )
+                      ? Number(((currentScore / totalPossible) * 100).toFixed(1))
                       : null;
 
                   return (
@@ -130,16 +120,11 @@ export default function SubmissionsList({
                               : submission.student?.name ||
                                 submission.user?.name ||
                                 "Unknown Student"}
-                            {!isStudentView &&
-                              (submission.student?.id ||
-                                submission.user?.id) && (
-                                <span className="text-sm font-normal text-gray-600 ml-2">
-                                  (ID:{" "}
-                                  {submission.student?.id ||
-                                    submission.user?.id}
-                                  )
-                                </span>
-                              )}
+                            {!isStudentView && (submission.student?.id || submission.user?.id) && (
+                              <span className="text-sm font-normal text-gray-600 ml-2">
+                                (ID: {submission.student?.id || submission.user?.id})
+                              </span>
+                            )}
                           </h4>
                           <p className="text-gray-600 text-sm">
                             {isStudentView
@@ -150,13 +135,12 @@ export default function SubmissionsList({
                         <div className="text-right">
                           <span
                             className={`px-3 py-1 rounded-full text-sm font-medium ${getSubmissionStatusColor(
-                              status
+                              status,
                             )}`}
                           >
                             {status}
                           </span>
-                          {(submission.gradedAt ||
-                            submission.status === "GRADED") && (
+                          {(submission.gradedAt || submission.status === "GRADED") && (
                             <div className="mt-2 flex items-center gap-2 justify-end">
                               <p className="text-lg font-bold text-gray-900">
                                 {currentScore}/{totalPossible} marks

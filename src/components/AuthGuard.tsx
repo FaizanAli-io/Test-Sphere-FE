@@ -12,19 +12,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const teacherRoutes = useMemo(() => ["/teacher"], []);
   const studentRoutes = useMemo(() => ["/student"], []);
 
-  const matchesRoute = useCallback(
-    (path: string, patterns: string[]): boolean => {
-      return patterns.some((pattern) => {
-        if (pattern.includes("[") && pattern.includes("]")) {
-          const regexPattern = pattern.replace(/\[.*?\]/g, "[^/]+");
-          const regex = new RegExp(`^${regexPattern}$`);
-          return regex.test(path);
-        }
-        return path === pattern || path.startsWith(pattern + "/");
-      });
-    },
-    []
-  );
+  const matchesRoute = useCallback((path: string, patterns: string[]): boolean => {
+    return patterns.some((pattern) => {
+      if (pattern.includes("[") && pattern.includes("]")) {
+        const regexPattern = pattern.replace(/\[.*?\]/g, "[^/]+");
+        const regex = new RegExp(`^${regexPattern}$`);
+        return regex.test(path);
+      }
+      return path === pattern || path.startsWith(pattern + "/");
+    });
+  }, []);
 
   useEffect(() => {
     // Check if we're on the client side before accessing localStorage
@@ -53,22 +50,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
         const userRole = role.toUpperCase();
 
         // Check role-based access
-        if (
-          pathname &&
-          matchesRoute(pathname, studentRoutes) &&
-          userRole !== "STUDENT"
-        ) {
+        if (pathname && matchesRoute(pathname, studentRoutes) && userRole !== "STUDENT") {
           router.replace("/teacher");
           setLoading(false);
           return;
         }
 
         const teacherRoutesWithClass = [...teacherRoutes, "/class/[classId]"];
-        if (
-          pathname &&
-          matchesRoute(pathname, teacherRoutesWithClass) &&
-          userRole !== "TEACHER"
-        ) {
+        if (pathname && matchesRoute(pathname, teacherRoutesWithClass) && userRole !== "TEACHER") {
           router.replace("/student");
           setLoading(false);
           return;
@@ -87,14 +76,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, [
-    pathname,
-    router,
-    publicRoutes,
-    studentRoutes,
-    teacherRoutes,
-    matchesRoute,
-  ]);
+  }, [pathname, router, publicRoutes, studentRoutes, teacherRoutes, matchesRoute]);
 
   if (loading) {
     return (

@@ -248,9 +248,7 @@ export default function OtpVerification({
             <input
               type="text"
               value={otp}
-              onChange={(e) =>
-                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
-              }
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
               placeholder="000000"
               className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-center text-3xl tracking-[0.5em] font-bold bg-gray-50"
               required

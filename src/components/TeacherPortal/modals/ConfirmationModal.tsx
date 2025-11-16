@@ -52,29 +52,20 @@ export default function ConfirmationModal({
           <div className="w-20 h-20 bg-gradient-to-br from-red-100 to-rose-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">{modalConfig.icon}</span>
           </div>
-          <h3 className="text-3xl font-bold text-gray-900 mb-4">
-            {modalConfig.title}
-          </h3>
+          <h3 className="text-3xl font-bold text-gray-900 mb-4">{modalConfig.title}</h3>
 
           {type === "kick" && data?.studentName && (
             <>
-              <p className="text-gray-600 mb-2 text-lg">
-                Are you sure you want to remove
-              </p>
-              <p className="text-indigo-600 font-bold text-xl mb-6">
-                {data.studentName}
-              </p>
+              <p className="text-gray-600 mb-2 text-lg">Are you sure you want to remove</p>
+              <p className="text-indigo-600 font-bold text-xl mb-6">{data.studentName}</p>
               <p className="text-gray-500 text-sm">
-                from this class? They will lose access to all class materials
-                and tests.
+                from this class? They will lose access to all class materials and tests.
               </p>
             </>
           )}
 
           {type === "delete" && (
-            <p className="text-gray-600 mb-8 text-lg leading-relaxed">
-              {modalConfig.message}
-            </p>
+            <p className="text-gray-600 mb-8 text-lg leading-relaxed">{modalConfig.message}</p>
           )}
         </div>
         <div className="flex gap-3 mt-8">

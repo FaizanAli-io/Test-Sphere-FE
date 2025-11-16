@@ -16,7 +16,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
   onCancel,
   requireWebcam = true,
   onToggleRequireWebcam,
-  errors = []
+  errors = [],
 }) => {
   const totalMarks = test.questions.reduce((sum, q) => sum + q.maxMarks, 0);
 
@@ -30,38 +30,26 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
 
           <div className="p-8">
             <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                {test.title}
-              </h2>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                {test.description}
-              </p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">{test.title}</h2>
+              <p className="text-gray-600 text-lg leading-relaxed">{test.description}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border-2 border-blue-200">
                 <div className="text-4xl mb-3">📝</div>
-                <p className="text-sm font-bold text-gray-600 mb-1">
-                  Total Questions
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {test.questions.length}
-                </p>
+                <p className="text-sm font-bold text-gray-600 mb-1">Total Questions</p>
+                <p className="text-3xl font-bold text-gray-900">{test.questions.length}</p>
               </div>
 
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-200">
                 <div className="text-4xl mb-3">⏱️</div>
                 <p className="text-sm font-bold text-gray-600 mb-1">Duration</p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {test.duration} min
-                </p>
+                <p className="text-3xl font-bold text-gray-900">{test.duration} min</p>
               </div>
 
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200">
                 <div className="text-4xl mb-3">🎯</div>
-                <p className="text-sm font-bold text-gray-600 mb-1">
-                  Total Marks
-                </p>
+                <p className="text-sm font-bold text-gray-600 mb-1">Total Marks</p>
                 <p className="text-3xl font-bold text-gray-900">{totalMarks}</p>
               </div>
             </div>
@@ -78,22 +66,15 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-indigo-600 font-bold mt-1">•</span>
-                  <span>
-                    You can navigate between questions using the question
-                    palette
-                  </span>
+                  <span>You can navigate between questions using the question palette</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-indigo-600 font-bold mt-1">•</span>
-                  <span>
-                    Your answers are automatically saved as you progress
-                  </span>
+                  <span>Your answers are automatically saved as you progress</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-indigo-600 font-bold mt-1">•</span>
-                  <span>
-                    The test will auto-submit when the timer reaches zero
-                  </span>
+                  <span>The test will auto-submit when the timer reaches zero</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-indigo-600 font-bold mt-1">•</span>
@@ -116,8 +97,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
-                    You must share your{" "}
-                    <span className="font-semibold">entire screen</span> when
+                    You must share your <span className="font-semibold">entire screen</span> when
                     prompted. Window or tab sharing is not allowed.
                   </span>
                 </li>
@@ -125,31 +105,30 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
                     The test will automatically enter{" "}
-                    <span className="font-semibold">fullscreen mode</span> once
-                    you start. Exiting fullscreen will be recorded as a
-                    violation.
+                    <span className="font-semibold">fullscreen mode</span> once you start. Exiting
+                    fullscreen will be recorded as a violation.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
-                    Repeated fullscreen violations may result in automatic test
-                    submission and your teacher will be notified.
+                    Repeated fullscreen violations may result in automatic test submission and your
+                    teacher will be notified.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
                     If enabled, you must also{" "}
-                    <span className="font-semibold">allow webcam access</span>{" "}
-                    before the test can begin.
+                    <span className="font-semibold">allow webcam access</span> before the test can
+                    begin.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
-                    If you deny permissions, you will be asked again and will
-                    not be able to start the test until granted.
+                    If you deny permissions, you will be asked again and will not be able to start
+                    the test until granted.
                   </span>
                 </li>
               </ul>
@@ -180,10 +159,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                   checked={requireWebcam}
                   onChange={(e) => onToggleRequireWebcam?.(e.target.checked)}
                 />
-                <label
-                  htmlFor="require-webcam"
-                  className="text-gray-800 font-medium"
-                >
+                <label htmlFor="require-webcam" className="text-gray-800 font-medium">
                   Require webcam monitoring
                 </label>
               </div>

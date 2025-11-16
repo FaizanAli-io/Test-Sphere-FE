@@ -16,7 +16,7 @@ interface UserProfile {
 
 export function useProfileEditor(
   userProfile: UserProfile | null,
-  onSaved: (updated: UserProfile) => void
+  onSaved: (updated: UserProfile) => void,
 ) {
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);

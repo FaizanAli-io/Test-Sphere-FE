@@ -54,8 +54,7 @@ export default function Header() {
 
   useEffect(() => {
     // initial auth check
-    const token =
-      typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
     const hasToken = !!token;
     setIsAuth(hasToken);
 
@@ -69,8 +68,7 @@ export default function Header() {
     }
 
     const onAuthChange = () => {
-      const t =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const t = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const authed = !!t;
       setIsAuth(authed);
 
@@ -165,9 +163,7 @@ export default function Header() {
               title="Logout"
             >
               <LogOut className="w-4 h-4 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="text-sm font-medium hidden sm:inline">
-                Logout
-              </span>
+              <span className="text-sm font-medium hidden sm:inline">Logout</span>
             </button>
 
             {/* Profile button */}
@@ -198,9 +194,7 @@ export default function Header() {
                       if (target.src === user?.profileImage) {
                         // Use state-based approach instead of DOM manipulation
                         // This will trigger a re-render with the fallback div
-                        setUser((prev) =>
-                          prev ? { ...prev, profileImage: undefined } : prev
-                        );
+                        setUser((prev) => (prev ? { ...prev, profileImage: undefined } : prev));
                       }
                     }}
                   />

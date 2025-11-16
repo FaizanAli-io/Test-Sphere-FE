@@ -16,8 +16,7 @@ export default function EditQuestionModal({
   onUpdate,
   loadingQuestions,
 }: EditQuestionModalProps) {
-  const [localEditingQuestion, setLocalEditingQuestion] =
-    useState<Question | null>(null);
+  const [localEditingQuestion, setLocalEditingQuestion] = useState<Question | null>(null);
 
   useEffect(() => {
     setLocalEditingQuestion(editingQuestion);
@@ -37,8 +36,7 @@ export default function EditQuestionModal({
     onClose();
   };
 
-  if (!showEditQuestionModal || !editingQuestion || !localEditingQuestion)
-    return null;
+  if (!showEditQuestionModal || !editingQuestion || !localEditingQuestion) return null;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
@@ -48,9 +46,7 @@ export default function EditQuestionModal({
         </div>
         <div className="p-8 space-y-6">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Question Text *
-            </label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Question Text *</label>
             <textarea
               value={localEditingQuestion.text}
               onChange={(e) =>
@@ -66,9 +62,7 @@ export default function EditQuestionModal({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Question Type
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Question Type</label>
               <select
                 value={localEditingQuestion.type}
                 disabled
@@ -81,9 +75,7 @@ export default function EditQuestionModal({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Maximum Marks *
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Maximum Marks *</label>
               <input
                 type="number"
                 min="1"
@@ -119,9 +111,7 @@ export default function EditQuestionModal({
 
           {localEditingQuestion.type === "MULTIPLE_CHOICE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">
-                Answer Options
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options</label>
               <div className="space-y-3">
                 {localEditingQuestion.options?.map((option, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -141,9 +131,7 @@ export default function EditQuestionModal({
                       type="text"
                       value={option}
                       onChange={(e) => {
-                        const newOptions = [
-                          ...(localEditingQuestion.options || []),
-                        ];
+                        const newOptions = [...(localEditingQuestion.options || [])];
                         newOptions[i] = e.target.value;
                         setLocalEditingQuestion({
                           ...localEditingQuestion,
@@ -160,9 +148,7 @@ export default function EditQuestionModal({
 
           {localEditingQuestion.type === "TRUE_FALSE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">
-                Correct Answer
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer</label>
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input

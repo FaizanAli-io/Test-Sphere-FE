@@ -41,9 +41,7 @@ export default function BasePortal({
       ? "Start your teaching journey by creating your first class"
       : "Join your first class using a code provided by your teacher",
     emptyStateIcon: isTeacher ? "🏫" : "📚",
-    emptyStateActionLabel: isTeacher
-      ? "Create Your First Class"
-      : "Join Your First Class",
+    emptyStateActionLabel: isTeacher ? "Create Your First Class" : "Join Your First Class",
   };
 
   return (
@@ -57,9 +55,7 @@ export default function BasePortal({
           <h1 className="text-5xl font-bold text-gray-900 mb-3 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-600">
             {config.title}
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {config.subtitle}
-          </p>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">{config.subtitle}</p>
         </div>
 
         {/* Success Message */}
@@ -95,9 +91,7 @@ export default function BasePortal({
         <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                {config.classListTitle}
-              </h3>
+              <h3 className="text-3xl font-bold text-gray-900 mb-2">{config.classListTitle}</h3>
               <p className="text-gray-600">{config.classListSubtitle}</p>
             </div>
             <button
@@ -115,16 +109,12 @@ export default function BasePortal({
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0 left-0"></div>
               </div>
-              <p className="text-gray-600 font-semibold mt-6 text-lg">
-                Loading your classes...
-              </p>
+              <p className="text-gray-600 font-semibold mt-6 text-lg">Loading your classes...</p>
             </div>
           ) : error && !classes.length ? (
             <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-8 text-center">
               <div className="text-5xl mb-4">⚠️</div>
-              <p className="text-red-700 font-bold text-lg mb-2">
-                Error Loading Classes
-              </p>
+              <p className="text-red-700 font-bold text-lg mb-2">Error Loading Classes</p>
               <p className="text-red-600">{error}</p>
             </div>
           ) : classes.length === 0 ? (
@@ -132,9 +122,7 @@ export default function BasePortal({
               <div className="w-24 h-24 bg-gradient-to-br from-indigo-100 to-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 text-5xl">
                 {config.emptyStateIcon}
               </div>
-              <h4 className="text-2xl font-bold text-gray-900 mb-3">
-                {config.emptyStateTitle}
-              </h4>
+              <h4 className="text-2xl font-bold text-gray-900 mb-3">{config.emptyStateTitle}</h4>
               <p className="text-gray-600 mb-8 text-lg max-w-md mx-auto">
                 {config.emptyStateSubtitle}
               </p>

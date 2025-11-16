@@ -15,34 +15,22 @@ const calculateObjectiveMarks = (submission: Submission) => {
   if (!submission.answers) return { obtained: 0, total: 0 };
   const objectiveAnswers = submission.answers.filter(
     (answer) =>
-      answer.question?.type === "MULTIPLE_CHOICE" ||
-      answer.question?.type === "TRUE_FALSE"
+      answer.question?.type === "MULTIPLE_CHOICE" || answer.question?.type === "TRUE_FALSE",
   );
-  const obtained = objectiveAnswers.reduce(
-    (sum, answer) => sum + (answer.obtainedMarks || 0),
-    0
-  );
-  const total = objectiveAnswers.reduce(
-    (sum, answer) => sum + (answer.question?.maxMarks || 0),
-    0
-  );
+  const obtained = objectiveAnswers.reduce((sum, answer) => sum + (answer.obtainedMarks || 0), 0);
+  const total = objectiveAnswers.reduce((sum, answer) => sum + (answer.question?.maxMarks || 0), 0);
   return { obtained, total };
 };
 
 const calculateSubjectiveMarks = (submission: Submission) => {
   if (!submission.answers) return { obtained: 0, total: 0 };
   const subjectiveAnswers = submission.answers.filter(
-    (answer) =>
-      answer.question?.type === "SHORT_ANSWER" ||
-      answer.question?.type === "LONG_ANSWER"
+    (answer) => answer.question?.type === "SHORT_ANSWER" || answer.question?.type === "LONG_ANSWER",
   );
-  const obtained = subjectiveAnswers.reduce(
-    (sum, answer) => sum + (answer.obtainedMarks || 0),
-    0
-  );
+  const obtained = subjectiveAnswers.reduce((sum, answer) => sum + (answer.obtainedMarks || 0), 0);
   const total = subjectiveAnswers.reduce(
     (sum, answer) => sum + (answer.question?.maxMarks || 0),
-    0
+    0,
   );
   return { obtained, total };
 };
@@ -54,8 +42,7 @@ const calculatePercentage = (obtained: number, total: number) => {
 
 const countAnsweredQuestions = (submission: Submission) => {
   if (!submission.answers) return 0;
-  return submission.answers.filter((a) => a.answer != null && a.answer !== "")
-    .length;
+  return submission.answers.filter((a) => a.answer != null && a.answer !== "").length;
 };
 
 export default function SubmissionsSection({
@@ -63,14 +50,12 @@ export default function SubmissionsSection({
   loadingSubmissions,
   onViewSubmissions,
   onViewIndividualSubmission,
-  onDeleteSubmission
+  onDeleteSubmission,
 }: SubmissionsSectionProps) {
   return (
     <div className="bg-white rounded-3xl shadow-xl p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Submissions ({submissions.length})
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900">Submissions ({submissions.length})</h2>
         <button
           onClick={onViewSubmissions}
           className="px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-bold rounded-xl hover:from-purple-600 hover:to-indigo-600 transition-all shadow-lg hover:shadow-xl"
@@ -87,12 +72,8 @@ export default function SubmissionsSection({
       ) : submissions.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-6xl mb-4">📝</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            No Submissions Yet
-          </h3>
-          <p className="text-gray-600">
-            Students haven{"'"}t submitted their tests yet.
-          </p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Submissions Yet</h3>
+          <p className="text-gray-600">Students haven{"'"}t submitted their tests yet.</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -120,23 +101,16 @@ export default function SubmissionsSection({
                 <th className="text-center p-4 font-bold text-gray-900 border-r border-purple-100">
                   Grading Status
                 </th>
-                <th className="text-center p-4 font-bold text-gray-900 w-20">
-                  Actions
-                </th>
+                <th className="text-center p-4 font-bold text-gray-900 w-20">Actions</th>
               </tr>
             </thead>
             <tbody>
               {submissions.map((submission, index) => {
                 const objectiveMarks = calculateObjectiveMarks(submission);
                 const subjectiveMarks = calculateSubjectiveMarks(submission);
-                const currentTotal = calculateCurrentTotalMarks(
-                  submission.answers
-                );
+                const currentTotal = calculateCurrentTotalMarks(submission.answers);
                 const totalMarks = objectiveMarks.total + subjectiveMarks.total;
-                const percentage = calculatePercentage(
-                  currentTotal,
-                  totalMarks
-                );
+                const percentage = calculatePercentage(currentTotal, totalMarks);
                 const gradingStatus = submission.status;
 
                 return (
@@ -166,14 +140,10 @@ export default function SubmissionsSection({
                           <span className="font-bold text-lg text-gray-900">
                             {objectiveMarks.obtained}/{objectiveMarks.total}
                           </span>
-                          <span className="text-xs text-gray-600">
-                            MCQ & T/F
-                          </span>
+                          <span className="text-xs text-gray-600">MCQ & T/F</span>
                         </div>
                       ) : (
-                        <span className="text-gray-400 text-sm">
-                          No objective
-                        </span>
+                        <span className="text-gray-400 text-sm">No objective</span>
                       )}
                     </td>
                     <td className="p-4 text-center border-r border-gray-200">
@@ -182,14 +152,10 @@ export default function SubmissionsSection({
                           <span className="font-bold text-lg text-gray-900">
                             {subjectiveMarks.obtained}/{subjectiveMarks.total}
                           </span>
-                          <span className="text-xs text-gray-600">
-                            Short & Long
-                          </span>
+                          <span className="text-xs text-gray-600">Short & Long</span>
                         </div>
                       ) : (
-                        <span className="text-gray-400 text-sm">
-                          No subjective
-                        </span>
+                        <span className="text-gray-400 text-sm">No subjective</span>
                       )}
                     </td>
                     <td className="p-4 text-center border-r border-gray-200">
@@ -198,8 +164,7 @@ export default function SubmissionsSection({
                           {currentTotal}/{totalMarks}
                         </span>
                         <span className="text-xs text-gray-600">
-                          {countAnsweredQuestions(submission)} questions
-                          answered
+                          {countAnsweredQuestions(submission)} questions answered
                         </span>
                       </div>
                     </td>
@@ -258,9 +223,7 @@ export default function SubmissionsSection({
           </table>
 
           {submissions.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              No submissions found
-            </div>
+            <div className="text-center py-8 text-gray-500">No submissions found</div>
           )}
         </div>
       )}

@@ -15,13 +15,11 @@ export default function QuestionsSection({
   loadingQuestions,
   onAddQuestion,
   onEditQuestion,
-  onDeleteQuestion
+  onDeleteQuestion,
 }: QuestionsSectionProps) {
   const [isSectionOpen, setIsSectionOpen] = React.useState(true);
   // Track which questions are expanded without using hooks inside a loop
-  const [openQuestionIds, setOpenQuestionIds] = React.useState<Set<number>>(
-    () => new Set()
-  );
+  const [openQuestionIds, setOpenQuestionIds] = React.useState<Set<number>>(() => new Set());
   const toggleQuestionOpen = (id: number) => {
     setOpenQuestionIds((prev) => {
       const next = new Set(prev);
@@ -40,13 +38,9 @@ export default function QuestionsSection({
           onClick={() => setIsSectionOpen((prev) => !prev)}
         >
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Questions ({questions.length})
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900">Questions ({questions.length})</h2>
             <span
-              className={`text-gray-500 transition-transform ${
-                isSectionOpen ? "rotate-180" : ""
-              }`}
+              className={`text-gray-500 transition-transform ${isSectionOpen ? "rotate-180" : ""}`}
             >
               ▼
             </span>
@@ -75,12 +69,8 @@ export default function QuestionsSection({
         ) : questions.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">❓</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No Questions Yet
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Add some questions to get started with your test.
-            </p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Questions Yet</h3>
+            <p className="text-gray-600 mb-6">Add some questions to get started with your test.</p>
             <button
               onClick={onAddQuestion}
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl"
@@ -105,14 +95,10 @@ export default function QuestionsSection({
                       <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
                         Q{index + 1}
                       </span>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {question.text}
-                      </h3>
+                      <h3 className="text-lg font-semibold text-gray-900">{question.text}</h3>
                     </div>
                     <span
-                      className={`text-gray-500 transition-transform ${
-                        isOpen ? "rotate-180" : ""
-                      }`}
+                      className={`text-gray-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
                     >
                       ▼
                     </span>
@@ -131,16 +117,12 @@ export default function QuestionsSection({
                                 : "Long Answer"}
                         </span>
                         <span className="text-sm text-gray-600">
-                          {question.maxMarks}{" "}
-                          {question.maxMarks === 1 ? "mark" : "marks"}
+                          {question.maxMarks} {question.maxMarks === 1 ? "mark" : "marks"}
                         </span>
                       </div>
 
                       {question.image && (
-                        <div
-                          className="mb-4 relative w-full"
-                          style={{ maxHeight: "300px" }}
-                        >
+                        <div className="mb-4 relative w-full" style={{ maxHeight: "300px" }}>
                           <Image
                             src={question.image}
                             alt="Question image"
@@ -153,31 +135,28 @@ export default function QuestionsSection({
                         </div>
                       )}
 
-                      {question.type === "MULTIPLE_CHOICE" &&
-                        question.options && (
-                          <div className="space-y-2">
-                            {question.options.map((option, optIndex) => (
-                              <div
-                                key={optIndex}
-                                className={`p-3 rounded-lg border ${
-                                  question.correctAnswer === optIndex
-                                    ? "bg-green-50 border-green-200 text-green-800"
-                                    : "bg-gray-50 border-gray-200 text-gray-900"
-                                }`}
-                              >
-                                <span className="font-medium">
-                                  {String.fromCharCode(65 + optIndex)}.
-                                </span>{" "}
-                                {option}
-                                {question.correctAnswer === optIndex && (
-                                  <span className="text-green-600 font-bold ml-2">
-                                    ✓
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                      {question.type === "MULTIPLE_CHOICE" && question.options && (
+                        <div className="space-y-2">
+                          {question.options.map((option, optIndex) => (
+                            <div
+                              key={optIndex}
+                              className={`p-3 rounded-lg border ${
+                                question.correctAnswer === optIndex
+                                  ? "bg-green-50 border-green-200 text-green-800"
+                                  : "bg-gray-50 border-gray-200 text-gray-900"
+                              }`}
+                            >
+                              <span className="font-medium">
+                                {String.fromCharCode(65 + optIndex)}.
+                              </span>{" "}
+                              {option}
+                              {question.correctAnswer === optIndex && (
+                                <span className="text-green-600 font-bold ml-2">✓</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       {question.type === "TRUE_FALSE" && (
                         <div className="flex gap-4">
@@ -190,9 +169,7 @@ export default function QuestionsSection({
                           >
                             True{" "}
                             {question.correctAnswer === 1 && (
-                              <span className="text-green-600 font-bold">
-                                ✓
-                              </span>
+                              <span className="text-green-600 font-bold">✓</span>
                             )}
                           </div>
                           <div
@@ -204,9 +181,7 @@ export default function QuestionsSection({
                           >
                             False{" "}
                             {question.correctAnswer === 0 && (
-                              <span className="text-green-600 font-bold">
-                                ✓
-                              </span>
+                              <span className="text-green-600 font-bold">✓</span>
                             )}
                           </div>
                         </div>

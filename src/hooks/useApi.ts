@@ -4,8 +4,7 @@ import { debugLogger } from "@/utils/logger";
 // 1. Prefer explicit NEXT_PUBLIC_API_BASE_URL (set in .env.local)
 // 2. Fallback to localhost:3000 (current backend dev port)
 // This removes reliance on a boolean dev flag and guarantees port 3000 locally.
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
 
 // Log base URL and auth header once per runtime without touching window
 let apiBaseLogged = false;
@@ -21,8 +20,7 @@ const requestCache = new Map<string, Promise<Response>>();
 const CACHE_DURATION = 100; // 100ms to deduplicate rapid calls
 
 export const api = async (path: string, options?: ExtendedRequestInit) => {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   // Log base URL and auth header once (on first call)
   if (!apiBaseLogged) {
@@ -41,10 +39,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
         ...headers,
         ...Object.fromEntries(Array.from(options.headers.entries())),
       };
-    } else if (
-      typeof options.headers === "object" &&
-      !Array.isArray(options.headers)
-    ) {
+    } else if (typeof options.headers === "object" && !Array.isArray(options.headers)) {
       headers = {
         ...headers,
         ...(options.headers as Record<string, string>),
@@ -91,12 +86,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     body = {};
   }
 
-  if (
-    options?.date &&
-    typeof body === "object" &&
-    body !== null &&
-    !Array.isArray(body)
-  ) {
+  if (options?.date && typeof body === "object" && body !== null && !Array.isArray(body)) {
     (body as Record<string, unknown>).requestDate = new Date().toISOString();
   }
 

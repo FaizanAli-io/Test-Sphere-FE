@@ -12,12 +12,10 @@ export default function EditTestModal({
   showEditTestModal,
   editingTest,
   onClose,
-  onUpdate
+  onUpdate,
 }: EditTestModalProps) {
   const [updatingTest, setUpdatingTest] = useState(false);
-  const [localEditingTest, setLocalEditingTest] = useState<Test | null>(
-    editingTest
-  );
+  const [localEditingTest, setLocalEditingTest] = useState<Test | null>(editingTest);
 
   // Autofill when editingTest changes
   useEffect(() => {
@@ -30,18 +28,14 @@ export default function EditTestModal({
     const start = new Date(localEditingTest.startAt);
     const end = new Date(start.getTime() + localEditingTest.duration * 60000);
 
-    setLocalEditingTest((prev) =>
-      prev ? { ...prev, endAt: end.toISOString() } : prev
-    );
+    setLocalEditingTest((prev) => (prev ? { ...prev, endAt: end.toISOString() } : prev));
   }, [localEditingTest?.startAt, localEditingTest?.duration]);
 
   const handleUpdateTest = async () => {
     if (!localEditingTest) return;
 
     const start = new Date(localEditingTest.startAt);
-    const minEnd = new Date(
-      start.getTime() + localEditingTest.duration * 60000
-    );
+    const minEnd = new Date(start.getTime() + localEditingTest.duration * 60000);
     const end = new Date(localEditingTest.endAt);
 
     if (end < minEnd) {
@@ -58,7 +52,7 @@ export default function EditTestModal({
         status: localEditingTest.status,
         startAt: new Date(localEditingTest.startAt).toISOString(),
         endAt: new Date(localEditingTest.endAt).toISOString(),
-        numQuestions: localEditingTest.numQuestions
+        numQuestions: localEditingTest.numQuestions,
       };
 
       const success = await onUpdate(updatePayload);
@@ -89,16 +83,12 @@ export default function EditTestModal({
         <div className="p-8 space-y-6">
           {/* Title */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Title
-            </label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
             <input
               type="text"
               value={localEditingTest?.title || ""}
               onChange={(e) =>
-                setLocalEditingTest((prev) =>
-                  prev ? { ...prev, title: e.target.value } : null
-                )
+                setLocalEditingTest((prev) => (prev ? { ...prev, title: e.target.value } : null))
               }
               className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-xl"
             />
@@ -106,15 +96,13 @@ export default function EditTestModal({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
             <textarea
               rows={3}
               value={localEditingTest?.description || ""}
               onChange={(e) =>
                 setLocalEditingTest((prev) =>
-                  prev ? { ...prev, description: e.target.value } : null
+                  prev ? { ...prev, description: e.target.value } : null,
                 )
               }
               className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-xl resize-none"
@@ -133,7 +121,7 @@ export default function EditTestModal({
                 value={localEditingTest?.duration || 0}
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
-                    prev ? { ...prev, duration: Number(e.target.value) } : null
+                    prev ? { ...prev, duration: Number(e.target.value) } : null,
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-xl"
@@ -141,18 +129,14 @@ export default function EditTestModal({
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Num Questions
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Num Questions</label>
               <input
                 type="number"
                 min="1"
                 value={localEditingTest?.numQuestions || 0}
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
-                    prev
-                      ? { ...prev, numQuestions: Number(e.target.value) }
-                      : null
+                    prev ? { ...prev, numQuestions: Number(e.target.value) } : null,
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-xl"
@@ -160,16 +144,12 @@ export default function EditTestModal({
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Status
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Status</label>
               <select
                 value={localEditingTest?.status || "DRAFT"}
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
-                    prev
-                      ? { ...prev, status: e.target.value as Test["status"] }
-                      : null
+                    prev ? { ...prev, status: e.target.value as Test["status"] } : null,
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-xl bg-white"
@@ -184,24 +164,20 @@ export default function EditTestModal({
           {/* Dates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Start At
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Start At</label>
               <input
                 type="datetime-local"
                 value={
-                  localEditingTest?.startAt
-                    ? toLocalDatetimeValue(localEditingTest.startAt)
-                    : ""
+                  localEditingTest?.startAt ? toLocalDatetimeValue(localEditingTest.startAt) : ""
                 }
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
                     prev
                       ? {
                           ...prev,
-                          startAt: new Date(e.target.value).toISOString()
+                          startAt: new Date(e.target.value).toISOString(),
                         }
-                      : null
+                      : null,
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-xl"
@@ -209,24 +185,18 @@ export default function EditTestModal({
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                End At
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">End At</label>
               <input
                 type="datetime-local"
-                value={
-                  localEditingTest?.endAt
-                    ? toLocalDatetimeValue(localEditingTest.endAt)
-                    : ""
-                }
+                value={localEditingTest?.endAt ? toLocalDatetimeValue(localEditingTest.endAt) : ""}
                 onChange={(e) =>
                   setLocalEditingTest((prev) =>
                     prev
                       ? {
                           ...prev,
-                          endAt: new Date(e.target.value).toISOString()
+                          endAt: new Date(e.target.value).toISOString(),
                         }
-                      : null
+                      : null,
                   )
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 text-gray-900 rounded-xl"

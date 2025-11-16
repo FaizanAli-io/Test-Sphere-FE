@@ -15,7 +15,7 @@ const formatDate = (dateString: string) => {
     month: "long",
     day: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   });
 };
 
@@ -34,12 +34,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export default function HeaderSection({
-  test,
-  onBack,
-  onEdit,
-  onDelete
-}: HeaderSectionProps) {
+export default function HeaderSection({ test, onBack, onEdit, onDelete }: HeaderSectionProps) {
   const router = useRouter();
 
   const handleInvigilate = () => {

@@ -3,10 +3,7 @@ import React, { useState } from "react";
 import api from "@/hooks/useApi";
 import { useNotification } from "@/hooks/useNotification";
 import { SubmissionDetailProps, SubmissionStatus } from "../types";
-import {
-  calculateCurrentTotalMarks,
-  calculateTotalPossibleMarks
-} from "../utils";
+import { calculateCurrentTotalMarks, calculateTotalPossibleMarks } from "../utils";
 
 import SubmissionHeader from "./SubmissionHeader";
 import ScoreSummary from "./ScoreSummary";
@@ -24,11 +21,9 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
     viewContext,
     onUpdateStatus,
     onUpdateScores,
-    topExtraContent
+    topExtraContent,
   } = props;
-  const [gradingScores, setGradingScores] = useState<Record<string, number>>(
-    {}
-  );
+  const [gradingScores, setGradingScores] = useState<Record<string, number>>({});
   const [loadingBulkUpdate, setLoadingBulkUpdate] = useState(false);
   const notifications = useNotification();
 
@@ -38,11 +33,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
   const totalPossible = calculateTotalPossibleMarks(submission.answers);
   const currentTotal = calculateCurrentTotalMarks(submission.answers);
 
-  const handleScoreChange = (
-    submissionId: number,
-    questionIndex: number,
-    score: number
-  ) => {
+  const handleScoreChange = (submissionId: number, questionIndex: number, score: number) => {
     const key = `${submissionId}-${questionIndex}`;
     setGradingScores((prev) => ({ ...prev, [key]: score }));
   };
@@ -52,26 +43,22 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
     setLoadingBulkUpdate(true);
     try {
-      const answers = Object.entries(gradingScores).map(
-        ([key, obtainedMarks]) => {
-          const [, questionIndex] = key.split("-");
-          const questionIdx = parseInt(questionIndex);
+      const answers = Object.entries(gradingScores).map(([key, obtainedMarks]) => {
+        const [, questionIndex] = key.split("-");
+        const questionIdx = parseInt(questionIndex);
 
-          const answer = submission.answers?.[questionIdx];
-          if (!answer) {
-            throw new Error(
-              `Answer not found for question index ${questionIdx}`
-            );
-          }
-
-          return { answerId: answer.id, obtainedMarks };
+        const answer = submission.answers?.[questionIdx];
+        if (!answer) {
+          throw new Error(`Answer not found for question index ${questionIdx}`);
         }
-      );
+
+        return { answerId: answer.id, obtainedMarks };
+      });
 
       const response = await api(`/submissions/${submission.id}/grade`, {
         body: JSON.stringify({ answers }),
         method: "POST",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -81,9 +68,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
       await response.json();
 
-      notifications.showSuccess(
-        `Updated ${answers.length} score(s) successfully`
-      );
+      notifications.showSuccess(`Updated ${answers.length} score(s) successfully`);
 
       // Update parent state with new scores
       if (onUpdateScores && submission.answers) {
@@ -101,9 +86,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
       setGradingScores({});
     } catch (error) {
       console.error("Failed to update scores:", error);
-      notifications.showError(
-        error instanceof Error ? error.message : "Failed to update scores"
-      );
+      notifications.showError(error instanceof Error ? error.message : "Failed to update scores");
     } finally {
       setLoadingBulkUpdate(false);
     }
@@ -116,7 +99,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
       const response = await api(`/submissions/${submission.id}/status`, {
         method: "PATCH",
         auth: true,
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
@@ -124,9 +107,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
         throw new Error(errorData.message || "Failed to update status");
       }
 
-      notifications.showSuccess(
-        `Submission marked as ${newStatus.toLowerCase()} successfully`
-      );
+      notifications.showSuccess(`Submission marked as ${newStatus.toLowerCase()} successfully`);
 
       // Update status in parent state
       if (onUpdateStatus) {
@@ -134,9 +115,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
       }
     } catch (error) {
       console.error("Failed to update status:", error);
-      notifications.showError(
-        error instanceof Error ? error.message : "Failed to update status"
-      );
+      notifications.showError(error instanceof Error ? error.message : "Failed to update status");
     }
   };
 
@@ -148,9 +127,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-3xl">
             <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mb-4"></div>
-              <p className="text-lg font-semibold text-gray-900">
-                Updating scores...
-              </p>
+              <p className="text-lg font-semibold text-gray-900">Updating scores...</p>
               <p className="text-sm text-gray-600 mt-2">Please wait</p>
             </div>
           </div>

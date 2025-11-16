@@ -1,10 +1,6 @@
 import React from "react";
 
-export type QuestionType =
-  | "TRUE_FALSE"
-  | "MULTIPLE_CHOICE"
-  | "SHORT_ANSWER"
-  | "LONG_ANSWER";
+export type QuestionType = "TRUE_FALSE" | "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "LONG_ANSWER";
 export type SubmissionStatus = "IN_PROGRESS" | "SUBMITTED" | "GRADED";
 export type GradingStatus = "AUTOMATIC" | "PENDING" | "GRADED";
 

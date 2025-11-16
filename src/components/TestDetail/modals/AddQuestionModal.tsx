@@ -75,20 +75,15 @@ export default function AddQuestionModal({
     label: string,
     value: T,
     onChange: (v: T) => void,
-    type: "text" | "number" = "text"
+    type: "text" | "number" = "text",
   ) => (
     <div>
-      <label className="block text-sm font-bold text-gray-700 mb-2">
-        {label}
-      </label>
+      <label className="block text-sm font-bold text-gray-700 mb-2">{label}</label>
       <input
         type={type}
         value={value}
         onChange={(e) => {
-          const val =
-            type === "number"
-              ? (Number(e.target.value) as T)
-              : (e.target.value as T);
+          const val = type === "number" ? (Number(e.target.value) as T) : (e.target.value as T);
           onChange(val);
         }}
         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
@@ -112,8 +107,7 @@ export default function AddQuestionModal({
               className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow hover:shadow-lg transition-all"
             >
               <span className="flex items-center gap-2">
-                🧠{" "}
-                {showAiSection ? "Hide AI Generator" : "AI Question Generator"}
+                🧠 {showAiSection ? "Hide AI Generator" : "AI Question Generator"}
               </span>
               <span>{showAiSection ? "▲" : "▼"}</span>
             </button>
@@ -134,9 +128,7 @@ export default function AddQuestionModal({
                     </label>
                     <select
                       value={aiType}
-                      onChange={(e) =>
-                        setAiType(e.target.value as typeof aiType)
-                      }
+                      onChange={(e) => setAiType(e.target.value as typeof aiType)}
                       className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-gray-900 bg-white"
                     >
                       <option value="MULTIPLE_CHOICE">Multiple Choice</option>
@@ -149,7 +141,7 @@ export default function AddQuestionModal({
                     "Number of Questions",
                     numberOfQuestions,
                     setNumberOfQuestions,
-                    "number"
+                    "number",
                   )}
                 </div>
 
@@ -170,9 +162,7 @@ export default function AddQuestionModal({
                 <div className="flex gap-4 justify-center">
                   <button
                     onClick={() => handleGenerateFromPrompt(generatedPrompt)}
-                    disabled={
-                      aiPdfUploading || aiGenerating || !generatedPrompt
-                    }
+                    disabled={aiPdfUploading || aiGenerating || !generatedPrompt}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
                     {aiGenerating ? "Generating..." : "Generate from Prompt"}
@@ -184,22 +174,16 @@ export default function AddQuestionModal({
                     accept=".pdf"
                     className="hidden"
                     id="pdf-upload"
-                    onChange={(e) =>
-                      handleGenerateFromPdf(e.target.files?.[0] || null)
-                    }
+                    onChange={(e) => handleGenerateFromPdf(e.target.files?.[0] || null)}
                   />
                   <label htmlFor="pdf-upload" className="flex-1">
                     <button
                       type="button"
-                      onClick={() =>
-                        document.getElementById("pdf-upload")?.click()
-                      }
+                      onClick={() => document.getElementById("pdf-upload")?.click()}
                       disabled={aiPdfUploading || aiGenerating}
                       className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                     >
-                      {aiPdfUploading
-                        ? "Processing PDF..."
-                        : "Generate from PDF"}
+                      {aiPdfUploading ? "Processing PDF..." : "Generate from PDF"}
                     </button>
                   </label>
                 </div>
@@ -220,14 +204,10 @@ export default function AddQuestionModal({
 
           {/* Question Text */}
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Question Text *
-            </label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Question Text *</label>
             <textarea
               value={newQuestion.text}
-              onChange={(e) =>
-                setNewQuestion({ ...newQuestion, text: e.target.value })
-              }
+              onChange={(e) => setNewQuestion({ ...newQuestion, text: e.target.value })}
               placeholder="Enter your question here..."
               rows={3}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 resize-none"
@@ -237,9 +217,7 @@ export default function AddQuestionModal({
           {/* Question Settings */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Question Type *
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Question Type *</label>
               <select
                 value={newQuestion.type}
                 onChange={(e) => {
@@ -254,9 +232,7 @@ export default function AddQuestionModal({
                           ? ["True", "False"]
                           : undefined,
                     correctAnswer:
-                      type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE"
-                        ? 0
-                        : undefined,
+                      type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE" ? 0 : undefined,
                   });
                 }}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white"
@@ -268,9 +244,7 @@ export default function AddQuestionModal({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                Maximum Marks *
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Maximum Marks *</label>
               <input
                 type="number"
                 min="1"
@@ -294,9 +268,7 @@ export default function AddQuestionModal({
             <input
               type="text"
               value={newQuestion.image || ""}
-              onChange={(e) =>
-                setNewQuestion({ ...newQuestion, image: e.target.value })
-              }
+              onChange={(e) => setNewQuestion({ ...newQuestion, image: e.target.value })}
               placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
             />
@@ -305,9 +277,7 @@ export default function AddQuestionModal({
           {/* Dynamic Options */}
           {newQuestion.type === "MULTIPLE_CHOICE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">
-                Answer Options *
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options *</label>
               <div className="space-y-3">
                 {newQuestion.options?.map((option, i) => (
                   <div key={i} className="flex items-center gap-3">
@@ -315,9 +285,7 @@ export default function AddQuestionModal({
                       type="radio"
                       name="correctAnswer"
                       checked={newQuestion.correctAnswer === i}
-                      onChange={() =>
-                        setNewQuestion({ ...newQuestion, correctAnswer: i })
-                      }
+                      onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: i })}
                       className="w-5 h-5 text-green-600 focus:ring-green-500"
                     />
                     <input
@@ -334,9 +302,7 @@ export default function AddQuestionModal({
                     {newQuestion.options!.length > 2 && (
                       <button
                         onClick={() => {
-                          const newOptions = newQuestion.options!.filter(
-                            (_, idx) => idx !== i
-                          );
+                          const newOptions = newQuestion.options!.filter((_, idx) => idx !== i);
                           setNewQuestion({
                             ...newQuestion,
                             options: newOptions,
@@ -378,22 +344,15 @@ export default function AddQuestionModal({
           {/* True/False */}
           {newQuestion.type === "TRUE_FALSE" && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-3">
-                Correct Answer *
-              </label>
+              <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer *</label>
               <div className="flex gap-4">
                 {["True", "False"].map((val, idx) => (
-                  <label
-                    key={idx}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
+                  <label key={idx} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
                       name="trueFalseAnswer"
                       checked={newQuestion.correctAnswer === idx}
-                      onChange={() =>
-                        setNewQuestion({ ...newQuestion, correctAnswer: idx })
-                      }
+                      onChange={() => setNewQuestion({ ...newQuestion, correctAnswer: idx })}
                       className="w-5 h-5 text-green-600 focus:ring-green-500"
                     />
                     <span className="text-gray-900 font-medium">{val}</span>
@@ -404,13 +363,11 @@ export default function AddQuestionModal({
           )}
 
           {/* Short/Long Answer Info */}
-          {(newQuestion.type === "SHORT_ANSWER" ||
-            newQuestion.type === "LONG_ANSWER") && (
+          {(newQuestion.type === "SHORT_ANSWER" || newQuestion.type === "LONG_ANSWER") && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
               <p className="text-sm text-blue-800 font-medium">
-                ℹ️ This question type requires manual grading. Students will
-                provide written answers that you{"'"}ll need to evaluate and
-                grade manually.
+                ℹ️ This question type requires manual grading. Students will provide written answers
+                that you{"'"}ll need to evaluate and grade manually.
               </p>
             </div>
           )}

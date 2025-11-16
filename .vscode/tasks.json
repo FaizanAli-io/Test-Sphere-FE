@@ -1,13 +1,11 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "npm: lint",
-			"type": "shell",
-			"command": "npm run lint",
-			"problemMatcher": [
-				"$eslint-stylish"
-			]
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "npm: lint",
+      "type": "shell",
+      "command": "npm run lint",
+      "problemMatcher": ["$eslint-stylish"]
+    }
+  ]
 }

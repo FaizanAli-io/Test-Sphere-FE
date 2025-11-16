@@ -6,9 +6,11 @@ interface FullscreenViolationWarningProps {
   onDismiss: () => void;
 }
 
-export const FullscreenViolationWarning: React.FC<
-  FullscreenViolationWarningProps
-> = ({ violationCount, countdownSeconds, onDismiss }) => {
+export const FullscreenViolationWarning: React.FC<FullscreenViolationWarningProps> = ({
+  violationCount,
+  countdownSeconds,
+  onDismiss,
+}) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 border-4 border-red-500">
@@ -17,22 +19,16 @@ export const FullscreenViolationWarning: React.FC<
             <span className="text-4xl">⚠️</span>
           </div>
 
-          <h2 className="text-2xl font-bold text-red-600 mb-4">
-            Fullscreen Violation!
-          </h2>
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Fullscreen Violation!</h2>
 
           <p className="text-gray-700 mb-4 text-lg">
-            You exited fullscreen mode during the test. This action has been
-            recorded.
+            You exited fullscreen mode during the test. This action has been recorded.
           </p>
 
           <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-6">
-            <p className="text-red-800 font-semibold">
-              Violation recorded ({violationCount})
-            </p>
+            <p className="text-red-800 font-semibold">Violation recorded ({violationCount})</p>
             <p className="text-red-700 text-sm mt-2">
-              Please return to fullscreen. Repeated exits may result in
-              automatic test submission.
+              Please return to fullscreen. Repeated exits may result in automatic test submission.
             </p>
           </div>
 
@@ -48,8 +44,8 @@ export const FullscreenViolationWarning: React.FC<
               {countdownSeconds !== 1 ? "s" : ""}
             </p>
             <p className="text-orange-700 text-sm mt-1">
-              Click &ldquo;I Understand&rdquo; to continue the test, or the exam
-              will be automatically submitted.
+              Click &ldquo;I Understand&rdquo; to continue the test, or the exam will be
+              automatically submitted.
             </p>
           </div>
 

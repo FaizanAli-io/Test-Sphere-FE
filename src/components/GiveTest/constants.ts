@@ -30,5 +30,5 @@ export const TEST_SECURITY_CONFIG = {
   /**
    * Interval in seconds for capturing screenshots when not in fullscreen mode.
    */
-  SCREENSHOT_CAPTURE_INTERVAL_SECONDS: 5
+  SCREENSHOT_CAPTURE_INTERVAL_SECONDS: 5,
 } as const;

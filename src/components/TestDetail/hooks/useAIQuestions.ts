@@ -7,7 +7,7 @@ export const useAIQuestions = (
   testId?: string,
   onQuestionsCreated?: () => void,
   notifications?: NotificationFunctions,
-  closeModal?: () => void
+  closeModal?: () => void,
 ) => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
@@ -16,12 +16,8 @@ export const useAIQuestions = (
   const [aiMessages, setAiMessages] = useState<string[]>([]);
   const [showAiSection, setShowAiSection] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
-  const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<
-    Question[]
-  >([]);
-  const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(
-    new Set()
-  );
+  const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<Question[]>([]);
+  const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(new Set());
 
   const normalizeAIQuestion = useCallback(
     (q: Record<string, unknown>): Question | null => {
@@ -34,21 +30,11 @@ export const useAIQuestions = (
       const rawType = String(q.type || "MULTIPLE_CHOICE").toUpperCase();
       let type: Question["type"] = "MULTIPLE_CHOICE";
 
-      if (
-        [
-          "TRUE_FALSE",
-          "MULTIPLE_CHOICE",
-          "SHORT_ANSWER",
-          "LONG_ANSWER"
-        ].includes(rawType)
-      ) {
+      if (["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(rawType)) {
         type = rawType as Question["type"];
       }
 
-      const maxMarks = Math.max(
-        1,
-        Number(q.maxMarks || q.marks || q.points || 1)
-      );
+      const maxMarks = Math.max(1, Number(q.maxMarks || q.marks || q.points || 1));
 
       let options: string[] | undefined;
       let correctAnswer: number | undefined;
@@ -69,11 +55,7 @@ export const useAIQuestions = (
       } else if (type === "TRUE_FALSE") {
         options = ["True", "False"];
 
-        if (
-          q.correctAnswer === "True" ||
-          q.correctAnswer === true ||
-          q.correctAnswer === 1
-        ) {
+        if (q.correctAnswer === "True" || q.correctAnswer === true || q.correctAnswer === 1) {
           correctAnswer = 1;
         } else if (
           q.correctAnswer === "False" ||
@@ -94,10 +76,7 @@ export const useAIQuestions = (
         maxMarks,
         options,
         correctAnswer,
-        image:
-          typeof q.image === "string" && q.image.trim()
-            ? q.image.trim()
-            : undefined
+        image: typeof q.image === "string" && q.image.trim() ? q.image.trim() : undefined,
       };
 
       if (type === "MULTIPLE_CHOICE" && (!options || options.length < 2)) {
@@ -109,24 +88,19 @@ export const useAIQuestions = (
         (type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE") &&
         typeof correctAnswer !== "number"
       ) {
-        console.warn(
-          "Missing correct answer for question:",
-          normalizedQuestion
-        );
+        console.warn("Missing correct answer for question:", normalizedQuestion);
         return null;
       }
 
       return normalizedQuestion;
     },
-    [testId]
+    [testId],
   );
 
   const generateAIQuestions = useCallback(
     async (prompt: string) => {
       if (!prompt.trim()) {
-        notifications?.showError?.(
-          "Please enter a prompt for AI question generation"
-        );
+        notifications?.showError?.("Please enter a prompt for AI question generation");
         return false;
       }
 
@@ -138,8 +112,8 @@ export const useAIQuestions = (
           method: "POST",
           auth: true,
           body: JSON.stringify({
-            prompt: prompt.trim()
-          })
+            prompt: prompt.trim(),
+          }),
         });
 
         if (!response.ok) {
@@ -154,37 +128,30 @@ export const useAIQuestions = (
         }
 
         if (result.questions && result.questions.length > 0) {
-          const normalized = result.questions
-            .map(normalizeAIQuestion)
-            .filter(Boolean);
+          const normalized = result.questions.map(normalizeAIQuestion).filter(Boolean);
 
           if (normalized.length > 0) {
             setPendingApprovalQuestions(normalized);
             setShowApprovalModal(true);
             closeModal?.();
             notifications?.showSuccess?.(
-              `Generated ${normalized.length} questions for your review`
+              `Generated ${normalized.length} questions for your review`,
             );
           }
         } else {
-          notifications?.showWarning?.(
-            "No questions were generated from the prompt"
-          );
+          notifications?.showWarning?.("No questions were generated from the prompt");
         }
 
         return true;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Failed to generate AI questions";
+        const errorMessage = err instanceof Error ? err.message : "Failed to generate AI questions";
         notifications?.showError?.(errorMessage);
         return false;
       } finally {
         setAiGenerating(false);
       }
     },
-    [notifications, closeModal, normalizeAIQuestion]
+    [notifications, closeModal, normalizeAIQuestion],
   );
 
   const uploadPDFForQuestions = useCallback(
@@ -199,7 +166,7 @@ export const useAIQuestions = (
           method: "POST",
           auth: true,
           headers: {},
-          body: formData
+          body: formData,
         });
 
         if (!response.ok) {
@@ -208,33 +175,27 @@ export const useAIQuestions = (
         }
 
         const result = await response.json();
-        const normalized =
-          result.questions?.map(normalizeAIQuestion).filter(Boolean) || [];
+        const normalized = result.questions?.map(normalizeAIQuestion).filter(Boolean) || [];
 
         if (normalized.length > 0) {
           setPendingApprovalQuestions(normalized);
           setShowApprovalModal(true);
           closeModal?.();
-          notifications?.showSuccess?.(
-            `Extracted ${normalized.length} questions from PDF`
-          );
+          notifications?.showSuccess?.(`Extracted ${normalized.length} questions from PDF`);
         } else {
-          notifications?.showWarning?.(
-            "No questions could be extracted from the PDF"
-          );
+          notifications?.showWarning?.("No questions could be extracted from the PDF");
         }
 
         return true;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to process PDF";
+        const errorMessage = err instanceof Error ? err.message : "Failed to process PDF";
         notifications?.showError?.(errorMessage);
         return false;
       } finally {
         setAiPdfUploading(false);
       }
     },
-    [notifications, closeModal, normalizeAIQuestion]
+    [notifications, closeModal, normalizeAIQuestion],
   );
 
   const approveQuestions = useCallback(
@@ -255,22 +216,16 @@ export const useAIQuestions = (
             testId: Number(testId),
             text: q.text?.trim() || "Question text not provided",
             type: q.type || "MULTIPLE_CHOICE",
-            maxMarks: q.maxMarks || 1
+            maxMarks: q.maxMarks || 1,
           };
 
-          if (
-            q.type === "MULTIPLE_CHOICE" &&
-            q.options &&
-            q.options.length > 0
-          ) {
+          if (q.type === "MULTIPLE_CHOICE" && q.options && q.options.length > 0) {
             questionData.options = q.options;
-            questionData.correctAnswer =
-              typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
+            questionData.correctAnswer = typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
           }
 
           if (q.type === "TRUE_FALSE") {
-            questionData.correctAnswer =
-              typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
+            questionData.correctAnswer = typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
           }
 
           if (q.image && q.image.trim()) {
@@ -281,26 +236,25 @@ export const useAIQuestions = (
         });
 
         const payload = {
-          questions: questionsToCreate
+          questions: questionsToCreate,
         };
 
         const response = await api(`/tests/${testId}/questions`, {
           method: "POST",
           auth: true,
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
           console.error("Question creation error:", errorData);
           throw new Error(
-            errorData.message ||
-              `Failed to create questions: HTTP ${response.status}`
+            errorData.message || `Failed to create questions: HTTP ${response.status}`,
           );
         }
 
         notifications?.showSuccess?.(
-          `${questions.length} questions approved and created successfully`
+          `${questions.length} questions approved and created successfully`,
         );
 
         onQuestionsCreated?.();
@@ -313,15 +267,13 @@ export const useAIQuestions = (
         return true;
       } catch (err) {
         const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Failed to create approved questions";
+          err instanceof Error ? err.message : "Failed to create approved questions";
         notifications?.showError?.(errorMessage);
         return false;
       }
     },
 
-    [testId, notifications, onQuestionsCreated, closeModal]
+    [testId, notifications, onQuestionsCreated, closeModal],
   );
 
   const resetAIState = useCallback(() => {
@@ -355,6 +307,6 @@ export const useAIQuestions = (
 
     handleGenerateFromPrompt: generateAIQuestions,
     handleGenerateFromPdf: uploadPDFForQuestions,
-    handleApproveBatchQuestions: approveQuestions
+    handleApproveBatchQuestions: approveQuestions,
   };
 };

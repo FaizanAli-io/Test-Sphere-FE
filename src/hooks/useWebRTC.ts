@@ -17,18 +17,10 @@ interface WebRTCState {
 }
 
 const ICE_SERVERS = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-  ],
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
 };
 
-export const useWebRTC = ({
-  userId,
-  role,
-  testId,
-  enabled,
-}: UseWebRTCProps) => {
+export const useWebRTC = ({ userId, role, testId, enabled }: UseWebRTCProps) => {
   const [state, setState] = useState<WebRTCState>({
     isConnected: false,
     isStreaming: false,
@@ -106,10 +98,7 @@ export const useWebRTC = ({
 
       if (pc.connectionState === "connected") {
         setState((prev) => ({ ...prev, isStreaming: true, error: null }));
-      } else if (
-        pc.connectionState === "failed" ||
-        pc.connectionState === "disconnected"
-      ) {
+      } else if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
         setState((prev) => ({
           ...prev,
           isStreaming: false,
@@ -177,20 +166,14 @@ export const useWebRTC = ({
     const socket = socketRef.current;
     if (!socket) return;
 
-    const handleSignal = async (message: {
-      type: string;
-      data: any;
-      from: string;
-    }) => {
+    const handleSignal = async (message: { type: string; data: any; from: string }) => {
       console.log("Received signal:", message.type, "from:", message.from);
 
       const pc = peerConnectionRef.current || createPeerConnection();
 
       try {
         if (message.type === "offer") {
-          await pc.setRemoteDescription(
-            new RTCSessionDescription(message.data)
-          );
+          await pc.setRemoteDescription(new RTCSessionDescription(message.data));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
 
@@ -203,9 +186,7 @@ export const useWebRTC = ({
             role,
           });
         } else if (message.type === "answer") {
-          await pc.setRemoteDescription(
-            new RTCSessionDescription(message.data)
-          );
+          await pc.setRemoteDescription(new RTCSessionDescription(message.data));
         } else if (message.type === "ice-candidate") {
           await pc.addIceCandidate(new RTCIceCandidate(message.data));
         }
@@ -215,10 +196,7 @@ export const useWebRTC = ({
       }
     };
 
-    const handleStreamRequest = async (data: {
-      teacherId: string;
-      testId: number;
-    }) => {
+    const handleStreamRequest = async (data: { teacherId: string; testId: number }) => {
       console.log("Stream requested by teacher:", data.teacherId);
 
       try {
@@ -257,14 +235,7 @@ export const useWebRTC = ({
       socket.off("stream-request", handleStreamRequest);
       socket.off("stream-stopped", handleStreamStopped);
     };
-  }, [
-    userId,
-    role,
-    testId,
-    createPeerConnection,
-    startStreaming,
-    stopStreaming,
-  ]);
+  }, [userId, role, testId, createPeerConnection, startStreaming, stopStreaming]);
 
   // Request stream (for teachers)
   const requestStream = useCallback(
@@ -294,7 +265,7 @@ export const useWebRTC = ({
         return null;
       }
     },
-    [userId, testId, createPeerConnection]
+    [userId, testId, createPeerConnection],
   );
 
   // Stop viewing stream (for teachers)
@@ -316,7 +287,7 @@ export const useWebRTC = ({
       remoteStreamRef.current = null;
       setState((prev) => ({ ...prev, isStreaming: false }));
     },
-    [userId, testId]
+    [userId, testId],
   );
 
   return {

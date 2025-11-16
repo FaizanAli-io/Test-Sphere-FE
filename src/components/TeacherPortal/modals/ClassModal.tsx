@@ -41,9 +41,7 @@ export default function ClassModal({
   }, [classData]);
 
   const handleSubmit = async () => {
-    const success = await onSubmit(
-      classData ? { ...classData, ...formData } : formData
-    );
+    const success = await onSubmit(classData ? { ...classData, ...formData } : formData);
     if (success) {
       onClose();
       setFormData({ name: "", description: "" });
@@ -85,28 +83,20 @@ export default function ClassModal({
         </div>
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Class Name *
-            </label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Class Name *</label>
             <input
               type="text"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className={`w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 ${colorConfig.focus} text-gray-900 bg-gray-50 focus:bg-white transition-all font-medium`}
               placeholder="e.g., Mathematics 101"
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
-              Description
-            </label>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
             <textarea
               value={formData.description}
-              onChange={(e) =>
-                setFormData({ ...formData, description: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className={`w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:ring-2 ${colorConfig.focus} text-gray-900 bg-gray-50 focus:bg-white transition-all font-medium resize-none`}
               rows={4}
               placeholder="Brief description of the class (optional)"

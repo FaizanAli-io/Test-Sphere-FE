@@ -15,7 +15,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
   student,
   teacherId,
   testId,
-  onClose
+  onClose,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isRequesting, setIsRequesting] = useState(false);
@@ -27,12 +27,12 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     connectionState,
     remoteStream,
     requestStream,
-    stopViewingStream
+    stopViewingStream,
   } = useWebRTC({
     userId: teacherId,
     role: "teacher",
     testId,
-    enabled: !!student
+    enabled: !!student,
   });
 
   useEffect(() => {
@@ -98,12 +98,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
 
         {/* Video Container */}
         <div className="relative bg-black aspect-video">
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className="w-full h-full object-contain"
-          />
+          <video ref={videoRef} autoPlay playsInline className="w-full h-full object-contain" />
 
           {/* Connection Status Overlay */}
           {!isConnected && (
@@ -120,9 +115,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
               <div className="text-center">
                 <Loader2 className="animate-spin h-16 w-16 text-yellow-500 mx-auto mb-4" />
                 <p className="text-white text-lg">Requesting stream...</p>
-                <p className="text-gray-300 text-sm mt-2">
-                  Waiting for student to accept
-                </p>
+                <p className="text-gray-300 text-sm mt-2">Waiting for student to accept</p>
               </div>
             </div>
           )}
@@ -155,9 +148,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
           <div className="absolute bottom-4 left-4 flex gap-3">
             <div
               className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                student.cameraEnabled
-                  ? "bg-green-500 bg-opacity-80"
-                  : "bg-gray-700 bg-opacity-80"
+                student.cameraEnabled ? "bg-green-500 bg-opacity-80" : "bg-gray-700 bg-opacity-80"
               }`}
             >
               <Camera size={18} className="text-white" />
@@ -184,12 +175,10 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
         <div className="bg-gray-800 px-6 py-4 border-t border-gray-700">
           <div className="flex items-center justify-between text-sm">
             <div className="text-gray-400">
-              <span className="font-medium text-white">Email:</span>{" "}
-              {student.email}
+              <span className="font-medium text-white">Email:</span> {student.email}
             </div>
             <div className="text-gray-400">
-              <span className="font-medium text-white">Submission ID:</span>{" "}
-              {student.submissionId}
+              <span className="font-medium text-white">Submission ID:</span> {student.submissionId}
             </div>
           </div>
         </div>

@@ -1,22 +1,14 @@
 import React from "react";
 import Image from "next/image";
 
-import {
-  getAnswerStatus,
-  formatAnswerText,
-  getCorrectAnswerText
-} from "../utils";
+import { getAnswerStatus, formatAnswerText, getCorrectAnswerText } from "../utils";
 
 type Props = {
   answer: any;
   index: number;
   submissionId: number;
   gradingScores: Record<string, number>;
-  onScoreChange: (
-    submissionId: number,
-    questionIndex: number,
-    score: number
-  ) => void;
+  onScoreChange: (submissionId: number, questionIndex: number, score: number) => void;
   isTeacherView: boolean;
 };
 
@@ -26,12 +18,11 @@ export default function QuestionItem({
   submissionId,
   gradingScores,
   onScoreChange,
-  isTeacherView
+  isTeacherView,
 }: Props) {
   const key = `${submissionId}-${index}`;
   const localScore = gradingScores[key];
-  const displayScore =
-    localScore !== undefined ? localScore : answer.obtainedMarks || 0;
+  const displayScore = localScore !== undefined ? localScore : answer.obtainedMarks || 0;
 
   const question = answer.question;
   const studentAnswerText = answer.answer;
@@ -49,13 +40,13 @@ export default function QuestionItem({
   const formattedStudentAnswer = formatAnswerText(
     studentAnswerText,
     question?.type,
-    effectiveOptions
+    effectiveOptions,
   );
 
   const correctAnswerText = getCorrectAnswerText(
     question?.correctAnswer ?? undefined,
     question?.type,
-    effectiveOptions
+    effectiveOptions,
   );
 
   return (
@@ -97,19 +88,12 @@ export default function QuestionItem({
                 type="number"
                 min="0"
                 max={maxMarks}
-                value={
-                  localScore !== undefined
-                    ? localScore
-                    : answer.obtainedMarks || 0
-                }
+                value={localScore !== undefined ? localScore : answer.obtainedMarks || 0}
                 onChange={(e) =>
                   onScoreChange(
                     submissionId,
                     index,
-                    Math.min(
-                      maxMarks,
-                      Math.max(0, parseInt(e.target.value) || 0)
-                    )
+                    Math.min(maxMarks, Math.max(0, parseInt(e.target.value) || 0)),
                   )
                 }
                 className="w-16 px-3 py-2 border-2 border-gray-400 rounded-lg text-center font-semibold text-gray-900 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-all"
@@ -131,8 +115,7 @@ export default function QuestionItem({
         <p className="text-gray-800 font-medium">{formattedStudentAnswer}</p>
       </div>
 
-      {(question?.type === "MULTIPLE_CHOICE" ||
-        question?.type === "TRUE_FALSE") && (
+      {(question?.type === "MULTIPLE_CHOICE" || question?.type === "TRUE_FALSE") && (
         <div className="bg-white/80 rounded-xl p-4 mb-4">
           <h6 className="font-semibold text-green-800 mb-2">Correct Answer:</h6>
           <p className="text-green-700 font-medium">{correctAnswerText}</p>

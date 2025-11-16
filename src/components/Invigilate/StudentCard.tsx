@@ -7,10 +7,7 @@ interface StudentCardProps {
   onClick: () => void;
 }
 
-export const StudentCard: React.FC<StudentCardProps> = ({
-  student,
-  onClick,
-}) => {
+export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick }) => {
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -49,9 +46,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({
       </div>
 
       {/* Student Name */}
-      <h3 className="text-white text-center font-semibold text-lg mb-3 truncate">
-        {student.name}
-      </h3>
+      <h3 className="text-white text-center font-semibold text-lg mb-3 truncate">{student.name}</h3>
 
       {/* Camera and Mic Status */}
       <div className="flex justify-center gap-4">
@@ -61,21 +56,13 @@ export const StudentCard: React.FC<StudentCardProps> = ({
           }`}
           title={student.cameraEnabled ? "Camera enabled" : "Camera disabled"}
         >
-          {student.cameraEnabled ? (
-            <Camera size={18} />
-          ) : (
-            <CameraOff size={18} />
-          )}
+          {student.cameraEnabled ? <Camera size={18} /> : <CameraOff size={18} />}
         </div>
         <div
           className={`flex items-center gap-1 ${
             student.microphoneEnabled ? "text-green-400" : "text-gray-500"
           }`}
-          title={
-            student.microphoneEnabled
-              ? "Microphone enabled"
-              : "Microphone disabled"
-          }
+          title={student.microphoneEnabled ? "Microphone enabled" : "Microphone disabled"}
         >
           {student.microphoneEnabled ? <Mic size={18} /> : <MicOff size={18} />}
         </div>

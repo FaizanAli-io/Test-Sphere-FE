@@ -11,17 +11,14 @@ export interface WebRTCConfig {
 }
 
 export const DEFAULT_WEBRTC_CONFIG: WebRTCConfig = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-  ],
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
 };
 
 /**
  * Creates a new RTCPeerConnection with the given configuration
  */
 export const createPeerConnection = (
-  config: WebRTCConfig = DEFAULT_WEBRTC_CONFIG
+  config: WebRTCConfig = DEFAULT_WEBRTC_CONFIG,
 ): RTCPeerConnection => {
   return new RTCPeerConnection(config);
 };
@@ -31,7 +28,7 @@ export const createPeerConnection = (
  */
 export const handleRemoteStream = (
   peerConnection: RTCPeerConnection,
-  videoElement: HTMLVideoElement
+  videoElement: HTMLVideoElement,
 ): void => {
   peerConnection.ontrack = (event) => {
     if (event.streams && event.streams[0]) {
@@ -46,7 +43,7 @@ export const handleRemoteStream = (
  */
 export const handleIceCandidate = (
   peerConnection: RTCPeerConnection,
-  onCandidate: (candidate: RTCIceCandidate) => void
+  onCandidate: (candidate: RTCIceCandidate) => void,
 ): void => {
   peerConnection.onicecandidate = (event) => {
     if (event.candidate) {
@@ -60,7 +57,7 @@ export const handleIceCandidate = (
  */
 export const handleConnectionStateChange = (
   peerConnection: RTCPeerConnection,
-  onStateChange: (state: RTCPeerConnectionState) => void
+  onStateChange: (state: RTCPeerConnectionState) => void,
 ): void => {
   peerConnection.onconnectionstatechange = () => {
     onStateChange(peerConnection.connectionState);
@@ -72,7 +69,7 @@ export const handleConnectionStateChange = (
  * TODO: Send offer to signaling server
  */
 export const createOffer = async (
-  peerConnection: RTCPeerConnection
+  peerConnection: RTCPeerConnection,
 ): Promise<RTCSessionDescriptionInit> => {
   const offer = await peerConnection.createOffer();
   await peerConnection.setLocalDescription(offer);
@@ -85,7 +82,7 @@ export const createOffer = async (
  */
 export const handleAnswer = async (
   peerConnection: RTCPeerConnection,
-  answer: RTCSessionDescriptionInit
+  answer: RTCSessionDescriptionInit,
 ): Promise<void> => {
   await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
 };
@@ -96,7 +93,7 @@ export const handleAnswer = async (
  */
 export const addIceCandidate = async (
   peerConnection: RTCPeerConnection,
-  candidate: RTCIceCandidateInit
+  candidate: RTCIceCandidateInit,
 ): Promise<void> => {
   await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
 };
@@ -104,9 +101,7 @@ export const addIceCandidate = async (
 /**
  * Closes the peer connection and cleans up resources
  */
-export const closePeerConnection = (
-  peerConnection: RTCPeerConnection
-): void => {
+export const closePeerConnection = (peerConnection: RTCPeerConnection): void => {
   peerConnection.close();
 };
 

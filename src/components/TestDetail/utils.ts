@@ -11,16 +11,14 @@ export const formatDate = (dateString: string | undefined): string => {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit"
+    second: "2-digit",
   });
 };
 
 /**
  * Calculate total possible marks from answers array
  */
-export const calculateTotalPossibleMarks = (
-  answers: Answer[] | undefined
-): number => {
+export const calculateTotalPossibleMarks = (answers: Answer[] | undefined): number => {
   if (!answers) return 0;
   return answers.reduce((total, answer) => {
     // Check both answer.maxMarks and answer.question.maxMarks
@@ -32,14 +30,9 @@ export const calculateTotalPossibleMarks = (
 /**
  * Calculate current total obtained marks from answers array
  */
-export const calculateCurrentTotalMarks = (
-  answers: Answer[] | undefined
-): number => {
+export const calculateCurrentTotalMarks = (answers: Answer[] | undefined): number => {
   if (!answers) return 0;
-  return answers.reduce(
-    (total, answer) => total + (answer.obtainedMarks || 0),
-    0
-  );
+  return answers.reduce((total, answer) => total + (answer.obtainedMarks || 0), 0);
 };
 
 /**
@@ -49,10 +42,7 @@ export const getSubmissionStatus = (submission: {
   status?: string;
   obtainedMarks?: number | null;
 }): string => {
-  if (
-    submission.obtainedMarks !== null &&
-    submission.obtainedMarks !== undefined
-  ) {
+  if (submission.obtainedMarks !== null && submission.obtainedMarks !== undefined) {
     return "Graded";
   }
   if (submission.status === "SUBMITTED") {
@@ -78,10 +68,7 @@ export const getSubmissionStatusColor = (status: string): string => {
 /**
  * Calculate time taken between two dates in minutes
  */
-export const calculateTimeTaken = (
-  startTime: string,
-  endTime: string
-): number => {
+export const calculateTimeTaken = (startTime: string, endTime: string): number => {
   const start = new Date(startTime);
   const end = new Date(endTime);
   return Math.round((end.getTime() - start.getTime()) / (1000 * 60));
@@ -136,7 +123,7 @@ export const validateQuestion = (question: {
 export const formatAnswerText = (
   answer: string | undefined,
   questionType?: string,
-  options?: string[]
+  options?: string[],
 ): string => {
   if (!answer) return "No answer provided";
 
@@ -170,7 +157,7 @@ export const formatAnswerText = (
 export const getCorrectAnswerText = (
   correctAnswer: number | undefined,
   questionType?: string,
-  options?: string[]
+  options?: string[],
 ): string => {
   if (questionType === "MULTIPLE_CHOICE") {
     if (options && correctAnswer !== undefined && options[correctAnswer]) {

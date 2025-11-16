@@ -81,10 +81,7 @@ export const useTestExam = (testId: number | null) => {
         throw new Error(errorData.message || "Failed to fetch questions");
       }
 
-      const [testData, questionsData] = await Promise.all([
-        testRes.json(),
-        questionsRes.json(),
-      ]);
+      const [testData, questionsData] = await Promise.all([testRes.json(), questionsRes.json()]);
 
       setTest({ ...testData, questions: shuffleArray(questionsData) });
     } catch (err) {
@@ -121,8 +118,7 @@ export const useTestExam = (testId: number | null) => {
       setTestStarted(true);
       setTimeRemaining(test ? test.duration * 60 : 30 * 60);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to start test";
+      const errorMessage = err instanceof Error ? err.message : "Failed to start test";
       notifications.showError(errorMessage);
       setError(errorMessage);
     } finally {
@@ -158,9 +154,7 @@ export const useTestExam = (testId: number | null) => {
       notifications.showSuccess("Test submitted successfully!");
       router.push("/student");
     } catch (err) {
-      notifications.showError(
-        err instanceof Error ? err.message : "Error submitting test"
-      );
+      notifications.showError(err instanceof Error ? err.message : "Error submitting test");
     } finally {
       setSubmitting(false);
     }
@@ -199,10 +193,8 @@ export const useTestExam = (testId: number | null) => {
   // Memoized calculations to avoid redundant computations
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = test?.questions.length || 0;
-  const totalMarks =
-    test?.questions.reduce((sum, q) => sum + q.maxMarks, 0) || 0;
-  const progress =
-    totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+  const totalMarks = test?.questions.reduce((sum, q) => sum + q.maxMarks, 0) || 0;
+  const progress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   return {
     test,

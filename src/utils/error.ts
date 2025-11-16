@@ -7,8 +7,7 @@ export function extractErrorMessage(
   if (err && typeof err === "object") {
     // Narrow potential 'message' property
     const maybeMessage = (err as { message?: unknown }).message;
-    if (typeof maybeMessage === "string" && maybeMessage.trim())
-      return maybeMessage;
+    if (typeof maybeMessage === "string" && maybeMessage.trim()) return maybeMessage;
   }
   return fallback;
 }

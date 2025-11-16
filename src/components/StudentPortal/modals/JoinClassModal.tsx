@@ -30,9 +30,7 @@ export default function JoinClassModal({
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md transform transition-all duration-300">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-          Join a Class
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Join a Class</h2>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded">

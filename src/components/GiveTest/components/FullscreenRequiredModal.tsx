@@ -6,9 +6,11 @@ interface FullscreenRequiredModalProps {
   onCancel: () => void;
 }
 
-export const FullscreenRequiredModal: React.FC<
-  FullscreenRequiredModalProps
-> = ({ isOpen, onTryAgain, onCancel }) => {
+export const FullscreenRequiredModal: React.FC<FullscreenRequiredModalProps> = ({
+  isOpen,
+  onTryAgain,
+  onCancel,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -19,22 +21,17 @@ export const FullscreenRequiredModal: React.FC<
             <span className="text-4xl">🖥️</span>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Fullscreen Mode Required
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Fullscreen Mode Required</h2>
 
           <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-            To start the test, you must allow fullscreen mode. This ensures a
-            secure testing environment and prevents distractions.
+            To start the test, you must allow fullscreen mode. This ensures a secure testing
+            environment and prevents distractions.
           </p>
 
           <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-blue-800 mb-2">Important:</h3>
             <ul className="text-blue-700 text-sm space-y-1 text-left">
-              <li>
-                • Exiting fullscreen during the test will be recorded as a
-                violation
-              </li>
+              <li>• Exiting fullscreen during the test will be recorded as a violation</li>
               <li>• 2 violations will result in automatic test submission</li>
               <li>• Your teacher will be notified of any violations</li>
             </ul>

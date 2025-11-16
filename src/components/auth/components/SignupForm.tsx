@@ -32,7 +32,7 @@ export default function SignupForm({
   setSuccess,
   setLoading,
   setOtpSent,
-  router
+  router,
 }: SignupFormProps) {
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
@@ -56,12 +56,12 @@ export default function SignupForm({
         name,
         role,
         cnic,
-        profileImage: profileImage || undefined
+        profileImage: profileImage || undefined,
       };
 
       const res = await api("/auth/signup", {
         method: "POST",
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       const data: { message?: string } = await res.json();
@@ -69,13 +69,13 @@ export default function SignupForm({
       if (!res.ok) {
         if (res.status === 409) {
           setError(
-            "Email already registered. If you haven't verified your account, you can try to verify with OTP or login if already verified."
+            "Email already registered. If you haven't verified your account, you can try to verify with OTP or login if already verified.",
           );
           setOtpSent(true);
           return;
         } else if (res.status === 500) {
           setError(
-            "Account created but there was an issue sending verification email. You can try to verify with OTP or login if already verified."
+            "Account created but there was an issue sending verification email. You can try to verify with OTP or login if already verified.",
           );
           setOtpSent(true);
           return;
@@ -87,12 +87,7 @@ export default function SignupForm({
       setOtpSent(true);
       setSuccess("OTP sent to your email! Please verify to continue.");
     } catch (err: unknown) {
-      setError(
-        extractErrorMessage(
-          err,
-          "An unexpected error occurred. Please try again."
-        )
-      );
+      setError(extractErrorMessage(err, "An unexpected error occurred. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -116,9 +111,7 @@ export default function SignupForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Full Name
-        </label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -134,9 +127,7 @@ export default function SignupForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Email Address
-        </label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -152,9 +143,7 @@ export default function SignupForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Password
-        </label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -172,19 +161,13 @@ export default function SignupForm({
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
           >
-            {showPassword ? (
-              <EyeOff className="w-5 h-5" />
-            ) : (
-              <Eye className="w-5 h-5" />
-            )}
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Role
-        </label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
         <select
           value={role}
           onChange={(e) => setRole(e.target.value)}
@@ -201,9 +184,7 @@ export default function SignupForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          CNIC
-        </label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">CNIC</label>
         <div className="relative">
           <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -226,8 +207,7 @@ export default function SignupForm({
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Profile Image URL{" "}
-          <span className="text-gray-400 font-normal">(Optional)</span>
+          Profile Image URL <span className="text-gray-400 font-normal">(Optional)</span>
         </label>
         <input
           type="url"

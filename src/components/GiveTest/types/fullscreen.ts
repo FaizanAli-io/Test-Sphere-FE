@@ -26,7 +26,7 @@ export interface FullscreenEventTarget extends EventTarget {
       | "mozfullscreenchange"
       | "msfullscreenchange",
     listener: EventListener,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): void;
   removeEventListener(
     type:
@@ -35,6 +35,6 @@ export interface FullscreenEventTarget extends EventTarget {
       | "mozfullscreenchange"
       | "msfullscreenchange",
     listener: EventListener,
-    options?: boolean | EventListenerOptions
+    options?: boolean | EventListenerOptions,
   ): void;
 }

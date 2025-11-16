@@ -15,7 +15,7 @@ export type {
   ViewContext,
   SubmissionDetailProps,
   GradeSubmissionPayload,
-  NotificationFunctions
+  NotificationFunctions,
 } from "./types";
 
 export {
@@ -29,5 +29,5 @@ export {
   getSubmissionStatus,
   getSubmissionStatusColor,
   isAnswerCorrect,
-  normalizeSubmission
+  normalizeSubmission,
 } from "./utils";

@@ -16,9 +16,7 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error(
-      "useNotifications must be used within a NotificationProvider"
-    );
+    throw new Error("useNotifications must be used within a NotificationProvider");
   }
   return context;
 };
@@ -27,9 +25,7 @@ interface NotificationProviderProps {
   children: React.ReactNode;
 }
 
-export const NotificationProvider: React.FC<NotificationProviderProps> = ({
-  children,
-}) => {
+export const NotificationProvider: React.FC<NotificationProviderProps> = ({ children }) => {
   const {
     notifications,
     removeNotification,
@@ -48,14 +44,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   }, [clearAllTimeouts]);
 
   return (
-    <NotificationContext.Provider
-      value={{ showSuccess, showError, showWarning, showInfo }}
-    >
+    <NotificationContext.Provider value={{ showSuccess, showError, showWarning, showInfo }}>
       {children}
-      <NotificationBar
-        notifications={notifications}
-        onRemove={removeNotification}
-      />
+      <NotificationBar notifications={notifications} onRemove={removeNotification} />
     </NotificationContext.Provider>
   );
 };

@@ -6,10 +6,7 @@ interface NotificationBarProps {
   onRemove: (id: string) => void;
 }
 
-export default function NotificationBar({
-  notifications,
-  onRemove
-}: NotificationBarProps) {
+export default function NotificationBar({ notifications, onRemove }: NotificationBarProps) {
   if (notifications.length === 0) return null;
 
   const getNotificationStyles = (type: Notification["type"]) => {

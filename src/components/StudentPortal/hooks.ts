@@ -14,7 +14,7 @@ export function useStudentClasses() {
     try {
       const response = await api("/classes", {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -31,9 +31,7 @@ export function useStudentClasses() {
 
               // Case 1: shape already a class
               const source =
-                "class" in value
-                  ? (value.class as Record<string, unknown> | undefined)
-                  : value;
+                "class" in value ? (value.class as Record<string, unknown> | undefined) : value;
               if (!source) return null;
 
               const approved =
@@ -61,7 +59,7 @@ export function useStudentClasses() {
                 createdAt: source.createdAt as string | undefined,
                 approved,
                 disabled: approved === false,
-                statusLabel: approved === false ? "Pending Approval" : undefined
+                statusLabel: approved === false ? "Pending Approval" : undefined,
               } as ClassData;
             })
             .filter(Boolean) as ClassData[])
@@ -69,9 +67,7 @@ export function useStudentClasses() {
 
       setClasses(normalized.filter((c) => Number.isFinite(c.id)));
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "An unexpected error occurred"
-      );
+      setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -81,7 +77,7 @@ export function useStudentClasses() {
     const response = await api("/classes/join", {
       method: "POST",
       auth: true,
-      body: JSON.stringify({ code: classCode.trim().toUpperCase() })
+      body: JSON.stringify({ code: classCode.trim().toUpperCase() }),
     });
 
     if (!response.ok) {
@@ -96,7 +92,7 @@ export function useStudentClasses() {
   const leaveClass = useCallback(async (id: number) => {
     const response = await api(`/classes/${id}/leave`, {
       method: "POST",
-      auth: true
+      auth: true,
     });
 
     if (!response.ok) {
@@ -119,7 +115,7 @@ export function useStudentClasses() {
     fetchClasses,
     joinClass,
     leaveClass,
-    setError
+    setError,
   };
 }
 
@@ -134,7 +130,7 @@ export function useClassDetails() {
     try {
       const response = await api(`/classes/${id}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
 
       if (!response.ok) {
@@ -160,13 +156,12 @@ export function useClassDetails() {
           : typeof data.testCount === "number"
             ? data.testCount
             : 0,
-        createdAt: data.createdAt
+        createdAt: data.createdAt,
       };
       setSelectedClass(normalized);
       return normalized;
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       setError(errorMessage);
       throw err;
     } finally {
@@ -180,7 +175,7 @@ export function useClassDetails() {
     error,
     fetchClassDetails,
     setSelectedClass,
-    setError
+    setError,
   };
 }
 
@@ -195,7 +190,7 @@ export function useTestsForClass() {
     try {
       const response = await api(`/tests/class/${id}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!response.ok) {
         const data = await response.json();
@@ -222,11 +217,10 @@ export function useTestsForClass() {
                 id,
                 title: obj.title ?? "",
                 description: obj.description,
-                duration:
-                  typeof obj.duration === "number" ? obj.duration : undefined,
+                duration: typeof obj.duration === "number" ? obj.duration : undefined,
                 startAt: obj.startAt,
                 endAt: obj.endAt,
-                status: obj.status
+                status: obj.status,
               } as Test;
             })
             .filter((v): v is Test => v !== null)
@@ -234,8 +228,7 @@ export function useTestsForClass() {
       setTests(normalized);
       return normalized;
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       setError(errorMessage);
       setTests([]);
       throw err;
@@ -250,7 +243,7 @@ export function useTestsForClass() {
     error,
     fetchTestsForClass,
     setTests,
-    setError
+    setError,
   };
 }
 
@@ -270,7 +263,7 @@ export function useAllTests() {
         try {
           const response = await api(`/tests/class/${classItem.id}`, {
             method: "GET",
-            auth: true
+            auth: true,
           });
 
           if (response.ok) {
@@ -280,26 +273,15 @@ export function useAllTests() {
                   .map(
                     (test: Record<string, unknown>): Test => ({
                       id: Number(test.id),
-                      title:
-                        typeof test.title === "string"
-                          ? test.title
-                          : "Untitled Test",
-                      description:
-                        typeof test.description === "string"
-                          ? test.description
-                          : "",
+                      title: typeof test.title === "string" ? test.title : "Untitled Test",
+                      description: typeof test.description === "string" ? test.description : "",
                       classId: classItem.id,
                       className: classItem.name,
                       duration: Number(test.duration) || 0,
-                      startAt:
-                        typeof test.startAt === "string"
-                          ? test.startAt
-                          : undefined,
-                      endAt:
-                        typeof test.endAt === "string" ? test.endAt : undefined,
-                      status:
-                        typeof test.status === "string" ? test.status : "DRAFT"
-                    })
+                      startAt: typeof test.startAt === "string" ? test.startAt : undefined,
+                      endAt: typeof test.endAt === "string" ? test.endAt : undefined,
+                      status: typeof test.status === "string" ? test.status : "DRAFT",
+                    }),
                   )
                   .filter((test: Test) => Number.isFinite(test.id))
               : [];
@@ -307,18 +289,14 @@ export function useAllTests() {
             allTestsFromClasses.push(...classTests);
           }
         } catch (classErr) {
-          console.warn(
-            `Failed to fetch tests for class ${classItem.name}:`,
-            classErr
-          );
+          console.warn(`Failed to fetch tests for class ${classItem.name}:`, classErr);
           // Continue with other classes even if one fails
         }
       }
 
       setAllTests(allTestsFromClasses);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       setAllTestsError(errorMessage);
     } finally {
       setAllTestsLoading(false);
@@ -331,7 +309,7 @@ export function useAllTests() {
     allTestsError,
     fetchAllTests,
     setAllTests,
-    setAllTestsError
+    setAllTestsError,
   };
 }
 
@@ -363,7 +341,7 @@ export function useNotifications() {
         showError("Failed to copy code");
       }
     },
-    [showError]
+    [showError],
   );
 
   return {
@@ -373,6 +351,6 @@ export function useNotifications() {
     showSuccess,
     showError,
     clearError,
-    handleCopyCode
+    handleCopyCode,
   };
 }

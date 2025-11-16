@@ -1,11 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../../hooks/useApi";
-import {
-  Submission,
-  ViewContext,
-  GradeSubmissionPayload,
-  NotificationFunctions,
-} from "./types";
+import { Submission, ViewContext, GradeSubmissionPayload, NotificationFunctions } from "./types";
 import { normalizeSubmission } from "./utils";
 
 /**
@@ -14,13 +9,12 @@ import { normalizeSubmission } from "./utils";
 export const useSubmissions = (
   testId?: string,
   viewContext: ViewContext = "teacher",
-  notifications?: NotificationFunctions
+  notifications?: NotificationFunctions,
 ) => {
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
   const [submissionsLoading, setSubmissionsLoading] = useState(false);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [selectedSubmission, setSelectedSubmission] =
-    useState<Submission | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
   // Removed loadingSubmissionDetails - using rich data from list API
 
   /**
@@ -33,9 +27,7 @@ export const useSubmissions = (
 
     try {
       const endpoint =
-        viewContext === "teacher"
-          ? `/submissions/test/${testId}`
-          : "/submissions/student";
+        viewContext === "teacher" ? `/submissions/test/${testId}` : "/submissions/student";
 
       const response = await api(endpoint, {
         method: "GET",
@@ -56,9 +48,7 @@ export const useSubmissions = (
       setSubmissions(normalizedSubmissions);
     } catch (err) {
       console.error("Failed to fetch submissions:", err);
-      notifications?.showError(
-        err instanceof Error ? err.message : "Failed to fetch submissions"
-      );
+      notifications?.showError(err instanceof Error ? err.message : "Failed to fetch submissions");
       setSubmissions([]);
     } finally {
       setSubmissionsLoading(false);
@@ -95,26 +85,23 @@ export const useSubmissions = (
 
         setSubmissions((prevSubmissions) =>
           prevSubmissions.map((submission) =>
-            submission.id === submissionId ? updatedSubmission : submission
-          )
+            submission.id === submissionId ? updatedSubmission : submission,
+          ),
         );
 
         if (selectedSubmission?.id === submissionId) {
           setSelectedSubmission(updatedSubmission);
         }
 
-        notifications?.showSuccess(
-          `Graded ${payload.answers.length} answer(s) successfully`
-        );
+        notifications?.showSuccess(`Graded ${payload.answers.length} answer(s) successfully`);
         return true;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to grade submission";
+        const errorMessage = err instanceof Error ? err.message : "Failed to grade submission";
         notifications?.showError(errorMessage);
         return false;
       }
     },
-    [viewContext, notifications, selectedSubmission?.id]
+    [viewContext, notifications, selectedSubmission?.id],
   );
 
   const deleteSubmission = useCallback(
@@ -142,9 +129,7 @@ export const useSubmissions = (
         }
 
         // Some APIs return 204 No Content, so no JSON parse here
-        setSubmissions((prev) =>
-          prev.filter((submission) => submission.id !== submissionId)
-        );
+        setSubmissions((prev) => prev.filter((submission) => submission.id !== submissionId));
         if (selectedSubmission?.id === submissionId) {
           setSelectedSubmission(null);
         }
@@ -152,13 +137,12 @@ export const useSubmissions = (
         notifications?.showSuccess("Submission deleted successfully");
         return true;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to delete submission";
+        const errorMessage = err instanceof Error ? err.message : "Failed to delete submission";
         notifications?.showError(errorMessage);
         return false;
       }
     },
-    [viewContext, notifications, selectedSubmission?.id]
+    [viewContext, notifications, selectedSubmission?.id],
   );
 
   /**
@@ -191,7 +175,7 @@ export const useSubmissions = (
     (testId: number): Submission | undefined => {
       return submissions.find((sub) => sub.testId === testId);
     },
-    [submissions]
+    [submissions],
   );
 
   /**
@@ -201,7 +185,7 @@ export const useSubmissions = (
     (classId: number): Submission[] => {
       return submissions.filter((sub) => sub.test?.classId === classId);
     },
-    [submissions]
+    [submissions],
   );
 
   useEffect(() => {

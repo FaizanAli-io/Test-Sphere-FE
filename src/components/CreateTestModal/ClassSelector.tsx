@@ -18,7 +18,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
   classId,
   prefilledClassId,
   onRetry,
-  onSelect
+  onSelect,
 }) => {
   return (
     <div>

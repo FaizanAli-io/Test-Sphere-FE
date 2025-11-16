@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  ReactElement,
-  useCallback,
-  useRef
-} from "react";
+import React, { useState, useEffect, ReactElement, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 
 import api from "../../hooks/useApi"; // adjusted path (folder moved)
@@ -47,7 +41,7 @@ const BUTTON_STYLES = {
   primary:
     "px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl",
   secondary:
-    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl"
+    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl",
 };
 
 export default function ClassDetail(): ReactElement {
@@ -74,7 +68,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const classRes = await api(`/classes/${classId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!classRes.ok) {
         const errorData = await classRes.json();
@@ -95,27 +89,25 @@ export default function ClassDetail(): ReactElement {
                 typeof (s as { student?: unknown }).student === "object" &&
                 (s as { student?: unknown }).student !== null
               ) {
-                const inner =
-                  (s as { student: Partial<Student> }).student || {};
+                const inner = (s as { student: Partial<Student> }).student || {};
                 return {
                   id: Number(inner.id),
                   name: inner.name ?? "",
-                  email: inner.email ?? ""
+                  email: inner.email ?? "",
                 } as Student;
               }
               const flat = s as Partial<Student>;
               return {
                 id: Number(flat.id),
                 name: flat.name ?? "",
-                email: flat.email ?? ""
+                email: flat.email ?? "",
               } as Student;
             })
-          : []
+          : [],
       };
       setClassData(normalized);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to fetch class data";
+      const message = err instanceof Error ? err.message : "Failed to fetch class data";
       console.error(message);
     } finally {
       setLoading(false);
@@ -131,13 +123,13 @@ export default function ClassDetail(): ReactElement {
           try {
             const res = await api(`/tests/${test.id}/questions`, {
               method: "GET",
-              auth: true
+              auth: true,
             });
             if (res.ok) {
               const questions = await res.json();
               return {
                 ...test,
-                questionCount: Array.isArray(questions) ? questions.length : 0
+                questionCount: Array.isArray(questions) ? questions.length : 0,
               };
             }
             return { ...test, questionCount: 0 };
@@ -145,7 +137,7 @@ export default function ClassDetail(): ReactElement {
             console.error(error);
             return { ...test, questionCount: 0 };
           }
-        })
+        }),
       );
       setTests(testsWithCounts);
     } catch (err) {
@@ -161,7 +153,7 @@ export default function ClassDetail(): ReactElement {
     try {
       const testsRes = await api(`/tests/class/${classId}`, {
         method: "GET",
-        auth: true
+        auth: true,
       });
       if (!testsRes.ok) {
         const errorData = await testsRes.json();
@@ -191,7 +183,7 @@ export default function ClassDetail(): ReactElement {
       message: `Are you sure you want to remove ${studentName} from this class? This action cannot be undone.`,
       confirmText: "Remove",
       cancelText: "Cancel",
-      type: "danger"
+      type: "danger",
     });
     if (!confirmed) return;
     setKickingStudent(studentId);
@@ -199,7 +191,7 @@ export default function ClassDetail(): ReactElement {
       const response = await api(`/classes/${classId}/remove`, {
         method: "POST",
         auth: true,
-        body: JSON.stringify({ studentId })
+        body: JSON.stringify({ studentId }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -228,9 +220,7 @@ export default function ClassDetail(): ReactElement {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200" />
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0" />
           </div>
-          <p className="mt-6 text-gray-600 font-semibold text-lg">
-            Loading class details...
-          </p>
+          <p className="mt-6 text-gray-600 font-semibold text-lg">Loading class details...</p>
         </div>
       </div>
     );
@@ -243,14 +233,9 @@ export default function ClassDetail(): ReactElement {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">⚠</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Error Loading Class
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Error Loading Class</h2>
           <p className="text-gray-600 mb-8 text-lg">{"Class not found"}</p>
-          <button
-            onClick={() => router.push("/teacher")}
-            className={BUTTON_STYLES.primary}
-          >
+          <button onClick={() => router.push("/teacher")} className={BUTTON_STYLES.primary}>
             Back to Teacher Portal
           </button>
         </div>

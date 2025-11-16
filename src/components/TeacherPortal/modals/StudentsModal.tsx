@@ -25,9 +25,7 @@ export default function StudentsModal({
               👥
             </div>
             <div>
-              <h3 className="text-3xl font-bold text-gray-900">
-                {selectedClass.name}
-              </h3>
+              <h3 className="text-3xl font-bold text-gray-900">{selectedClass.name}</h3>
               <p className="text-gray-600 mt-1">
                 {selectedClass.students?.length || 0} enrolled{" "}
                 {selectedClass.students?.length === 1 ? "student" : "students"}
@@ -54,12 +52,8 @@ export default function StudentsModal({
                     {index + 1}
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900 text-lg">
-                      {classStudent.student.name}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {classStudent.student.email}
-                    </p>
+                    <p className="font-bold text-gray-900 text-lg">{classStudent.student.name}</p>
+                    <p className="text-sm text-gray-600">{classStudent.student.email}</p>
                   </div>
                 </div>
                 <button
@@ -82,14 +76,10 @@ export default function StudentsModal({
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
               👥
             </div>
-            <p className="text-gray-600 font-semibold text-lg">
-              No students enrolled yet
-            </p>
+            <p className="text-gray-600 font-semibold text-lg">No students enrolled yet</p>
             <p className="text-gray-500 text-sm mt-2">
               Share class code:{" "}
-              <span className="font-bold text-indigo-600">
-                {selectedClass.code}
-              </span>
+              <span className="font-bold text-indigo-600">{selectedClass.code}</span>
             </p>
           </div>
         )}
