@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, Camera, Mic, Loader2 } from "lucide-react";
-import type { InvigilatingStudent } from "@/hooks/useInvigilateStudents";
+
 import { useWebRTC } from "@/hooks/useWebRTC";
+import type { InvigilatingStudent } from "@/hooks/useInvigilateStudents";
 
 interface StudentLivestreamModalProps {
   student: InvigilatingStudent | null;
@@ -14,7 +15,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
   student,
   teacherId,
   testId,
-  onClose,
+  onClose
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isRequesting, setIsRequesting] = useState(false);
@@ -26,12 +27,12 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     connectionState,
     remoteStream,
     requestStream,
-    stopViewingStream,
+    stopViewingStream
   } = useWebRTC({
     userId: teacherId,
     role: "teacher",
     testId,
-    enabled: !!student,
+    enabled: !!student
   });
 
   useEffect(() => {

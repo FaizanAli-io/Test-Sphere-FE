@@ -6,17 +6,22 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 
 import {
   TestHeader,
-  useTestExam,
   QuestionRenderer,
   TestInstructions,
   SubmitConfirmModal,
-  useFullscreenMonitoring,
-  FullscreenViolationWarning,
   FullscreenRequiredModal,
-} from "./index";
-import { useTestMonitoring } from "./hooks/useTestMonitoring";
-import { useImageKitUploader } from "@/hooks/useImageKitUploader";
+  FullscreenViolationWarning
+} from "./components";
+
+import {
+  useTestExam,
+  useTestMonitoring,
+  useFullscreenMonitoring
+} from "./hooks";
+
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useImageKitUploader } from "@/hooks/useImageKitUploader";
+import { TEST_SECURITY_CONFIG } from "./constants";
 
 export default function GiveTest() {
   const router = useRouter();
@@ -32,6 +37,7 @@ export default function GiveTest() {
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [requireWebcam, setRequireWebcam] = useState(true);
   const [showFullscreenModal, setShowFullscreenModal] = useState(false);
+  const [startErrors, setStartErrors] = useState<string[]>([]);
 
   const {
     test,
@@ -48,7 +54,7 @@ export default function GiveTest() {
     startTest,
     updateAnswer,
     submitTest,
-    formatTime,
+    formatTime
   } = useTestExam(testId);
 
   const { config } = useImageKitUploader();
@@ -63,20 +69,30 @@ export default function GiveTest() {
     maxViolations,
     isFullscreenSupported,
     enterFullscreen,
-    dismissWarning,
+    dismissWarning
   } = useFullscreenMonitoring({
     submissionId,
     isTestActive: testStarted,
     onViolationLimit: async () => {
       // Auto-submit test when violation limit is reached
       notifications.showError(
-        `Test auto-submitted due to ${maxViolations} fullscreen violations.`
+        "Test auto-submitted due to multiple fullscreen violations."
       );
 
       // Log violation data locally for reference (frontend only)
 
       await submitTest();
     },
+    onExtendedFullscreenExit: async () => {
+      // Auto-submit test when user stays out of fullscreen for too long
+      notifications.showError(
+        "Test auto-submitted due to extended fullscreen violation."
+      );
+
+      // Log violation data locally for reference (frontend only)
+
+      await submitTest();
+    }
   });
 
   // Initialize monitoring hook with randomized intervals (5-10 seconds)
@@ -89,22 +105,82 @@ export default function GiveTest() {
     logs,
     isCapturing,
     requestScreenPermission,
-    checkWebcamAvailable,
+    checkWebcamAvailable
   } = useTestMonitoring({
     submissionId,
     isTestActive: testStarted,
     requireWebcam,
-    isFullscreen,
+    isFullscreen
   });
 
+  // Detect multiple displays using the Window Management API when available
+  const detectMultipleDisplays = async (): Promise<string | null> => {
+    // Skip check if multiple displays are allowed
+    if (TEST_SECURITY_CONFIG.ALLOW_MULTIPLE_DISPLAYS) {
+      return null;
+    }
+
+    try {
+      const anyNav: any = navigator as unknown as any;
+      const anyWin: any = window as unknown as any;
+
+      if (typeof anyWin.getScreenDetails !== "function") {
+        // API not supported; we cannot reliably detect multiple screens
+        // Return a guidance error to keep policy strict, or null to allow. We enforce check only when supported.
+        return null;
+      }
+
+      // Query permission for window-management
+      if (anyNav.permissions?.query) {
+        try {
+          const status = await anyNav.permissions.query({
+            // TS doesn't know this permission name yet
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            name: "window-management" as any
+          });
+
+          if (status.state === "denied") {
+            return "We need the 'Window Management' permission to verify you have only one display connected. Please allow the permission when prompted.";
+          }
+        } catch {
+          // Ignore permission errors and attempt to call getScreenDetails
+        }
+      }
+
+      const details = await anyWin.getScreenDetails();
+      const count = Array.isArray(details?.screens)
+        ? details.screens.length
+        : 1;
+
+      if (count > 1) {
+        return "Multiple displays detected. Disconnect external monitors and use a single display to start the test.";
+      }
+      return null;
+    } catch {
+      // If anything fails, fail closed by asking the user to try again
+      return "Unable to verify the number of connected displays. Please ensure only one display is connected and try again.";
+    }
+  };
+
   const handleStartTest = async (opts?: { requireWebcam: boolean }) => {
+    // Reset previous persistent errors
+    setStartErrors([]);
+
     const wantWebcam = opts?.requireWebcam ?? requireWebcam;
 
     // Check if fullscreen is supported
     if (!isFullscreenSupported()) {
-      notifications.showError(
+      setStartErrors((prev) => [
+        ...prev,
         "Fullscreen mode is not supported in your browser. Please use a modern browser to take this test."
-      );
+      ]);
+      return;
+    }
+
+    // Require single-display environment before starting
+    const multiDisplayError = await detectMultipleDisplays();
+    if (multiDisplayError) {
+      setStartErrors((prev) => [...prev, multiDisplayError]);
       return;
     }
 
@@ -112,9 +188,10 @@ export default function GiveTest() {
     if (wantWebcam) {
       const hasWebcam = await checkWebcamAvailable();
       if (!hasWebcam) {
-        notifications.showError(
+        setStartErrors((prev) => [
+          ...prev,
           "No webcam detected. Please connect a camera or disable 'Require webcam' to start."
-        );
+        ]);
         return;
       }
     }
@@ -122,9 +199,10 @@ export default function GiveTest() {
     // Request screen-capture permission once, before test begins (user gesture)
     const screenPermissionGranted = await requestScreenPermission();
     if (!screenPermissionGranted) {
-      notifications.showError(
+      setStartErrors((prev) => [
+        ...prev,
         "Screen sharing permission is required to start the test. Please share your entire screen."
-      );
+      ]);
       return;
     }
 
@@ -210,6 +288,7 @@ export default function GiveTest() {
         requireWebcam={requireWebcam}
         onToggleRequireWebcam={setRequireWebcam}
         onCancel={() => router.push("/student")}
+        errors={startErrors}
       />
     );
   }
@@ -260,7 +339,7 @@ export default function GiveTest() {
                 </span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Violations: {violationCount}/{maxViolations}
+                Violations: {violationCount}
               </p>
             </div>
           </div>
@@ -331,7 +410,6 @@ export default function GiveTest() {
       {showViolationWarning && (
         <FullscreenViolationWarning
           violationCount={violationCount}
-          maxViolations={maxViolations}
           countdownSeconds={countdownSeconds}
           onDismiss={dismissWarning}
         />

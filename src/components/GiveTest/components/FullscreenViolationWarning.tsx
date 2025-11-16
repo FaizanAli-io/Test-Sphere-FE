@@ -2,17 +2,13 @@ import React from "react";
 
 interface FullscreenViolationWarningProps {
   violationCount: number;
-  maxViolations: number;
   countdownSeconds: number;
   onDismiss: () => void;
 }
 
 export const FullscreenViolationWarning: React.FC<
   FullscreenViolationWarningProps
-> = ({ violationCount, maxViolations, countdownSeconds, onDismiss }) => {
-  const remainingViolations = maxViolations - violationCount;
-  const isLastWarning = remainingViolations === 0;
-
+> = ({ violationCount, countdownSeconds, onDismiss }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 border-4 border-red-500">
@@ -22,7 +18,7 @@ export const FullscreenViolationWarning: React.FC<
           </div>
 
           <h2 className="text-2xl font-bold text-red-600 mb-4">
-            {isLastWarning ? "Final Warning!" : "Fullscreen Violation!"}
+            Fullscreen Violation!
           </h2>
 
           <p className="text-gray-700 mb-4 text-lg">
@@ -32,21 +28,12 @@ export const FullscreenViolationWarning: React.FC<
 
           <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 mb-6">
             <p className="text-red-800 font-semibold">
-              Violation {violationCount} of {maxViolations}
+              Violation recorded ({violationCount})
             </p>
-            {!isLastWarning && (
-              <p className="text-red-700 text-sm mt-2">
-                {remainingViolations} more violation
-                {remainingViolations !== 1 ? "s" : ""} will result in automatic
-                test submission.
-              </p>
-            )}
-            {isLastWarning && (
-              <p className="text-red-700 text-sm mt-2">
-                Your test will be automatically submitted if you exit fullscreen
-                again.
-              </p>
-            )}
+            <p className="text-red-700 text-sm mt-2">
+              Please return to fullscreen. Repeated exits may result in
+              automatic test submission.
+            </p>
           </div>
 
           {/* Countdown Timer */}

@@ -7,6 +7,7 @@ interface TestInstructionsProps {
   onCancel: () => void;
   requireWebcam?: boolean;
   onToggleRequireWebcam?: (val: boolean) => void;
+  errors?: string[];
 }
 
 export const TestInstructions: React.FC<TestInstructionsProps> = ({
@@ -15,6 +16,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
   onCancel,
   requireWebcam = true,
   onToggleRequireWebcam,
+  errors = []
 }) => {
   const totalMarks = test.questions.reduce((sum, q) => sum + q.maxMarks, 0);
 
@@ -131,11 +133,8 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
-                    <span className="font-semibold text-red-700">
-                      2 fullscreen violations
-                    </span>{" "}
-                    will result in automatic test submission and your teacher
-                    will be notified.
+                    Repeated fullscreen violations may result in automatic test
+                    submission and your teacher will be notified.
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -155,6 +154,22 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 </li>
               </ul>
             </div>
+
+            {errors.length > 0 && (
+              <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-5 mb-6">
+                <h4 className="text-red-700 font-semibold mb-2 flex items-center gap-2">
+                  <span className="text-xl">⚠️</span>
+                  Please fix the following before starting
+                </h4>
+                <ul className="list-disc pl-6 text-red-700 space-y-1">
+                  {errors.map((e, i) => (
+                    <li key={i} className="text-sm md:text-base">
+                      {e}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="flex flex-col gap-6">
               <div className="flex items-center gap-3 bg-white border-2 border-gray-200 rounded-xl p-4">
