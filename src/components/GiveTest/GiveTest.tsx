@@ -14,7 +14,12 @@ import {
   StreamingIndicator,
 } from "./components";
 
-import { useTestExam, useTestMonitoring, useFullscreenMonitoring } from "./hooks";
+import {
+  useTestExam,
+  useTestMonitoring,
+  useFullscreenMonitoring,
+  useSystemEventMonitoring,
+} from "./hooks";
 
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
@@ -123,6 +128,12 @@ export default function GiveTest() {
       isFullscreen,
       initialScreenStream,
     });
+
+  // Initialize system event monitoring (clicks, keystrokes, focus changes)
+  useSystemEventMonitoring({
+    submissionId,
+    isTestActive: testStarted,
+  });
 
   // Detect multiple displays using the Window Management API when available
   const detectMultipleDisplays = async (): Promise<string | null> => {

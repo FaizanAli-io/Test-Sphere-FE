@@ -3,4 +3,4 @@ export { AIApprovalModal } from "./AIApprovalModal";
 export { AddQuestionModal } from "./AddQuestionModal";
 export { SubmissionsModal } from "./SubmissionsModal";
 export { EditQuestionModal } from "./EditQuestionModal";
-export { ProctoringLogsModal } from "../../Common/ProctoringLogsModal";
+export { ProctoringLogsModal } from "../../Common/ProctoringLogs";

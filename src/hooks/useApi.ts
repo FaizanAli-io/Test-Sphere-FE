@@ -107,7 +107,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   const cacheKey = `${options?.method || "GET"}:${url}:${JSON.stringify(payload.body || {})}`;
 
   // Log payload for every request
-  debugLogger("API Request Payload:", { path, payload });
+  debugLogger("API Request Payload:", { path, payload, body });
 
   const fetchPromise = fetch(url, payload);
 
