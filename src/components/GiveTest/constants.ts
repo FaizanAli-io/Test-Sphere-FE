@@ -8,13 +8,13 @@ export const TEST_SECURITY_CONFIG = {
   /**
    * Maximum number of fullscreen violations allowed before auto-submitting the test.
    */
-  MAX_FULLSCREEN_VIOLATIONS: 5,
+  MAX_FULLSCREEN_VIOLATIONS: 20,
 
   /**
    * Number of seconds a user has to re-enter fullscreen mode after exiting
    * before the test is automatically submitted.
    */
-  FULLSCREEN_REENTRY_SECONDS: 10,
+  FULLSCREEN_REENTRY_SECONDS: 300,
 
   /**
    * Whether to allow users with multiple displays to start the test.
@@ -25,7 +25,7 @@ export const TEST_SECURITY_CONFIG = {
   /**
    * Interval in seconds for capturing webcam photos during test monitoring.
    */
-  WEBCAM_CAPTURE_INTERVAL_SECONDS: 10,
+  WEBCAM_CAPTURE_INTERVAL_SECONDS: 2,
 
   /**
    * Interval in seconds for capturing screenshots when not in fullscreen mode.

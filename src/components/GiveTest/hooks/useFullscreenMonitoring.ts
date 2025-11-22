@@ -29,7 +29,7 @@ export const useFullscreenMonitoring = ({
   const [violationCount, setViolationCount] = useState(0);
   const [showViolationWarning, setShowViolationWarning] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState<number>(
-    TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS,
+    TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS
   );
   const [violationLogs, setViolationLogs] = useState<ViolationLog[]>([]);
   const hasEnteredFullscreen = useRef(false);
@@ -194,13 +194,17 @@ export const useFullscreenMonitoring = ({
           setTimeout(() => onExtendedFullscreenExit(), 0);
         }
       },
-      TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS * 1000 + 500,
+      TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS * 1000 + 500
     );
   }, [enterFullscreen, onExtendedFullscreenExit]);
 
   // Handle fullscreen exit violation
   const handleFullscreenViolation = useCallback(async () => {
-    if (!isTestActive || !hasEnteredFullscreen.current || isProcessingViolation.current) {
+    if (
+      !isTestActive ||
+      !hasEnteredFullscreen.current ||
+      isProcessingViolation.current
+    ) {
       return;
     }
 
@@ -226,7 +230,14 @@ export const useFullscreenMonitoring = ({
       // Start countdown warning with auto-submission
       startViolationCountdown();
     }
-  }, [isTestActive, violationCount, logViolation, onViolationLimit, startViolationCountdown]);
+  }, [
+    isTestActive,
+    violationCount,
+    logViolation,
+    onViolationLimit,
+    startViolationCountdown,
+    MAX_VIOLATIONS,
+  ]);
 
   // Dismiss violation warning manually and re-enter fullscreen
   const dismissWarning = useCallback(() => {
@@ -254,7 +265,12 @@ export const useFullscreenMonitoring = ({
     setIsFullscreen(isCurrentlyFullscreen);
 
     // If we were in fullscreen and now we're not - immediate action
-    if (wasFullscreen && !isCurrentlyFullscreen && hasEnteredFullscreen.current && isTestActive) {
+    if (
+      wasFullscreen &&
+      !isCurrentlyFullscreen &&
+      hasEnteredFullscreen.current &&
+      isTestActive
+    ) {
       // 1. Immediately try to re-enter fullscreen
       forceFullscreenReentry();
 
@@ -298,7 +314,11 @@ export const useFullscreenMonitoring = ({
 
     // Backup monitoring strategies
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isTestActive && hasEnteredFullscreen.current) {
+      if (
+        event.key === "Escape" &&
+        isTestActive &&
+        hasEnteredFullscreen.current
+      ) {
         setTimeout(() => {
           const currentStatus = checkFullscreenStatus();
           if (!currentStatus) {

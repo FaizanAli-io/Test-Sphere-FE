@@ -1,18 +1,16 @@
 import React from "react";
 import { formatDate } from "../utils";
-import { SubmissionDetailProps } from "../types";
+import { SubmissionDetailProps, Submission } from "../types";
 
-type Props = Pick<
-  SubmissionDetailProps,
-  "viewContext" | "onBack" | "onClose" | "topExtraContent"
-> & { isTeacherView: boolean; submission: any };
+type Props = Pick<SubmissionDetailProps, "onBack" | "onClose"> & {
+  isTeacherView: boolean;
+  submission: Submission;
+};
 
 export default function SubmissionHeader({
   submission,
-  viewContext,
   onBack,
   onClose,
-  topExtraContent,
   isTeacherView,
 }: Props) {
   const getHeaderGradient = () =>
@@ -20,7 +18,8 @@ export default function SubmissionHeader({
       ? "bg-gradient-to-r from-purple-500 to-indigo-600"
       : "bg-gradient-to-r from-green-500 to-emerald-600";
 
-  const getHeaderTextColor = () => (isTeacherView ? "text-purple-100" : "text-green-100");
+  const getHeaderTextColor = () =>
+    isTeacherView ? "text-purple-100" : "text-green-100";
 
   return (
     <div className={`px-8 py-6 ${getHeaderGradient()} sticky top-0 z-10`}>
@@ -32,7 +31,8 @@ export default function SubmissionHeader({
               : `Your Test Submission - (ID: ${submission.id})`}
           </h3>
           <p className={`${getHeaderTextColor()} mt-1`}>
-            {submission.test?.title || "Test"} - Submitted: {formatDate(submission.submittedAt)}
+            {submission.test?.title || "Test"} - Submitted:{" "}
+            {formatDate(submission.submittedAt)}
           </p>
         </div>
         <div className="flex space-x-2">

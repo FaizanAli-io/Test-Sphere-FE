@@ -65,8 +65,8 @@ export default function BasePortal({
           </div>
         )}
 
-        {/* Error Message */}
-        {error && (
+        {/* Error Message - Only show non-network errors */}
+        {error && !error.includes("Failed to fetch") && (
           <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg animate-shake">
             <p className="text-sm text-red-700 font-medium">{error}</p>
           </div>
@@ -110,12 +110,6 @@ export default function BasePortal({
                 <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0 left-0"></div>
               </div>
               <p className="text-gray-600 font-semibold mt-6 text-lg">Loading your classes...</p>
-            </div>
-          ) : error && !classes.length ? (
-            <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-300 rounded-2xl p-8 text-center">
-              <div className="text-5xl mb-4">⚠️</div>
-              <p className="text-red-700 font-bold text-lg mb-2">Error Loading Classes</p>
-              <p className="text-red-600">{error}</p>
             </div>
           ) : classes.length === 0 ? (
             <div className="text-center py-20 bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border-2 border-dashed border-gray-300">

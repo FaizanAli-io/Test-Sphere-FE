@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/hooks/useApi";
 import { useNotifications } from "@/contexts/NotificationContext";
+import {
+  shouldStoreSubmissionOffline,
+  saveSubmissionOffline,
+} from "../../../../offline";
 
 export interface Question {
   id: number;
@@ -81,7 +85,10 @@ export const useTestExam = (testId: number | null) => {
         throw new Error(errorData.message || "Failed to fetch questions");
       }
 
-      const [testData, questionsData] = await Promise.all([testRes.json(), questionsRes.json()]);
+      const [testData, questionsData] = await Promise.all([
+        testRes.json(),
+        questionsRes.json(),
+      ]);
 
       setTest({ ...testData, questions: shuffleArray(questionsData) });
     } catch (err) {
@@ -118,7 +125,8 @@ export const useTestExam = (testId: number | null) => {
       setTestStarted(true);
       setTimeRemaining(test ? test.duration * 60 : 30 * 60);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to start test";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to start test";
       notifications.showError(errorMessage);
       setError(errorMessage);
     } finally {
@@ -140,6 +148,18 @@ export const useTestExam = (testId: number | null) => {
           questionId: q.id,
         })) || [];
 
+      // Check if we should store offline
+      if (shouldStoreSubmissionOffline() && submissionId && testId) {
+        console.log("📴 Storing submission offline");
+        await saveSubmissionOffline(submissionId, testId, answersArray);
+        notifications.showSuccess(
+          "Test saved offline! It will be submitted when connection is restored."
+        );
+        router.push("/student");
+        return;
+      }
+
+      // Online mode: submit to backend
       const res = await api("/submissions/submit", {
         method: "POST",
         auth: true,
@@ -147,6 +167,17 @@ export const useTestExam = (testId: number | null) => {
       });
 
       if (!res.ok) {
+        // Backend is unavailable, store offline
+        if (submissionId && testId) {
+          console.log("⚠️ Backend unavailable, storing submission offline");
+          await saveSubmissionOffline(submissionId, testId, answersArray);
+          notifications.showSuccess(
+            "Test saved offline! It will be submitted when connection is restored."
+          );
+          router.push("/student");
+          return;
+        }
+
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to submit test");
       }
@@ -154,11 +185,34 @@ export const useTestExam = (testId: number | null) => {
       notifications.showSuccess("Test submitted successfully!");
       router.push("/student");
     } catch (err) {
-      notifications.showError(err instanceof Error ? err.message : "Error submitting test");
+      // Try to store offline as fallback
+      if (submissionId && testId && test) {
+        try {
+          const answersArray: Answer[] =
+            test.questions.map((q) => ({
+              answer: answers[q.id] ?? null,
+              questionId: q.id,
+            })) || [];
+
+          await saveSubmissionOffline(submissionId, testId, answersArray);
+          notifications.showSuccess(
+            "Test saved offline! It will be submitted when connection is restored."
+          );
+          router.push("/student");
+        } catch {
+          notifications.showError(
+            err instanceof Error ? err.message : "Error submitting test"
+          );
+        }
+      } else {
+        notifications.showError(
+          err instanceof Error ? err.message : "Error submitting test"
+        );
+      }
     } finally {
       setSubmitting(false);
     }
-  }, [answers, router, notifications, test]);
+  }, [answers, router, notifications, test, submissionId, testId]);
 
   useEffect(() => {
     if (!testStarted || timeRemaining <= 0) return;
@@ -193,8 +247,10 @@ export const useTestExam = (testId: number | null) => {
   // Memoized calculations to avoid redundant computations
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = test?.questions.length || 0;
-  const totalMarks = test?.questions.reduce((sum, q) => sum + q.maxMarks, 0) || 0;
-  const progress = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+  const totalMarks =
+    test?.questions.reduce((sum, q) => sum + q.maxMarks, 0) || 0;
+  const progress =
+    totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   return {
     test,

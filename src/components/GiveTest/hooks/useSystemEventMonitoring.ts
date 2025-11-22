@@ -4,7 +4,6 @@ import { useEffect, useRef, useCallback } from "react";
 
 import api from "@/hooks/useApi";
 import {
-  SystemEvent,
   FocusChangeEvent,
   MouseClickEvent,
   KeystrokeEvent,
@@ -13,6 +12,12 @@ import {
   KeystrokeMetaPayload,
 } from "../types/systemEvents";
 import { TEST_SECURITY_CONFIG } from "../constants";
+import {
+  shouldStoreOffline,
+  saveFocusChangesOffline,
+  saveMouseClicksOffline,
+  saveKeystrokesOffline,
+} from "../../../../offline";
 
 interface UseSystemEventMonitoringProps {
   submissionId: number | null;
@@ -47,7 +52,48 @@ export const useSystemEventMonitoring = ({
     mouseClickBufferRef.current = [];
     keystrokeBufferRef.current = [];
 
-    // Upload each event type if there are events
+    // Check if we should store offline
+    if (shouldStoreOffline()) {
+      console.log("📴 Storing system events offline");
+
+      try {
+        if (focusChanges.length > 0) {
+          await saveFocusChangesOffline(
+            submissionId,
+            focusChanges.map((e) => ({
+              duration: e.duration,
+              loggedAt: e.loggedAt,
+            }))
+          );
+        }
+
+        if (mouseClicks.length > 0) {
+          await saveMouseClicksOffline(
+            submissionId,
+            mouseClicks.map((e) => ({
+              type: e.buttonType,
+              position: e.position,
+              loggedAt: e.loggedAt,
+            }))
+          );
+        }
+
+        if (keystrokes.length > 0) {
+          await saveKeystrokesOffline(
+            submissionId,
+            keystrokes.map((e) => ({ key: e.key, loggedAt: e.loggedAt }))
+          );
+        }
+
+        console.log("✅ System events stored offline");
+      } catch (error) {
+        console.error("❌ Failed to store system events offline:", error);
+      }
+
+      return;
+    }
+
+    // Online mode: Upload each event type if there are events
     try {
       if (focusChanges.length > 0) {
         console.log(`📤 Uploading ${focusChanges.length} focus change events`);
@@ -67,9 +113,14 @@ export const useSystemEventMonitoring = ({
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          console.error("❌ FOCUS_CHANGE upload failed:", errorData);
-          throw new Error(`Failed to upload focus changes: ${JSON.stringify(errorData)}`);
+          console.log("⚠️ Focus change upload failed, storing offline");
+          await saveFocusChangesOffline(
+            submissionId,
+            focusChanges.map((e) => ({
+              duration: e.duration,
+              loggedAt: e.loggedAt,
+            }))
+          );
         }
       }
 
@@ -92,9 +143,15 @@ export const useSystemEventMonitoring = ({
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          console.error("❌ MOUSECLICK upload failed:", errorData);
-          throw new Error(`Failed to upload mouse clicks: ${JSON.stringify(errorData)}`);
+          console.log("⚠️ Mouse click upload failed, storing offline");
+          await saveMouseClicksOffline(
+            submissionId,
+            mouseClicks.map((e) => ({
+              type: e.buttonType,
+              position: e.position,
+              loggedAt: e.loggedAt,
+            }))
+          );
         }
       }
 
@@ -116,13 +173,19 @@ export const useSystemEventMonitoring = ({
         });
 
         if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          console.error("❌ KEYSTROKE upload failed:", errorData);
-          throw new Error(`Failed to upload keystrokes: ${JSON.stringify(errorData)}`);
+          console.log("⚠️ Keystroke upload failed, storing offline");
+          await saveKeystrokesOffline(
+            submissionId,
+            keystrokes.map((e) => ({ key: e.key, loggedAt: e.loggedAt }))
+          );
         }
       }
 
-      if (focusChanges.length > 0 || mouseClicks.length > 0 || keystrokes.length > 0) {
+      if (
+        focusChanges.length > 0 ||
+        mouseClicks.length > 0 ||
+        keystrokes.length > 0
+      ) {
         console.log("✅ System events uploaded successfully");
       }
     } catch (error) {
@@ -204,7 +267,7 @@ export const useSystemEventMonitoring = ({
 
       mouseClickBufferRef.current.push(event);
     },
-    [isTestActive],
+    [isTestActive]
   );
 
   /**
@@ -223,7 +286,7 @@ export const useSystemEventMonitoring = ({
 
       mouseClickBufferRef.current.push(event);
     },
-    [isTestActive],
+    [isTestActive]
   );
 
   /**
@@ -241,7 +304,7 @@ export const useSystemEventMonitoring = ({
 
       keystrokeBufferRef.current.push(event);
     },
-    [isTestActive],
+    [isTestActive]
   );
 
   /**
@@ -289,7 +352,7 @@ export const useSystemEventMonitoring = ({
     if (!isTestActive || !submissionId) return;
 
     console.log(
-      `⏱️ Starting system events upload interval (every ${TEST_SECURITY_CONFIG.SYSTEM_EVENTS_UPLOAD_INTERVAL_SECONDS}s)`,
+      `⏱️ Starting system events upload interval (every ${TEST_SECURITY_CONFIG.SYSTEM_EVENTS_UPLOAD_INTERVAL_SECONDS}s)`
     );
 
     // Upload immediately on start, then at intervals

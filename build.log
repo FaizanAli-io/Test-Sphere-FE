@@ -1,0 +1,75 @@
+﻿
+> frontend-next@0.1.0 build
+> next build --turbopack
+
+   Ôû▓ Next.js 15.5.3 (Turbopack)
+
+   Creating an optimized production build ...
+ Ô£ô Finished writing to disk in 105ms
+ Ô£ô Compiled successfully in 7.1s
+   Linting and checking validity of types ...
+
+./src/components/ClassDetail/ClassHeader.tsx
+10:15  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/CreateTestModal/CreateTestModal.tsx
+303:51  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+303:61  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/GiveTest/components/StreamingIndicator.tsx
+22:44  Warning: 'localStream' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/GiveTest/components/TestInstructions.tsx
+70:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+93:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+120:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/GiveTest/GiveTest.tsx
+4:10  Warning: 'IKContext' is defined but never used.  @typescript-eslint/no-unused-vars
+67:11  Warning: 'config' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+106:5  Warning: 'maxViolations' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+158:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+158:51  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+159:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+159:48  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/GiveTest/hooks/useFullscreenMonitoring.ts
+229:6  Warning: React Hook useCallback has a missing dependency: 'MAX_VIOLATIONS'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/GiveTest/hooks/useSystemEventMonitoring.ts
+7:3  Warning: 'SystemEvent' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/GiveTest/hooks/useTestExam.ts
+195:18  Warning: 'offlineError' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Invigilate/components/StudentCard.tsx
+48:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./src/hooks/useWebRTC.ts
+262:6  Warning: React Hook useEffect has missing dependencies: 'createPeerConnection' and 'startStreaming'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+449:5  Warning: React Hook useCallback has a missing dependency: 'createPeerConnection'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+node.exe : Failed to compile.
+At C:\Program Files\nodejs\npm.ps1:29 char:3
++   & $NODE_EXE $NPM_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Failed to compile.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+./src/components/GiveTest/GiveTest.tsx:135:38
+Type error: Property 'isCapturing' does not exist on type '{ videoRef: RefObject<HTMLVideoElement | null>; 
+canvasRef: RefObject<HTMLCanvasElement | null>; requestScreenPermission: () => Promise<...>; 
+requestWebcamPermission: () => Promise<...>; logs: MonitoringLog[]; webcamStream: MediaStream | null; 
+checkWebcamAvailable: () => Promise<...>; }'.
+
+[0m [90m 133 |[39m   [90m// - NOT in fullscreen: Take ONLY screenshots[39m
+ [90m 134 |[39m   [90m// - IN fullscreen: Take ONLY webcam photos[39m
+[31m[1m>[22m[39m[90m 135 |[39m   [36mconst[39m { videoRef[33m,[39m canvasRef[33m,[39m logs[33m,[39m 
+isCapturing[33m,[39m requestScreenPermission[33m,[39m checkWebcamAvailable } [33m=[39m
+ [90m     |[39m                                      [31m[1m^[22m[39m
+ [90m 136 |[39m     useTestMonitoring({
+ [90m 137 |[39m       submissionId[33m,[39m
+ [90m 138 |[39m       isTestActive[33m:[39m testStarted[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

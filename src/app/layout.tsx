@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import AuthGuard from "@/components/AuthGuard";
 import { Inter, Roboto_Mono } from "next/font/google";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import ServiceWorkerCleanup from "@/components/ServiceWorkerCleanup";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const robotoMono = Roboto_Mono({
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${inter.variable} ${robotoMono.variable} antialiased`}>
+        <ServiceWorkerCleanup />
         <NotificationProvider>
           <AuthGuard>
             <Header />

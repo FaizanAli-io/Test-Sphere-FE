@@ -19,7 +19,7 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
 
-  const { isConnected, isStreaming, error, localStream, stopStreaming } = useWebRTC({
+  const { isConnected, isStreaming, error, stopStreaming } = useWebRTC({
     userId,
     role: "student",
     testId,
@@ -47,7 +47,9 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
           <div className="bg-gray-800 px-4 py-2 flex items-center justify-between border-b border-gray-700">
             <div className="flex items-center gap-2">
               <Video size={16} className="text-yellow-500" />
-              <span className="text-white text-sm font-medium">Proctoring Active</span>
+              <span className="text-white text-sm font-medium">
+                Proctoring Active
+              </span>
             </div>
             <button
               onClick={() => setIsMinimized(true)}

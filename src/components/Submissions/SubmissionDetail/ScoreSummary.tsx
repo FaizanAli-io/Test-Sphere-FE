@@ -1,13 +1,12 @@
 import React from "react";
 import { formatDate } from "../utils";
-import { SubmissionStatus } from "../types";
+import { SubmissionStatus, Submission } from "../types";
 
 type Props = {
   isTeacherView: boolean;
-  submission: any;
+  submission: Submission;
   totalPossible: number;
   currentTotal: number;
-  onBack?: () => void;
   handleStatusUpdate: (newStatus: SubmissionStatus) => void;
   topExtraContent?: React.ReactNode;
 };
@@ -17,7 +16,6 @@ export default function ScoreSummary({
   submission,
   totalPossible,
   currentTotal,
-  onBack,
   handleStatusUpdate,
   topExtraContent,
 }: Props) {
@@ -90,15 +88,21 @@ export default function ScoreSummary({
                 : "bg-gray-400 text-white"
             }`}
           >
-            {totalPossible > 0 ? `${((currentTotal / totalPossible) * 100).toFixed(1)}%` : "---%"}
+            {totalPossible > 0
+              ? `${((currentTotal / totalPossible) * 100).toFixed(1)}%`
+              : "---%"}
           </div>
-          <p className="text-sm text-gray-700 mt-1 font-medium">Score Percentage</p>
+          <p className="text-sm text-gray-700 mt-1 font-medium">
+            Score Percentage
+          </p>
         </div>
 
         <div className="bg-white/80 rounded-xl p-4 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="font-medium text-gray-700">Questions:</span>
-            <span className="text-gray-900 font-semibold">{submission.answers?.length || 0}</span>
+            <span className="text-gray-900 font-semibold">
+              {submission.answers?.length || 0}
+            </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="font-medium text-gray-700">Submitted:</span>
@@ -109,11 +113,15 @@ export default function ScoreSummary({
           {submission.gradedAt && (
             <div className="flex justify-between text-sm">
               <span className="font-medium text-gray-700">Graded:</span>
-              <span className="text-gray-900 font-semibold">{formatDate(submission.gradedAt)}</span>
+              <span className="text-gray-900 font-semibold">
+                {formatDate(submission.gradedAt)}
+              </span>
             </div>
           )}
           {topExtraContent && isTeacherView && (
-            <div className="pt-2 border-t border-gray-300">{topExtraContent}</div>
+            <div className="pt-2 border-t border-gray-300">
+              {topExtraContent}
+            </div>
           )}
         </div>
       </div>
