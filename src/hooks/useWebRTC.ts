@@ -47,6 +47,7 @@ export const useWebRTC = ({
   const remoteStreamRef = useRef<MediaStream | null>(null);
   const peerIdRef = useRef<string | null>(null);
   const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+  const isUsingInitialStreamRef = useRef<boolean>(false);
 
   // Initialize socket connection
   useEffect(() => {
@@ -58,8 +59,10 @@ export const useWebRTC = ({
       // Allow engine.io to negotiate best transport (polling -> websocket)
       withCredentials: true,
       reconnection: true,
-      reconnectionAttempts: 5,
+      reconnectionAttempts: Infinity, // Keep trying to reconnect
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      timeout: 20000,
     });
 
     socketRef.current = socket;
@@ -79,27 +82,68 @@ export const useWebRTC = ({
       console.log("[WebRTC] 📨 Socket event received:", eventName, args);
     });
 
-    socket.on("disconnect", () => {
-      console.log("[WebRTC] Socket disconnected");
+    socket.on("disconnect", (reason: string) => {
+      console.log("[WebRTC] Socket disconnected, reason:", reason);
       setState((prev) => ({ ...prev, isConnected: false }));
+
+      // Close peer connection on disconnect
+      if (peerConnectionRef.current) {
+        console.log("[WebRTC] Closing peer connection due to socket disconnect");
+        try {
+          peerConnectionRef.current.close();
+        } catch (e) {
+          console.error("[WebRTC] Error closing peer connection:", e);
+        }
+        peerConnectionRef.current = null;
+      }
+
+      // Clear pending ICE candidates
+      pendingIceCandidatesRef.current = [];
+    });
+
+    socket.io.on("reconnect", (attempt: number) => {
+      console.log("[WebRTC] Socket reconnected after", attempt, "attempts");
+      setState((prev) => ({ ...prev, error: null }));
+      // Re-register after reconnection
+      socket.emit("register", { userId, role, testId: parseInt(testId) });
+
+      // If we were streaming before, the teacher will need to request the stream again
+      // So we just wait for a new stream-request event
+    });
+
+    socket.io.on("reconnect_attempt", (attempt: number) => {
+      console.log("[WebRTC] Reconnection attempt", attempt);
+    });
+
+    socket.io.on("reconnect_error", (error: Error) => {
+      console.error("[WebRTC] Reconnection error:", error);
+    });
+
+    socket.io.on("reconnect_failed", () => {
+      console.error("[WebRTC] Reconnection failed after all attempts");
+      setState((prev) => ({
+        ...prev,
+        error: "Failed to reconnect to streaming server",
+      }));
     });
 
     socket.on("connect_error", (error: Error) => {
       console.error("[WebRTC] Socket connection error:", error);
-      setState((prev) => ({
-        ...prev,
-        error: "Failed to connect to streaming server",
-      }));
+      // Don't set error state immediately, let reconnection handle it
     });
 
-    socket.on("error", (payload: any) => {
+    socket.on("error", (payload: unknown) => {
       console.error("[WebRTC] Socket error event:", payload);
     });
 
     // Set up signal handlers in the same effect to ensure they're registered
     console.log("[WebRTC] Setting up signal handlers");
 
-    const handleSignal = async (message: { type: string; data: any; from: string }) => {
+    const handleSignal = async (message: {
+      type: string;
+      data: RTCSessionDescriptionInit | RTCIceCandidateInit;
+      from: string;
+    }) => {
       console.log("[WebRTC] ✅ Received signal:", message.type, "from:", message.from);
 
       const pc = peerConnectionRef.current || createPeerConnection();
@@ -108,7 +152,9 @@ export const useWebRTC = ({
       try {
         if (message.type === "offer") {
           console.log("[WebRTC] Processing offer, current state:", pc.signalingState);
-          await pc.setRemoteDescription(new RTCSessionDescription(message.data));
+          await pc.setRemoteDescription(
+            new RTCSessionDescription(message.data as RTCSessionDescriptionInit),
+          );
           console.log("[WebRTC] Remote description set, creating answer...");
 
           // Process any pending ICE candidates after setting remote description
@@ -139,7 +185,9 @@ export const useWebRTC = ({
           console.log("[WebRTC] Answer emitted successfully");
         } else if (message.type === "answer") {
           console.log("[WebRTC] Processing answer");
-          await pc.setRemoteDescription(new RTCSessionDescription(message.data));
+          await pc.setRemoteDescription(
+            new RTCSessionDescription(message.data as RTCSessionDescriptionInit),
+          );
 
           // Process any pending ICE candidates after setting remote description
           if (pendingIceCandidatesRef.current.length > 0) {
@@ -156,10 +204,10 @@ export const useWebRTC = ({
         } else if (message.type === "ice-candidate") {
           if (pc.remoteDescription) {
             console.log("[WebRTC] Adding ICE candidate");
-            await pc.addIceCandidate(new RTCIceCandidate(message.data));
+            await pc.addIceCandidate(new RTCIceCandidate(message.data as RTCIceCandidateInit));
           } else {
             console.log("[WebRTC] Queueing ICE candidate (no remote description yet)");
-            pendingIceCandidatesRef.current.push(message.data);
+            pendingIceCandidatesRef.current.push(message.data as RTCIceCandidateInit);
           }
         }
       } catch (error) {
@@ -181,6 +229,15 @@ export const useWebRTC = ({
       );
 
       try {
+        // Clear any existing peer connection if it's in a bad state
+        if (peerConnectionRef.current) {
+          const state = peerConnectionRef.current.connectionState;
+          if (state === "failed" || state === "closed") {
+            console.log("[WebRTC] Cleaning up old peer connection before new stream request");
+            peerConnectionRef.current = null;
+          }
+        }
+
         peerIdRef.current = data.teacherId;
         console.log("[WebRTC] Starting streaming...");
         await startStreaming(data.streamType || "webcam");
@@ -233,14 +290,25 @@ export const useWebRTC = ({
       socket.disconnect();
       socketRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, userId, role, testId]);
 
   // Create peer connection - not memoized to avoid dependency issues
   const createPeerConnection = () => {
+    // If we have an existing peer connection, check its state
     if (peerConnectionRef.current) {
-      return peerConnectionRef.current;
+      const state = peerConnectionRef.current.connectionState;
+      // If it's closed or failed, clean it up and create a new one
+      if (state === "closed" || state === "failed") {
+        console.log("[WebRTC] Existing peer connection is closed/failed, creating new one");
+        peerConnectionRef.current = null;
+      } else {
+        console.log("[WebRTC] Reusing existing peer connection with state:", state);
+        return peerConnectionRef.current;
+      }
     }
 
+    console.log("[WebRTC] Creating new peer connection");
     const pc = new RTCPeerConnection(ICE_SERVERS);
     peerConnectionRef.current = pc;
 
@@ -268,11 +336,22 @@ export const useWebRTC = ({
       if (pc.connectionState === "connected") {
         setState((prev) => ({ ...prev, isStreaming: true, error: null }));
       } else if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
+        console.log("[WebRTC] Connection failed/disconnected, cleaning up peer connection");
         setState((prev) => ({
           ...prev,
           isStreaming: false,
           error: "Connection failed",
         }));
+
+        // Clean up the failed peer connection so a new one can be created
+        if (peerConnectionRef.current === pc) {
+          try {
+            pc.close();
+          } catch (e) {
+            console.error("[WebRTC] Error closing failed peer connection:", e);
+          }
+          peerConnectionRef.current = null;
+        }
       }
     };
 
@@ -334,6 +413,7 @@ export const useWebRTC = ({
               return;
             }
             stream = initialScreenStream;
+            isUsingInitialStreamRef.current = true;
           } else {
             console.log("[WebRTC] Initial screen stream not available:", {
               exists: !!initialScreenStream,
@@ -346,7 +426,7 @@ export const useWebRTC = ({
             stream = await navigator.mediaDevices.getDisplayMedia({
               video: {
                 displaySurface: "monitor", // Request entire screen (may be ignored)
-              } as any,
+              } as MediaTrackConstraints & { displaySurface?: string },
               audio: false,
             });
 
@@ -369,6 +449,7 @@ export const useWebRTC = ({
               console.warn("[WebRTC] User did not select entire screen; aborting stream start");
               return;
             }
+            isUsingInitialStreamRef.current = false;
           }
         } else {
           // Try to reuse initial stream first, otherwise request new
@@ -378,12 +459,14 @@ export const useWebRTC = ({
               initialStream.getTracks().length,
             );
             stream = initialStream;
+            isUsingInitialStreamRef.current = true;
           } else {
             console.log("[WebRTC] Requesting new webcam stream");
             stream = await navigator.mediaDevices.getUserMedia({
               video: { width: 1280, height: 720 },
               audio: true,
             });
+            isUsingInitialStreamRef.current = false;
           }
         }
 
@@ -410,14 +493,23 @@ export const useWebRTC = ({
         throw error;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [initialStream, initialScreenStream],
   );
 
   // Stop streaming
   const stopStreaming = useCallback(() => {
     if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => track.stop());
+      // Only stop tracks if this is NOT one of the initial streams
+      // Initial streams should be preserved for reuse
+      if (!isUsingInitialStreamRef.current) {
+        console.log("[WebRTC] Stopping locally created stream tracks");
+        localStreamRef.current.getTracks().forEach((track) => track.stop());
+      } else {
+        console.log("[WebRTC] Preserving initial stream for reuse");
+      }
       localStreamRef.current = null;
+      isUsingInitialStreamRef.current = false;
     }
 
     if (peerConnectionRef.current) {
@@ -491,6 +583,22 @@ export const useWebRTC = ({
     [userId, testId],
   );
 
+  // Manual reconnect method
+  const reconnect = useCallback(() => {
+    if (socketRef.current) {
+      console.log(
+        "[WebRTC] Manual reconnect triggered, socket connected:",
+        socketRef.current.connected,
+      );
+      if (!socketRef.current.connected) {
+        console.log("[WebRTC] Attempting to reconnect socket...");
+        socketRef.current.connect();
+      } else {
+        console.log("[WebRTC] Socket already connected");
+      }
+    }
+  }, []);
+
   return {
     ...state,
     localStream: localStreamRef.current,
@@ -499,5 +607,6 @@ export const useWebRTC = ({
     stopStreaming,
     requestStream,
     stopViewingStream,
+    reconnect,
   };
 };

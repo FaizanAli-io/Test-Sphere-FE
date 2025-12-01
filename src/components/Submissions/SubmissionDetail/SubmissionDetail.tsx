@@ -135,10 +135,8 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
         <SubmissionHeader
           submission={submission}
-          viewContext={viewContext}
           onBack={onBack}
           onClose={onClose}
-          topExtraContent={topExtraContent}
           isTeacherView={isTeacherView}
         />
 
@@ -159,7 +157,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
           {/* Questions */}
           <div className="space-y-6">
-            {submission.answers?.map((answer: any, index: number) => (
+            {submission.answers?.map((answer, index) => (
               <QuestionItem
                 key={answer.id}
                 answer={answer}

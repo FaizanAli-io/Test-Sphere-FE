@@ -2,19 +2,20 @@ import React from "react";
 import { formatDate } from "../utils";
 import { SubmissionDetailProps } from "../types";
 
-type Props = Pick<
-  SubmissionDetailProps,
-  "viewContext" | "onBack" | "onClose" | "topExtraContent"
-> & { isTeacherView: boolean; submission: any };
+interface HeaderSubmission {
+  id: number;
+  user?: { name: string };
+  student?: { name: string };
+  submittedAt?: string;
+  test?: { title: string };
+}
 
-export default function SubmissionHeader({
-  submission,
-  viewContext,
-  onBack,
-  onClose,
-  topExtraContent,
-  isTeacherView,
-}: Props) {
+type Props = Pick<SubmissionDetailProps, "onBack" | "onClose"> & {
+  isTeacherView: boolean;
+  submission: HeaderSubmission;
+};
+
+export default function SubmissionHeader({ submission, onBack, onClose, isTeacherView }: Props) {
   const getHeaderGradient = () =>
     isTeacherView
       ? "bg-gradient-to-r from-purple-500 to-indigo-600"

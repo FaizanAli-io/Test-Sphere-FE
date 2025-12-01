@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 
 import api from "@/hooks/useApi";
 import {
-  SystemEvent,
   FocusChangeEvent,
   MouseClickEvent,
   KeystrokeEvent,
@@ -13,27 +12,76 @@ import {
   KeystrokeMetaPayload,
 } from "../types/systemEvents";
 import { TEST_SECURITY_CONFIG } from "../constants";
+import { storeOfflineLog } from "@/utils/offlineStorage";
+
+interface OfflineUploadedCounts {
+  screenshots: number;
+  webcamPhotos: number;
+  focusChanges: number;
+  clicks: number;
+  keystrokes: number;
+}
 
 interface UseSystemEventMonitoringProps {
   submissionId: number | null;
   isTestActive: boolean;
+  isOnline?: boolean;
+  offlineUploadedCounts?: OfflineUploadedCounts;
+}
+
+interface SystemEventStats {
+  focusChanges: { total: number; uploaded: number };
+  clicks: { total: number; uploaded: number };
+  keystrokes: { total: number; uploaded: number };
 }
 
 export const useSystemEventMonitoring = ({
   submissionId,
   isTestActive,
-}: UseSystemEventMonitoringProps) => {
+  isOnline = true,
+  offlineUploadedCounts,
+}: UseSystemEventMonitoringProps): SystemEventStats => {
   // Event buffers for each event type
   const focusChangeBufferRef = useRef<FocusChangeEvent[]>([]);
   const mouseClickBufferRef = useRef<MouseClickEvent[]>([]);
   const keystrokeBufferRef = useRef<KeystrokeEvent[]>([]);
 
+  // Stats tracking
+  const statsRef = useRef<SystemEventStats>({
+    focusChanges: { total: 0, uploaded: 0 },
+    clicks: { total: 0, uploaded: 0 },
+    keystrokes: { total: 0, uploaded: 0 },
+  });
+
   // Track focus state
   const lastFocusLostTimeRef = useRef<number | null>(null);
   const uploadIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [stats, setStats] = useState<SystemEventStats>(statsRef.current);
+
+  // Update stats when offline logs are uploaded
+  useEffect(() => {
+    if (offlineUploadedCounts) {
+      if (offlineUploadedCounts.focusChanges > 0) {
+        statsRef.current.focusChanges.uploaded += offlineUploadedCounts.focusChanges;
+      }
+      if (offlineUploadedCounts.clicks > 0) {
+        statsRef.current.clicks.uploaded += offlineUploadedCounts.clicks;
+      }
+      if (offlineUploadedCounts.keystrokes > 0) {
+        statsRef.current.keystrokes.uploaded += offlineUploadedCounts.keystrokes;
+      }
+      if (
+        offlineUploadedCounts.focusChanges > 0 ||
+        offlineUploadedCounts.clicks > 0 ||
+        offlineUploadedCounts.keystrokes > 0
+      ) {
+        setStats({ ...statsRef.current });
+      }
+    }
+  }, [offlineUploadedCounts]);
 
   /**
-   * Upload buffered events to backend
+   * Upload buffered events to backend (or store offline if disconnected)
    */
   const uploadBufferedEvents = useCallback(async () => {
     if (!submissionId) return;
@@ -47,88 +95,182 @@ export const useSystemEventMonitoring = ({
     mouseClickBufferRef.current = [];
     keystrokeBufferRef.current = [];
 
-    // Upload each event type if there are events
+    // If offline, store all events in IndexedDB
+    if (!isOnline) {
+      console.log("🔌 Offline: Storing system events in IndexedDB");
+      try {
+        const promises = [];
+
+        if (focusChanges.length > 0) {
+          const meta: FocusChangeMetaPayload[] = focusChanges.map((event) => ({
+            duration: event.duration,
+            loggedAt: event.loggedAt,
+          }));
+          promises.push(
+            storeOfflineLog(submissionId, "FOCUS_CHANGE", {
+              submissionId,
+              logType: "FOCUS_CHANGE",
+              meta,
+            }),
+          );
+        }
+
+        if (mouseClicks.length > 0) {
+          const meta: MouseClickMetaPayload[] = mouseClicks.map((event) => ({
+            type: event.buttonType,
+            position: event.position,
+            loggedAt: event.loggedAt,
+          }));
+          promises.push(
+            storeOfflineLog(submissionId, "MOUSECLICK", {
+              submissionId,
+              logType: "MOUSECLICK",
+              meta,
+            }),
+          );
+        }
+
+        if (keystrokes.length > 0) {
+          const meta: KeystrokeMetaPayload[] = keystrokes.map((event) => ({
+            key: event.key,
+            loggedAt: event.loggedAt,
+          }));
+          promises.push(
+            storeOfflineLog(submissionId, "KEYSTROKE", {
+              submissionId,
+              logType: "KEYSTROKE",
+              meta,
+            }),
+          );
+        }
+
+        await Promise.all(promises);
+        console.log(`📦 Stored ${promises.length} system event batch(es) offline`);
+      } catch (error) {
+        console.error("❌ Failed to store system events offline:", error);
+      }
+      return;
+    }
+
+    // Online: upload all event types in a single batch array
     try {
+      const logsToUpload = [];
+
       if (focusChanges.length > 0) {
-        console.log(`📤 Uploading ${focusChanges.length} focus change events`);
         const meta: FocusChangeMetaPayload[] = focusChanges.map((event) => ({
           duration: event.duration,
           loggedAt: event.loggedAt,
         }));
-
-        const response = await api("/proctoring-logs", {
-          auth: true,
-          method: "POST",
-          body: JSON.stringify({
-            logType: "FOCUS_CHANGE",
-            submissionId,
-            meta: meta,
-          }),
+        logsToUpload.push({
+          logType: "FOCUS_CHANGE",
+          submissionId,
+          meta,
         });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          console.error("❌ FOCUS_CHANGE upload failed:", errorData);
-          throw new Error(`Failed to upload focus changes: ${JSON.stringify(errorData)}`);
-        }
       }
 
       if (mouseClicks.length > 0) {
-        console.log(`📤 Uploading ${mouseClicks.length} mouse click events`);
         const meta: MouseClickMetaPayload[] = mouseClicks.map((event) => ({
           type: event.buttonType,
           position: event.position,
           loggedAt: event.loggedAt,
         }));
-
-        const response = await api("/proctoring-logs", {
-          auth: true,
-          method: "POST",
-          body: JSON.stringify({
-            logType: "MOUSECLICK",
-            submissionId,
-            meta: meta,
-          }),
+        logsToUpload.push({
+          logType: "MOUSECLICK",
+          submissionId,
+          meta,
         });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          console.error("❌ MOUSECLICK upload failed:", errorData);
-          throw new Error(`Failed to upload mouse clicks: ${JSON.stringify(errorData)}`);
-        }
       }
 
       if (keystrokes.length > 0) {
-        console.log(`📤 Uploading ${keystrokes.length} keystroke events`);
         const meta: KeystrokeMetaPayload[] = keystrokes.map((event) => ({
           key: event.key,
           loggedAt: event.loggedAt,
         }));
+        logsToUpload.push({
+          logType: "KEYSTROKE",
+          submissionId,
+          meta,
+        });
+      }
 
-        const response = await api("/proctoring-logs", {
+      if (logsToUpload.length > 0) {
+        console.log(`📤 Uploading ${logsToUpload.length} log type(s) in batch`);
+        const response = await api("/proctoring-logs/batch", {
           auth: true,
           method: "POST",
-          body: JSON.stringify({
-            logType: "KEYSTROKE",
-            submissionId,
-            meta: meta,
-          }),
+          body: JSON.stringify({ logs: logsToUpload }),
         });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          console.error("❌ KEYSTROKE upload failed:", errorData);
-          throw new Error(`Failed to upload keystrokes: ${JSON.stringify(errorData)}`);
+          console.error("❌ System events upload failed:", errorData);
+          throw new Error(`Failed to upload system events: ${JSON.stringify(errorData)}`);
         }
-      }
 
-      if (focusChanges.length > 0 || mouseClicks.length > 0 || keystrokes.length > 0) {
         console.log("✅ System events uploaded successfully");
+
+        // Update stats on successful upload
+        statsRef.current.focusChanges.uploaded += focusChanges.length;
+        statsRef.current.clicks.uploaded += mouseClicks.length;
+        statsRef.current.keystrokes.uploaded += keystrokes.length;
+        setStats({ ...statsRef.current });
       }
     } catch (error) {
       console.error("❌ Failed to upload system events:", error);
+      // On error, store offline as fallback
+      try {
+        const promises = [];
+
+        if (focusChanges.length > 0) {
+          const meta: FocusChangeMetaPayload[] = focusChanges.map((event) => ({
+            duration: event.duration,
+            loggedAt: event.loggedAt,
+          }));
+          promises.push(
+            storeOfflineLog(submissionId, "FOCUS_CHANGE", {
+              submissionId,
+              logType: "FOCUS_CHANGE",
+              meta,
+            }),
+          );
+        }
+
+        if (mouseClicks.length > 0) {
+          const meta: MouseClickMetaPayload[] = mouseClicks.map((event) => ({
+            type: event.buttonType,
+            position: event.position,
+            loggedAt: event.loggedAt,
+          }));
+          promises.push(
+            storeOfflineLog(submissionId, "MOUSECLICK", {
+              submissionId,
+              logType: "MOUSECLICK",
+              meta,
+            }),
+          );
+        }
+
+        if (keystrokes.length > 0) {
+          const meta: KeystrokeMetaPayload[] = keystrokes.map((event) => ({
+            key: event.key,
+            loggedAt: event.loggedAt,
+          }));
+          promises.push(
+            storeOfflineLog(submissionId, "KEYSTROKE", {
+              submissionId,
+              logType: "KEYSTROKE",
+              meta,
+            }),
+          );
+        }
+
+        await Promise.all(promises);
+        console.log("💾 Stored failed uploads offline as fallback");
+      } catch (fallbackError) {
+        console.error("❌ Failed to store offline as fallback:", fallbackError);
+      }
     }
-  }, [submissionId]);
+  }, [submissionId, isOnline]);
 
   /**
    * Handle window/tab focus change
@@ -150,6 +292,8 @@ export const useSystemEventMonitoring = ({
           loggedAt: new Date().toISOString(),
         };
         focusChangeBufferRef.current.push(event);
+        statsRef.current.focusChanges.total++;
+        setStats({ ...statsRef.current });
         console.log(`👁️ User regained focus after ${duration}ms`);
         lastFocusLostTimeRef.current = null;
       }
@@ -182,6 +326,8 @@ export const useSystemEventMonitoring = ({
         loggedAt: new Date().toISOString(),
       };
       focusChangeBufferRef.current.push(event);
+      statsRef.current.focusChanges.total++;
+      setStats({ ...statsRef.current });
       console.log(`👁️ Window regained focus after ${duration}ms`);
       lastFocusLostTimeRef.current = null;
     }
@@ -203,6 +349,8 @@ export const useSystemEventMonitoring = ({
       };
 
       mouseClickBufferRef.current.push(event);
+      statsRef.current.clicks.total++;
+      setStats({ ...statsRef.current });
     },
     [isTestActive],
   );
@@ -222,6 +370,8 @@ export const useSystemEventMonitoring = ({
       };
 
       mouseClickBufferRef.current.push(event);
+      statsRef.current.clicks.total++;
+      setStats({ ...statsRef.current });
     },
     [isTestActive],
   );
@@ -240,6 +390,8 @@ export const useSystemEventMonitoring = ({
       };
 
       keystrokeBufferRef.current.push(event);
+      statsRef.current.keystrokes.total++;
+      setStats({ ...statsRef.current });
     },
     [isTestActive],
   );
@@ -310,10 +462,5 @@ export const useSystemEventMonitoring = ({
     };
   }, [isTestActive, submissionId, uploadBufferedEvents]);
 
-  return {
-    // Return event counts for debugging/display if needed
-    getFocusChangeCount: () => focusChangeBufferRef.current.length,
-    getMouseClickCount: () => mouseClickBufferRef.current.length,
-    getKeystrokeCount: () => keystrokeBufferRef.current.length,
-  };
+  return stats;
 };

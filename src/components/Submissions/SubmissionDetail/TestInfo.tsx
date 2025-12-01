@@ -1,6 +1,16 @@
 import React from "react";
 
-type Props = { submission: any };
+interface TestInfoSubmission {
+  test?: {
+    title: string;
+    description?: string;
+    duration: number;
+    status: string;
+    class?: { name: string };
+  };
+}
+
+type Props = { submission: TestInfoSubmission };
 
 export default function TestInfo({ submission }: Props) {
   if (!submission.test) return null;

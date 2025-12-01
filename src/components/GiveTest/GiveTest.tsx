@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { IKContext } from "imagekitio-react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 
 import {
@@ -12,6 +11,7 @@ import {
   FullscreenRequiredModal,
   FullscreenViolationWarning,
   StreamingIndicator,
+  ConnectivityWarningModal,
 } from "./components";
 
 import {
@@ -22,9 +22,10 @@ import {
 } from "./hooks";
 
 import { useNotifications } from "@/contexts/NotificationContext";
-import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 import { TEST_SECURITY_CONFIG } from "./constants";
 import api from "@/hooks/useApi";
+import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
+import { useOfflineQueueManager } from "@/hooks/useOfflineQueueManager";
 
 export default function GiveTest() {
   const router = useRouter();
@@ -63,8 +64,15 @@ export default function GiveTest() {
     formatTime,
   } = useTestExam(testId);
 
-  const { config } = useImageKitUploader();
   const notifications = useNotifications();
+
+  // Connection monitoring and offline queue management
+  const { isOnline } = useConnectionMonitor();
+  const { pendingCount, isSyncing, hasPendingLogs, lastUploadedCounts } = useOfflineQueueManager({
+    submissionId: submissionId ?? null,
+    isOnline,
+    isTestActive: Boolean(testStarted),
+  });
 
   useEffect(() => {
     let ignore = false;
@@ -85,13 +93,21 @@ export default function GiveTest() {
     };
   }, []);
 
+  // Monitor for time expiration while offline
+  useEffect(() => {
+    if (testStarted && timeRemaining <= 0 && hasPendingLogs) {
+      notifications.showError(
+        "Test time expired while offline. Please wait for all logs to sync before closing the browser.",
+      );
+    }
+  }, [testStarted, timeRemaining, hasPendingLogs, notifications]);
+
   // Initialize fullscreen monitoring first (needed for useTestMonitoring)
   const {
     isFullscreen,
     violationCount,
     showViolationWarning,
     countdownSeconds,
-    maxViolations,
     isFullscreenSupported,
     enterFullscreen,
     dismissWarning,
@@ -120,19 +136,28 @@ export default function GiveTest() {
   // Pass isFullscreen to control capture behavior:
   // - NOT in fullscreen: Take ONLY screenshots
   // - IN fullscreen: Take ONLY webcam photos
-  const { videoRef, canvasRef, logs, isCapturing, requestScreenPermission, checkWebcamAvailable } =
-    useTestMonitoring({
-      submissionId,
-      isTestActive: testStarted,
-      requireWebcam,
-      isFullscreen,
-      initialScreenStream,
-    });
-
-  // Initialize system event monitoring (clicks, keystrokes, focus changes)
-  useSystemEventMonitoring({
+  const {
+    videoRef,
+    canvasRef,
+    requestScreenPermission,
+    checkWebcamAvailable,
+    stats: captureStats,
+  } = useTestMonitoring({
     submissionId,
     isTestActive: testStarted,
+    requireWebcam,
+    isFullscreen,
+    initialScreenStream,
+    isOnline,
+    offlineUploadedCounts: lastUploadedCounts,
+  });
+
+  // Initialize system event monitoring (clicks, keystrokes, focus changes)
+  const systemEventStats = useSystemEventMonitoring({
+    submissionId,
+    isTestActive: testStarted,
+    isOnline,
+    offlineUploadedCounts: lastUploadedCounts,
   });
 
   // Detect multiple displays using the Window Management API when available
@@ -143,8 +168,10 @@ export default function GiveTest() {
     }
 
     try {
-      const anyNav: any = navigator as unknown as any;
-      const anyWin: any = window as unknown as any;
+      const anyNav = navigator as {
+        permissions?: { query: (arg: { name: string }) => Promise<{ state: string }> };
+      };
+      const anyWin = window as { getScreenDetails?: () => Promise<{ screens: unknown[] }> };
 
       if (typeof anyWin.getScreenDetails !== "function") {
         // API not supported; we cannot reliably detect multiple screens
@@ -343,10 +370,12 @@ export default function GiveTest() {
         progress={progress}
         onSubmitTest={() => setShowSubmitConfirm(true)}
         submitting={submitting}
-        isCapturing={testStarted ? isCapturing : undefined}
-        logsCount={testStarted ? logs.length : undefined}
         isFullscreen={testStarted ? isFullscreen : undefined}
         violationCount={testStarted ? violationCount : undefined}
+        isOnline={isOnline}
+        hasPendingLogs={hasPendingLogs}
+        captureStats={testStarted ? captureStats : undefined}
+        systemEventStats={testStarted ? systemEventStats : undefined}
       />
 
       {/* Questions */}
@@ -382,6 +411,15 @@ export default function GiveTest() {
               onClick={() => setShowSubmitConfirm(true)}
               disabled={submitting}
               className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 text-lg"
+              title={
+                submitting
+                  ? "Submitting test..."
+                  : !isOnline || hasPendingLogs
+                    ? "Connection issues detected - will be shown after submit"
+                    : submitting
+                      ? "Submitting..."
+                      : "Submit Test"
+              }
             >
               Submit Test
             </button>
@@ -413,6 +451,18 @@ export default function GiveTest() {
         onTryAgain={handleRetryFullscreen}
         onCancel={handleCancelFullscreen}
       />
+
+      {/* Connectivity warning modal - shown when submitting with pending logs or time expired */}
+      {testStarted &&
+        (showSubmitConfirm || timeRemaining <= 0) &&
+        (!isOnline || hasPendingLogs) && (
+          <ConnectivityWarningModal
+            isOnline={isOnline}
+            hasPendingLogs={hasPendingLogs}
+            pendingCount={pendingCount}
+            isSyncing={isSyncing}
+          />
+        )}
 
       {/* WebRTC Streaming Indicator - This enables live viewing by teachers */}
       {testStarted && currentUserId && (

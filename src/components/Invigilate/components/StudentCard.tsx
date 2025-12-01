@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import { Camera, Mic, MicOff, CameraOff, Eye, FileText } from "lucide-react";
 
 import type { InvigilatingStudent } from "../hooks";
@@ -45,11 +46,14 @@ export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick, onVi
         {/* Profile Picture or Initials */}
         <div className="flex justify-center mb-4">
           {student.profilePicture ? (
-            <img
-              src={student.profilePicture}
-              alt={student.name}
-              className="w-24 h-24 rounded-full object-cover border-4 border-indigo-100 shadow-md"
-            />
+            <div className="relative w-24 h-24">
+              <Image
+                src={student.profilePicture}
+                alt={student.name}
+                fill
+                className="rounded-full object-cover border-4 border-indigo-100 shadow-md"
+              />
+            </div>
           ) : (
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold border-4 border-indigo-100 shadow-md">
               {getInitials(student.name)}

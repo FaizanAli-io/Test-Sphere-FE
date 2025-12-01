@@ -2,9 +2,10 @@ import React from "react";
 import Image from "next/image";
 
 import { getAnswerStatus, formatAnswerText, getCorrectAnswerText } from "../utils";
+import { Answer } from "../types";
 
 type Props = {
-  answer: any;
+  answer: Answer;
   index: number;
   submissionId: number;
   gradingScores: Record<string, number>;

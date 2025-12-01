@@ -300,7 +300,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
             endAt={formData.endAt}
             duration={formData.duration}
             dateError={dateError}
-            onChange={(k, v) => handleChange(k as any, v as any)}
+            onChange={(k, v) => handleChange(k as keyof TestData, v as TestData[keyof TestData])}
           />
 
           <div>

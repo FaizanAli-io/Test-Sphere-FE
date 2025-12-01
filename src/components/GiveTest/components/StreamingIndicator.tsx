@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Camera, CameraOff, Loader2, Video } from "lucide-react";
 import { useWebRTC } from "@/hooks/useWebRTC";
+import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 
 interface StreamingIndicatorProps {
   userId: string;
@@ -18,8 +19,9 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
   initialScreenStream,
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
+  const wasOfflineRef = useRef(false);
 
-  const { isConnected, isStreaming, error, localStream, stopStreaming } = useWebRTC({
+  const { isConnected, isStreaming, error, stopStreaming, reconnect } = useWebRTC({
     userId,
     role: "student",
     testId,
@@ -27,6 +29,28 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
     initialStream,
     initialScreenStream,
   });
+
+  const { isOnline } = useConnectionMonitor(enabled);
+
+  // Monitor connection status and trigger reconnection when connection is restored
+  useEffect(() => {
+    if (!enabled) return;
+
+    if (!isOnline) {
+      // Connection lost
+      wasOfflineRef.current = true;
+      console.log("[StreamingIndicator] Connection lost");
+    } else if (wasOfflineRef.current && isOnline) {
+      // Connection restored
+      console.log("[StreamingIndicator] Connection restored, triggering WebRTC reconnection");
+      wasOfflineRef.current = false;
+
+      // Trigger WebRTC reconnection
+      if (reconnect) {
+        reconnect();
+      }
+    }
+  }, [isOnline, enabled, reconnect]);
 
   // Stop streaming when component unmounts (leaving the test)
   useEffect(() => {

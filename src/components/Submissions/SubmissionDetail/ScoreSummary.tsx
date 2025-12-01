@@ -1,10 +1,10 @@
 import React from "react";
 import { formatDate } from "../utils";
-import { SubmissionStatus } from "../types";
+import { SubmissionStatus, Submission } from "../types";
 
 type Props = {
   isTeacherView: boolean;
-  submission: any;
+  submission: Submission;
   totalPossible: number;
   currentTotal: number;
   onBack?: () => void;
@@ -17,7 +17,6 @@ export default function ScoreSummary({
   submission,
   totalPossible,
   currentTotal,
-  onBack,
   handleStatusUpdate,
   topExtraContent,
 }: Props) {

@@ -226,7 +226,14 @@ export const useFullscreenMonitoring = ({
       // Start countdown warning with auto-submission
       startViolationCountdown();
     }
-  }, [isTestActive, violationCount, logViolation, onViolationLimit, startViolationCountdown]);
+  }, [
+    isTestActive,
+    violationCount,
+    logViolation,
+    onViolationLimit,
+    startViolationCountdown,
+    MAX_VIOLATIONS,
+  ]);
 
   // Dismiss violation warning manually and re-enter fullscreen
   const dismissWarning = useCallback(() => {

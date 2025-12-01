@@ -1,5 +1,4 @@
 import React from "react";
-import { useRouter } from "next/navigation";
 import type { Test } from "../types";
 
 interface HeaderSectionProps {
@@ -35,10 +34,8 @@ const getStatusColor = (status: string) => {
 };
 
 export default function HeaderSection({ test, onBack, onEdit, onDelete }: HeaderSectionProps) {
-  const router = useRouter();
-
   const handleInvigilate = () => {
-    router.push(`/test/${test.id}/invigilate`);
+    window.open(`/test/${test.id}/invigilate`, "_blank");
   };
 
   return (

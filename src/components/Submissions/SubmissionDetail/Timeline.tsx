@@ -1,7 +1,14 @@
 import React from "react";
 import { formatDate, calculateTimeTaken } from "../utils";
 
-type Props = { submission: any; isTeacherView: boolean };
+interface TimelineSubmission {
+  startedAt?: string;
+  submittedAt?: string;
+  endedAt?: string;
+  gradedAt?: string | null;
+}
+
+type Props = { submission: TimelineSubmission; isTeacherView: boolean };
 
 export default function Timeline({ submission }: Props) {
   return (

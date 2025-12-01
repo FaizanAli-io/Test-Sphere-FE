@@ -7,7 +7,7 @@ interface ClassHeaderProps {
     name: string;
     description: string;
     code: string;
-    students: any[];
+    students: Array<{ id: number; name: string; email: string }>;
   };
   testsCount: number;
   onBack: () => void;

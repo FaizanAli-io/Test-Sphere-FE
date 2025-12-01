@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Camera, Monitor, Eye, Mouse, Keyboard, X } from "lucide-react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
+import { Camera, Monitor, Eye, Mouse, Keyboard, X, RefreshCw } from "lucide-react";
 
 import api from "@/hooks/useApi";
 import { ImageLogsView } from "./ImageLogsView";
@@ -15,25 +15,45 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
 }) => {
   const [logs, setLogs] = useState<ProctoringLog[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<FilterType>("SCREENSHOT");
 
+  const fetchLogs = useCallback(
+    async (isRefresh = false) => {
+      if (!submissionId) return;
+
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
+
+      try {
+        const res = await api(`/proctoring-logs/${submissionId}`, { auth: true });
+        if (!res.ok) throw new Error("Failed to fetch logs");
+        const data = await res.json();
+        setLogs(data);
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Failed to fetch logs");
+      } finally {
+        if (isRefresh) {
+          setRefreshing(false);
+        } else {
+          setLoading(false);
+        }
+      }
+    },
+    [submissionId],
+  );
+
   useEffect(() => {
     if (!open || !submissionId) return;
-    setLoading(true);
-    setError(null);
     setLogs(null);
     setActiveTab("SCREENSHOT");
-
-    api(`/proctoring-logs/${submissionId}`, { auth: true })
-      .then(async (res) => {
-        if (!res.ok) throw new Error("Failed to fetch logs");
-        return res.json();
-      })
-      .then(setLogs)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [open, submissionId]);
+    fetchLogs(false);
+  }, [open, submissionId, fetchLogs]);
 
   // Calculate log counts
   const logCounts = useMemo((): LogCounts => {
@@ -215,13 +235,24 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
               Comprehensive monitoring data for this submission
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors"
-            aria-label="Close"
-          >
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchLogs(true)}
+              disabled={refreshing || loading}
+              className="text-gray-500 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Refresh logs"
+              title="Refresh logs"
+            >
+              <RefreshCw size={20} className={refreshing ? "animate-spin" : ""} />
+            </button>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Close"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}

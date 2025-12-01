@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { X, Camera, Mic, Loader2 } from "lucide-react";
 
 import { useWebRTC } from "@/hooks/useWebRTC";
+import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 import type { InvigilatingStudent } from "../hooks";
 
 interface StudentLivestreamModalProps {
@@ -21,6 +22,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
   const [selectedStreamType, setSelectedStreamType] = useState<"webcam" | "screen">("webcam");
   const [hasRequested, setHasRequested] = useState(false);
   const [currentStreamType, setCurrentStreamType] = useState<"webcam" | "screen" | null>(null);
+  const wasOfflineRef = useRef(false);
 
   const {
     isConnected,
@@ -30,12 +32,15 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     remoteStream,
     requestStream,
     stopViewingStream,
+    reconnect,
   } = useWebRTC({
     userId: teacherId,
     role: "teacher",
     testId,
     enabled: !!student,
   });
+
+  const { isOnline } = useConnectionMonitor(!!student);
 
   const handleRequestStream = async () => {
     if (!student || !isConnected || hasRequested) return;
@@ -77,6 +82,34 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     }
   };
 
+  // Monitor connection status and trigger reconnection when connection is restored
+  useEffect(() => {
+    if (!student) return;
+
+    if (!isOnline) {
+      // Connection lost
+      wasOfflineRef.current = true;
+      console.log("[StudentLivestreamModal] Connection lost");
+    } else if (wasOfflineRef.current && isOnline) {
+      // Connection restored
+      console.log("[StudentLivestreamModal] Connection restored, triggering WebRTC reconnection");
+      wasOfflineRef.current = false;
+
+      // Trigger WebRTC reconnection
+      if (reconnect) {
+        reconnect();
+      }
+
+      // If we were viewing a stream before disconnect, request it again
+      if (hasRequested && currentStreamType) {
+        setTimeout(() => {
+          console.log("[StudentLivestreamModal] Re-requesting stream after reconnection");
+          requestStream(student.id.toString(), currentStreamType);
+        }, 2000); // Wait 2 seconds for socket to fully reconnect
+      }
+    }
+  }, [isOnline, student, reconnect, hasRequested, currentStreamType, requestStream]);
+
   useEffect(() => {
     return () => {
       if (student) {
@@ -96,8 +129,14 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
+      handleStopStream();
       onClose();
     }
+  };
+
+  const handleCloseButton = () => {
+    handleStopStream();
+    onClose();
   };
 
   return (
@@ -116,7 +155,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleCloseButton}
             className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-700 rounded-lg"
           >
             <X size={24} />

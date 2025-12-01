@@ -1,5 +1,16 @@
 import React from "react";
 
+interface CaptureStats {
+  screenshots: { total: number; uploaded: number };
+  webcamPhotos: { total: number; uploaded: number };
+}
+
+interface SystemEventStats {
+  focusChanges: { total: number; uploaded: number };
+  clicks: { total: number; uploaded: number };
+  keystrokes: { total: number; uploaded: number };
+}
+
 interface TestHeaderProps {
   testTitle: string;
   answeredCount: number;
@@ -10,9 +21,12 @@ interface TestHeaderProps {
   onSubmitTest: () => void;
   submitting: boolean;
   isCapturing?: boolean;
-  logsCount?: number;
   isFullscreen?: boolean;
   violationCount?: number;
+  isOnline?: boolean;
+  hasPendingLogs?: boolean;
+  captureStats?: CaptureStats;
+  systemEventStats?: SystemEventStats;
 }
 
 export const TestHeader: React.FC<TestHeaderProps> = ({
@@ -25,9 +39,12 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
   onSubmitTest,
   submitting,
   isCapturing,
-  logsCount = 0,
   isFullscreen,
   violationCount = 0,
+  isOnline = true,
+  hasPendingLogs = false,
+  captureStats,
+  systemEventStats,
 }) => {
   return (
     <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b-2 border-gray-200">
@@ -41,36 +58,85 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Monitoring indicators stacked vertically */}
-            {(isCapturing !== undefined || isFullscreen !== undefined) && (
-              <div className="flex flex-col gap-2">
-                {isCapturing !== undefined && (
-                  <div className="bg-gray-50 border-2 border-gray-200 rounded-lg px-3 py-1.5">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
-                        }`}
-                      />
-                      <span className="text-xs font-medium text-gray-700">
-                        Captures: {logsCount}
-                      </span>
+            {/* Comprehensive Monitoring Stats */}
+            {(captureStats || systemEventStats || isFullscreen !== undefined) && (
+              <div className="bg-gray-50 border-2 border-gray-200 rounded-lg px-4 py-2">
+                <div className="grid grid-cols-6 gap-3 text-xs">
+                  {/* Screenshots */}
+                  {captureStats && (
+                    <div className="text-center">
+                      <div className="font-semibold text-gray-600 mb-1">Screenshots</div>
+                      <div className="text-blue-600 font-bold">
+                        {captureStats.screenshots.uploaded}/{captureStats.screenshots.total}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {isFullscreen !== undefined && (
-                  <div className="bg-gray-50 border-2 border-gray-200 rounded-lg px-3 py-1.5">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${
-                          violationCount === 0 ? "bg-green-500" : "bg-red-500"
-                        }`}
-                      />
-                      <span className="text-xs font-medium text-gray-700">
-                        Violations: {violationCount}
-                      </span>
+                  {/* Webcam */}
+                  {captureStats && (
+                    <div className="text-center">
+                      <div className="font-semibold text-gray-600 mb-1">Webcam</div>
+                      <div className="text-blue-600 font-bold">
+                        {captureStats.webcamPhotos.uploaded}/{captureStats.webcamPhotos.total}
+                      </div>
                     </div>
+                  )}
+
+                  {/* Focus Changes */}
+                  {systemEventStats && (
+                    <div className="text-center">
+                      <div className="font-semibold text-gray-600 mb-1">Focus</div>
+                      <div className="text-orange-600 font-bold">
+                        {systemEventStats.focusChanges.uploaded}/
+                        {systemEventStats.focusChanges.total}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Clicks */}
+                  {systemEventStats && (
+                    <div className="text-center">
+                      <div className="font-semibold text-gray-600 mb-1">Clicks</div>
+                      <div className="text-purple-600 font-bold">
+                        {systemEventStats.clicks.uploaded}/{systemEventStats.clicks.total}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Keystrokes */}
+                  {systemEventStats && (
+                    <div className="text-center">
+                      <div className="font-semibold text-gray-600 mb-1">Keys</div>
+                      <div className="text-green-600 font-bold">
+                        {systemEventStats.keystrokes.uploaded}/{systemEventStats.keystrokes.total}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Violations */}
+                  {isFullscreen !== undefined && (
+                    <div className="text-center">
+                      <div className="font-semibold text-gray-600 mb-1">Violations</div>
+                      <div
+                        className={`font-bold ${violationCount === 0 ? "text-green-600" : "text-red-600"}`}
+                      >
+                        {violationCount}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Capturing indicator */}
+                {isCapturing !== undefined && (
+                  <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-gray-300">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
+                      }`}
+                    />
+                    <span className="text-xs font-medium text-gray-600">
+                      {isCapturing ? "Capturing..." : "Monitoring Active"}
+                    </span>
                   </div>
                 )}
               </div>
@@ -87,13 +153,29 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
               </p>
             </div>
 
-            <button
-              onClick={onSubmitTest}
-              disabled={submitting}
-              className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
-            >
-              Submit Test
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={onSubmitTest}
+                disabled={submitting}
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+              >
+                Submit Test
+              </button>
+
+              {/* Connection status indicator */}
+              <div className="h-8 flex items-center justify-center">
+                {(!isOnline || hasPendingLogs) && (
+                  <div className="bg-orange-50 border-2 border-orange-300 rounded-lg px-3 py-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                      <span className="text-xs font-medium text-orange-700">
+                        {!isOnline ? "Connection Lost" : "Syncing..."}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

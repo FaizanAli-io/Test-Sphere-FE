@@ -43,15 +43,21 @@ export const useInvigilateStudents = (testId: string) => {
 
       // Backend returns: { submissions: [{ id, userId, user: {...}, ... }] }
       if (data && Array.isArray(data.submissions)) {
-        const students = data.submissions.map((submission: any) => ({
-          id: submission.user.id,
-          name: submission.user.name,
-          email: submission.user.email,
-          profilePicture: submission.user.profileImage,
-          cameraEnabled: true, // TODO: Get from WebRTC or proctoring data
-          microphoneEnabled: true, // TODO: Get from WebRTC or proctoring data
-          submissionId: submission.id,
-        }));
+        const students = data.submissions.map(
+          (submission: {
+            id: number;
+            user: { id: number; name: string; email: string; profileImage: string };
+            userId: number;
+          }) => ({
+            id: submission.user.id,
+            name: submission.user.name,
+            email: submission.user.email,
+            profilePicture: submission.user.profileImage,
+            cameraEnabled: true, // TODO: Get from WebRTC or proctoring data
+            microphoneEnabled: true, // TODO: Get from WebRTC or proctoring data
+            submissionId: submission.id,
+          }),
+        );
         setStudents(students);
       } else {
         console.warn("No submissions found in response:", data);

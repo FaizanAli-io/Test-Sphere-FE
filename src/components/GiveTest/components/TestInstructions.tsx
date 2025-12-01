@@ -67,15 +67,15 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
         if (!newPerms.microphone) missing.push("Microphone");
         errors.push(`${missing.join(" and ")} permission required to start the test.`);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Camera/Microphone permission check failed:", error);
 
       // Provide specific error messages
-      if (error.name === "NotAllowedError") {
+      if (error instanceof Error && error.name === "NotAllowedError") {
         errors.push(
           "Camera and microphone permissions were denied. Please allow access and try again.",
         );
-      } else if (error.name === "NotFoundError") {
+      } else if (error instanceof Error && error.name === "NotFoundError") {
         errors.push("No camera or microphone found. Please connect devices and try again.");
       } else {
         errors.push(
@@ -90,7 +90,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
         video: {
           // Note: Browsers may ignore this, we'll validate after selection
           displaySurface: "monitor",
-        } as any,
+        } as MediaTrackConstraints & { displaySurface?: string },
         audio: false,
       });
 
@@ -117,10 +117,10 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
         screenStream.getTracks().forEach((t) => t.stop());
         errors.push("Please select 'Entire screen' in the screen sharing dialog.");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Screen share permission check failed:", error);
 
-      if (error.name === "NotAllowedError") {
+      if (error instanceof Error && error.name === "NotAllowedError") {
         errors.push("Screen share permission was denied. Please allow access and try again.");
       } else {
         errors.push("Failed to access screen share. Please try again.");
