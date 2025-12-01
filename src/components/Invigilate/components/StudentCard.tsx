@@ -9,11 +9,7 @@ interface StudentCardProps {
   onViewLogs?: (student: InvigilatingStudent) => void;
 }
 
-export const StudentCard: React.FC<StudentCardProps> = ({
-  student,
-  onClick,
-  onViewLogs,
-}) => {
+export const StudentCard: React.FC<StudentCardProps> = ({ student, onClick, onViewLogs }) => {
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -49,7 +45,6 @@ export const StudentCard: React.FC<StudentCardProps> = ({
         {/* Profile Picture or Initials */}
         <div className="flex justify-center mb-4">
           {student.profilePicture ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={student.profilePicture}
               alt={student.name}
@@ -66,9 +61,7 @@ export const StudentCard: React.FC<StudentCardProps> = ({
         <h3 className="text-gray-900 text-center font-bold text-lg mb-1 truncate">
           {student.name}
         </h3>
-        <p className="text-gray-500 text-center text-sm mb-4 truncate">
-          {student.email}
-        </p>
+        <p className="text-gray-500 text-center text-sm mb-4 truncate">{student.email}</p>
 
         {/* Camera and Mic Status */}
         <div className="flex justify-center gap-6 mb-4 pb-4 border-b border-gray-200">
@@ -78,30 +71,16 @@ export const StudentCard: React.FC<StudentCardProps> = ({
             }`}
             title={student.cameraEnabled ? "Camera enabled" : "Camera disabled"}
           >
-            {student.cameraEnabled ? (
-              <Camera size={20} />
-            ) : (
-              <CameraOff size={20} />
-            )}
-            <span className="text-xs font-semibold">
-              {student.cameraEnabled ? "ON" : "OFF"}
-            </span>
+            {student.cameraEnabled ? <Camera size={20} /> : <CameraOff size={20} />}
+            <span className="text-xs font-semibold">{student.cameraEnabled ? "ON" : "OFF"}</span>
           </div>
           <div
             className={`flex items-center gap-2 ${
               student.microphoneEnabled ? "text-green-600" : "text-gray-400"
             }`}
-            title={
-              student.microphoneEnabled
-                ? "Microphone enabled"
-                : "Microphone disabled"
-            }
+            title={student.microphoneEnabled ? "Microphone enabled" : "Microphone disabled"}
           >
-            {student.microphoneEnabled ? (
-              <Mic size={20} />
-            ) : (
-              <MicOff size={20} />
-            )}
+            {student.microphoneEnabled ? <Mic size={20} /> : <MicOff size={20} />}
             <span className="text-xs font-semibold">
               {student.microphoneEnabled ? "ON" : "OFF"}
             </span>

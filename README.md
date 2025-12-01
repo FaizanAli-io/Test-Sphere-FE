@@ -1,83 +1,38 @@
-# Test Sphere - Frontend
-
-A modern Next.js-based education platform frontend with offline-first proctoring capabilities.
-
-## Features
-
-- **Student Portal**: Join classes, take tests, and view assignments
-- **Teacher Portal**: Create classes, manage tests, and view student submissions
-- **Offline Support**: Full exam functionality with automatic backend sync when online
-- **Real-time Proctoring**: Monitor students during exams with live streaming
-- **Security**: JWT authentication, role-based access control, and encrypted offline storage
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Installation
-
-```bash
-npm install
-```
-
-### Environment Variables
-
-Copy `.env.example` to `.env.local` and fill in your configuration:
-
-```bash
-cp .env.example .env.local
-```
-
-### Running Development Server
+First, run the development server:
 
 ```bash
 npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the application.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### Building for Production
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-```bash
-npm run build
-npm start
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Project Structure
+## Learn More
 
-- `src/app/` - Next.js app router pages
-- `src/components/` - Reusable React components
-- `src/contexts/` - React Context providers
-- `src/hooks/` - Custom React hooks
-- `src/utils/` - Utility functions
-- `offline/` - Offline-first system (IndexedDB, sync engine, encryption)
-- `public/` - Static assets
+To learn more about Next.js, take a look at the following resources:
 
-## Technologies
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-- **Framework**: Next.js 14+ with React 18+
-- **Styling**: Tailwind CSS
-- **UI Icons**: Lucide React
-- **API Communication**: Fetch API
-- **Authentication**: JWT (backend-managed)
-- **Offline Storage**: IndexedDB
-- **Real-time**: WebSocket/Socket.IO
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Backend API
+## Deploy on Vercel
 
-The frontend communicates with the Test Sphere Backend API running on `http://localhost:5000`.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Key endpoints:
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-- `GET /health` - Health check
-- `POST /auth/login` - User authentication
-- `GET /class` - Fetch classes
-- `POST /test/:id/submit` - Submit test answers
-- `POST /proctoring-log` - Upload proctoring logs
-
-## License
-
-Proprietary - Test Sphere
+# Deployed

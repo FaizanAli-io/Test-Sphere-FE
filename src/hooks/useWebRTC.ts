@@ -22,10 +22,7 @@ interface WebRTCState {
 }
 
 const ICE_SERVERS = {
-  iceServers: [
-    { urls: "stun:stun.l.google.com:19302" },
-    { urls: "stun:stun1.l.google.com:19302" },
-  ],
+  iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
 };
 
 export const useWebRTC = ({
@@ -95,39 +92,23 @@ export const useWebRTC = ({
       }));
     });
 
-    socket.on("error", (payload: Record<string, unknown>) => {
+    socket.on("error", (payload: any) => {
       console.error("[WebRTC] Socket error event:", payload);
     });
 
     // Set up signal handlers in the same effect to ensure they're registered
     console.log("[WebRTC] Setting up signal handlers");
 
-    interface SignalMessage {
-      type: string;
-      data: RTCSessionDescriptionInit | RTCIceCandidateInit;
-      from: string;
-    }
-
-    const handleSignal = async (message: SignalMessage) => {
-      console.log(
-        "[WebRTC] ✅ Received signal:",
-        message.type,
-        "from:",
-        message.from
-      );
+    const handleSignal = async (message: { type: string; data: any; from: string }) => {
+      console.log("[WebRTC] ✅ Received signal:", message.type, "from:", message.from);
 
       const pc = peerConnectionRef.current || createPeerConnection();
       peerIdRef.current = message.from;
 
       try {
         if (message.type === "offer") {
-          console.log(
-            "[WebRTC] Processing offer, current state:",
-            pc.signalingState
-          );
-          await pc.setRemoteDescription(
-            new RTCSessionDescription(message.data)
-          );
+          console.log("[WebRTC] Processing offer, current state:", pc.signalingState);
+          await pc.setRemoteDescription(new RTCSessionDescription(message.data));
           console.log("[WebRTC] Remote description set, creating answer...");
 
           // Process any pending ICE candidates after setting remote description
@@ -135,7 +116,7 @@ export const useWebRTC = ({
             console.log(
               "[WebRTC] Adding",
               pendingIceCandidatesRef.current.length,
-              "pending ICE candidates"
+              "pending ICE candidates",
             );
             for (const candidate of pendingIceCandidatesRef.current) {
               await pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -158,16 +139,14 @@ export const useWebRTC = ({
           console.log("[WebRTC] Answer emitted successfully");
         } else if (message.type === "answer") {
           console.log("[WebRTC] Processing answer");
-          await pc.setRemoteDescription(
-            new RTCSessionDescription(message.data)
-          );
+          await pc.setRemoteDescription(new RTCSessionDescription(message.data));
 
           // Process any pending ICE candidates after setting remote description
           if (pendingIceCandidatesRef.current.length > 0) {
             console.log(
               "[WebRTC] Adding",
               pendingIceCandidatesRef.current.length,
-              "pending ICE candidates"
+              "pending ICE candidates",
             );
             for (const candidate of pendingIceCandidatesRef.current) {
               await pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -179,9 +158,7 @@ export const useWebRTC = ({
             console.log("[WebRTC] Adding ICE candidate");
             await pc.addIceCandidate(new RTCIceCandidate(message.data));
           } else {
-            console.log(
-              "[WebRTC] Queueing ICE candidate (no remote description yet)"
-            );
+            console.log("[WebRTC] Queueing ICE candidate (no remote description yet)");
             pendingIceCandidatesRef.current.push(message.data);
           }
         }
@@ -200,7 +177,7 @@ export const useWebRTC = ({
         "[WebRTC] Stream requested by teacher:",
         data.teacherId,
         "Type:",
-        data.streamType || "webcam"
+        data.streamType || "webcam",
       );
 
       try {
@@ -217,10 +194,7 @@ export const useWebRTC = ({
         console.log("[WebRTC] Creating offer...");
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        console.log(
-          "[WebRTC] Offer created, emitting to teacher:",
-          data.teacherId
-        );
+        console.log("[WebRTC] Offer created, emitting to teacher:", data.teacherId);
 
         socket.emit("signal", {
           type: "offer",
@@ -259,10 +233,10 @@ export const useWebRTC = ({
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [enabled, userId, role, testId, createPeerConnection, startStreaming]);
+  }, [enabled, userId, role, testId]);
 
-  // Create peer connection - wrapped in useCallback to avoid dependency issues
-  const createPeerConnection = useCallback(() => {
+  // Create peer connection - not memoized to avoid dependency issues
+  const createPeerConnection = () => {
     if (peerConnectionRef.current) {
       return peerConnectionRef.current;
     }
@@ -293,10 +267,7 @@ export const useWebRTC = ({
 
       if (pc.connectionState === "connected") {
         setState((prev) => ({ ...prev, isStreaming: true, error: null }));
-      } else if (
-        pc.connectionState === "failed" ||
-        pc.connectionState === "disconnected"
-      ) {
+      } else if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
         setState((prev) => ({
           ...prev,
           isStreaming: false,
@@ -325,7 +296,7 @@ export const useWebRTC = ({
     }
 
     return pc;
-  }, [userId, testId, role]);
+  };
 
   // Start streaming (for students) with stream type
   const startStreaming = useCallback(
@@ -340,7 +311,7 @@ export const useWebRTC = ({
           if (initialScreenStream && initialScreenStream.active) {
             console.log(
               "[WebRTC] Reusing existing screen stream, tracks:",
-              initialScreenStream.getTracks().length
+              initialScreenStream.getTracks().length,
             );
             // Validate it's the entire screen when reusing
             const track = initialScreenStream.getVideoTracks()[0];
@@ -351,12 +322,10 @@ export const useWebRTC = ({
             const isEntireScreen =
               surface === "monitor" ||
               (typeof track?.label === "string" &&
-                /entire screen|screen 1|screen 2|whole screen/i.test(
-                  track.label
-                ));
+                /entire screen|screen 1|screen 2|whole screen/i.test(track.label));
             if (!isEntireScreen) {
               console.warn(
-                "[WebRTC] Provided screen stream is not entire screen; refusing to start"
+                "[WebRTC] Provided screen stream is not entire screen; refusing to start",
               );
               setState((prev) => ({
                 ...prev,
@@ -372,12 +341,12 @@ export const useWebRTC = ({
               tracks: initialScreenStream?.getTracks().length,
             });
             console.log(
-              "[WebRTC] Requesting NEW screen share (this should not happen if permissions were checked)"
+              "[WebRTC] Requesting NEW screen share (this should not happen if permissions were checked)",
             );
             stream = await navigator.mediaDevices.getDisplayMedia({
               video: {
                 displaySurface: "monitor", // Request entire screen (may be ignored)
-              } as DisplayMediaStreamOptions["video"],
+              } as any,
               audio: false,
             });
 
@@ -390,19 +359,14 @@ export const useWebRTC = ({
             const isEntireScreen =
               surface === "monitor" ||
               (typeof track?.label === "string" &&
-                /entire screen|screen 1|screen 2|whole screen/i.test(
-                  track.label
-                ));
+                /entire screen|screen 1|screen 2|whole screen/i.test(track.label));
             if (!isEntireScreen) {
               stream.getTracks().forEach((t) => t.stop());
               setState((prev) => ({
                 ...prev,
-                error:
-                  "Please select 'Entire screen' when sharing your screen.",
+                error: "Please select 'Entire screen' when sharing your screen.",
               }));
-              console.warn(
-                "[WebRTC] User did not select entire screen; aborting stream start"
-              );
+              console.warn("[WebRTC] User did not select entire screen; aborting stream start");
               return;
             }
           }
@@ -411,7 +375,7 @@ export const useWebRTC = ({
           if (initialStream && initialStream.active) {
             console.log(
               "[WebRTC] Reusing existing webcam stream, tracks:",
-              initialStream.getTracks().length
+              initialStream.getTracks().length,
             );
             stream = initialStream;
           } else {
@@ -434,7 +398,7 @@ export const useWebRTC = ({
         });
 
         console.log(
-          `[WebRTC] Local ${type} stream started with ${stream.getTracks().length} tracks`
+          `[WebRTC] Local ${type} stream started with ${stream.getTracks().length} tracks`,
         );
         return stream;
       } catch (error) {
@@ -446,7 +410,7 @@ export const useWebRTC = ({
         throw error;
       }
     },
-    [initialStream, initialScreenStream, createPeerConnection]
+    [initialStream, initialScreenStream],
   );
 
   // Stop streaming
@@ -477,9 +441,7 @@ export const useWebRTC = ({
 
         // Close existing peer connection if any
         if (peerConnectionRef.current) {
-          console.log(
-            "[WebRTC] Closing existing peer connection before new request"
-          );
+          console.log("[WebRTC] Closing existing peer connection before new request");
           peerConnectionRef.current.close();
           peerConnectionRef.current = null;
         }
@@ -487,12 +449,7 @@ export const useWebRTC = ({
         // Set peer id to route ICE candidates
         peerIdRef.current = studentId;
 
-        console.log(
-          "[WebRTC] Requesting stream from student:",
-          studentId,
-          "type:",
-          streamType
-        );
+        console.log("[WebRTC] Requesting stream from student:", studentId, "type:", streamType);
 
         // Request stream from student with specified type
         socketRef.current.emit("start-stream", {
@@ -509,7 +466,7 @@ export const useWebRTC = ({
         return null;
       }
     },
-    [userId, testId]
+    [userId, testId],
   );
 
   // Stop viewing stream (for teachers)
@@ -531,7 +488,7 @@ export const useWebRTC = ({
       remoteStreamRef.current = null;
       setState((prev) => ({ ...prev, isStreaming: false }));
     },
-    [userId, testId]
+    [userId, testId],
   );
 
   return {

@@ -4,11 +4,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 import api from "@/hooks/useApi";
 import { TEST_SECURITY_CONFIG } from "../constants";
-import {
-  shouldStoreOffline,
-  saveWebcamPhotoOffline,
-  saveScreenshotOffline,
-} from "../../../../offline";
 
 interface MonitoringLog {
   image: string;
@@ -39,11 +34,11 @@ export const useTestMonitoring = ({
   const screenStreamRef = useRef<MediaStream | null>(null);
   const [webcamStream, setWebcamStream] = useState<MediaStream | null>(null);
   const [logs, setLogs] = useState<MonitoringLog[]>([]);
+  const [isCapturing, setIsCapturing] = useState(false);
   const webcamCaptureCountRef = useRef(0);
   const screenshotCaptureCountRef = useRef(0);
 
-  const { config, authenticator, handleUploadSuccess, handleUploadError } =
-    useImageKitUploader();
+  const { config, authenticator, handleUploadSuccess, handleUploadError } = useImageKitUploader();
 
   const initializeWebcam = useCallback(async () => {
     try {
@@ -92,14 +87,10 @@ export const useTestMonitoring = ({
       // Use initialScreenStream if provided and still active
       let stream: MediaStream;
       if (initialScreenStream && initialScreenStream.active) {
-        console.log(
-          "[TestMonitoring] Reusing initial screen stream for screenshots"
-        );
+        console.log("[TestMonitoring] Reusing initial screen stream for screenshots");
         stream = initialScreenStream;
       } else {
-        console.log(
-          "[TestMonitoring] Requesting new screen share (fallback - should not happen)"
-        );
+        console.log("[TestMonitoring] Requesting new screen share (fallback - should not happen)");
         stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             displaySurface: "monitor", // Request entire screen
@@ -111,9 +102,9 @@ export const useTestMonitoring = ({
       const track = stream.getVideoTracks()[0];
       const settings = track?.getSettings?.();
       // displaySurface is non-standard in TS, so read from settings via index signature
-      const surface = (settings as Record<string, unknown> | undefined)?.[
-        "displaySurface"
-      ] as string | undefined;
+      const surface = (settings as Record<string, unknown> | undefined)?.["displaySurface"] as
+        | string
+        | undefined;
       const isEntireScreen =
         surface === "monitor" ||
         (typeof track.label === "string" &&
@@ -157,9 +148,7 @@ export const useTestMonitoring = ({
     if (!initialScreenStream || !initialScreenStream.active) return;
     if (screenStreamRef.current) return; // Already initialized
 
-    console.log(
-      "[TestMonitoring] Initializing screen stream from initial permission check"
-    );
+    console.log("[TestMonitoring] Initializing screen stream from initial permission check");
     screenStreamRef.current = initialScreenStream;
 
     const video = document.createElement("video");
@@ -215,7 +204,7 @@ export const useTestMonitoring = ({
           resolve(blob);
         },
         "image/jpeg",
-        0.8
+        0.8,
       );
     });
   }, [requireWebcam]);
@@ -246,7 +235,7 @@ export const useTestMonitoring = ({
   const uploadToImageKit = useCallback(
     async (
       blob: Blob,
-      type: "webcam" | "screenshot"
+      type: "webcam" | "screenshot",
     ): Promise<{ fileId: string; url: string } | null> => {
       if (!config) {
         // ImageKit config not loaded
@@ -266,13 +255,10 @@ export const useTestMonitoring = ({
         formData.append("token", authParams.token);
         formData.append("publicKey", config.publicKey);
 
-        const response = await fetch(
-          "https://upload.imagekit.io/api/v1/files/upload",
-          {
-            method: "POST",
-            body: formData,
-          }
-        );
+        const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+          method: "POST",
+          body: formData,
+        });
 
         if (!response.ok) {
           throw new Error(`Upload failed with status ${response.status}`);
@@ -291,7 +277,7 @@ export const useTestMonitoring = ({
         return null;
       }
     },
-    [config, authenticator, handleUploadSuccess, handleUploadError]
+    [config, authenticator, handleUploadSuccess, handleUploadError],
   );
 
   // Separate capture functions for webcam and screenshot
@@ -300,7 +286,7 @@ export const useTestMonitoring = ({
       return;
     }
 
-    console.log("📷 Starting webcam capture...");
+    console.log("� Starting webcam capture...");
 
     try {
       const webcamBlob = await captureWebcamPhoto();
@@ -309,35 +295,17 @@ export const useTestMonitoring = ({
         return;
       }
 
-      const timestamp = new Date().toISOString();
-
-      // Check if we should store offline
-      if (shouldStoreOffline()) {
-        console.log("📴 Storing webcam photo offline");
-        await saveWebcamPhotoOffline(submissionId, webcamBlob, timestamp);
-        webcamCaptureCountRef.current += 1;
-        console.log(
-          `✅ Webcam capture #${webcamCaptureCountRef.current} stored offline`
-        );
-        return;
-      }
-
-      // Online mode: upload to ImageKit and backend
       const webcamData = await uploadToImageKit(webcamBlob, "webcam");
       if (!webcamData) {
-        console.log("⚠️ Failed to upload webcam photo, storing offline");
-        await saveWebcamPhotoOffline(submissionId, webcamBlob, timestamp);
-        webcamCaptureCountRef.current += 1;
+        console.log("⚠️ Failed to upload webcam photo");
         return;
       }
 
-      setLogs((prev) => [
-        ...prev,
-        { image: webcamData.url, takenAt: timestamp },
-      ]);
+      const timestamp = new Date().toISOString();
+      setLogs((prev) => [...prev, { image: webcamData.url, takenAt: timestamp }]);
 
-      console.log("📤 Uploading webcam photo to backend");
-      const response = await api("/proctoring-logs", {
+      console.log("� Uploading webcam photo to backend");
+      await api("/proctoring-logs", {
         auth: true,
         method: "POST",
         body: JSON.stringify({
@@ -353,31 +321,10 @@ export const useTestMonitoring = ({
         }),
       });
 
-      if (!response.ok) {
-        console.log("⚠️ Backend upload failed, storing offline");
-        await saveWebcamPhotoOffline(submissionId, webcamBlob, timestamp);
-      }
-
       webcamCaptureCountRef.current += 1;
-      console.log(
-        `✅ Webcam capture #${webcamCaptureCountRef.current} completed`
-      );
+      console.log(`✅ Webcam capture #${webcamCaptureCountRef.current} completed`);
     } catch (error) {
       console.error("❌ Webcam capture failed:", error);
-      // Try to store offline as fallback
-      try {
-        const webcamBlob = await captureWebcamPhoto();
-        if (webcamBlob && submissionId) {
-          await saveWebcamPhotoOffline(
-            submissionId,
-            webcamBlob,
-            new Date().toISOString()
-          );
-          console.log("✅ Stored webcam photo offline after error");
-        }
-      } catch (offlineError) {
-        console.error("❌ Failed to store offline:", offlineError);
-      }
     }
   }, [submissionId, requireWebcam, captureWebcamPhoto, uploadToImageKit]);
 
@@ -396,38 +343,17 @@ export const useTestMonitoring = ({
         return;
       }
 
-      const timestamp = new Date().toISOString();
-
-      // Check if we should store offline
-      if (shouldStoreOffline()) {
-        console.log("📴 Storing screenshot offline");
-        await saveScreenshotOffline(submissionId, screenshotBlob, timestamp);
-        screenshotCaptureCountRef.current += 1;
-        console.log(
-          `✅ Screenshot #${screenshotCaptureCountRef.current} stored offline`
-        );
-        return;
-      }
-
-      // Online mode: upload to ImageKit and backend
-      const screenshotData = await uploadToImageKit(
-        screenshotBlob,
-        "screenshot"
-      );
+      const screenshotData = await uploadToImageKit(screenshotBlob, "screenshot");
       if (!screenshotData) {
-        console.log("⚠️ Failed to upload screenshot, storing offline");
-        await saveScreenshotOffline(submissionId, screenshotBlob, timestamp);
-        screenshotCaptureCountRef.current += 1;
+        console.log("⚠️ Failed to upload screenshot");
         return;
       }
 
-      setLogs((prev) => [
-        ...prev,
-        { image: screenshotData.url, takenAt: timestamp },
-      ]);
+      const timestamp = new Date().toISOString();
+      setLogs((prev) => [...prev, { image: screenshotData.url, takenAt: timestamp }]);
 
       console.log("📤 Uploading screenshot to backend");
-      const response = await api("/proctoring-logs", {
+      await api("/proctoring-logs", {
         auth: true,
         method: "POST",
         body: JSON.stringify({
@@ -443,31 +369,10 @@ export const useTestMonitoring = ({
         }),
       });
 
-      if (!response.ok) {
-        console.log("⚠️ Backend upload failed, storing offline");
-        await saveScreenshotOffline(submissionId, screenshotBlob, timestamp);
-      }
-
       screenshotCaptureCountRef.current += 1;
-      console.log(
-        `✅ Screenshot capture #${screenshotCaptureCountRef.current} completed`
-      );
+      console.log(`✅ Screenshot capture #${screenshotCaptureCountRef.current} completed`);
     } catch (error) {
       console.error("❌ Screenshot capture failed:", error);
-      // Try to store offline as fallback
-      try {
-        const screenshotBlob = await captureScreenshot();
-        if (screenshotBlob && submissionId) {
-          await saveScreenshotOffline(
-            submissionId,
-            screenshotBlob,
-            new Date().toISOString()
-          );
-          console.log("✅ Stored screenshot offline after error");
-        }
-      } catch (offlineError) {
-        console.error("❌ Failed to store offline:", offlineError);
-      }
     }
   }, [submissionId, isFullscreen, captureScreenshot, uploadToImageKit]);
 
@@ -478,7 +383,7 @@ export const useTestMonitoring = ({
     initializeWebcam();
 
     console.log(
-      `📷 Starting webcam capture interval (every ${TEST_SECURITY_CONFIG.WEBCAM_CAPTURE_INTERVAL_SECONDS}s)`
+      `📷 Starting webcam capture interval (every ${TEST_SECURITY_CONFIG.WEBCAM_CAPTURE_INTERVAL_SECONDS}s)`,
     );
 
     // Start immediately, then repeat
@@ -494,20 +399,14 @@ export const useTestMonitoring = ({
         webcamIntervalRef.current = null;
       }
     };
-  }, [
-    isTestActive,
-    submissionId,
-    requireWebcam,
-    initializeWebcam,
-    captureAndUploadWebcam,
-  ]);
+  }, [isTestActive, submissionId, requireWebcam, initializeWebcam, captureAndUploadWebcam]);
 
   // Screenshot capture interval (runs every 5 seconds when not in fullscreen)
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
     console.log(
-      `�️ Starting screenshot capture interval (every ${TEST_SECURITY_CONFIG.SCREENSHOT_CAPTURE_INTERVAL_SECONDS}s when not in fullscreen)`
+      `�️ Starting screenshot capture interval (every ${TEST_SECURITY_CONFIG.SCREENSHOT_CAPTURE_INTERVAL_SECONDS}s when not in fullscreen)`,
     );
 
     // Start immediately if not in fullscreen
@@ -551,6 +450,7 @@ export const useTestMonitoring = ({
     requestScreenPermission,
     requestWebcamPermission,
     logs,
+    isCapturing,
     webcamStream,
     checkWebcamAvailable,
   };

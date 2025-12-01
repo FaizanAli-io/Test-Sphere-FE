@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { IKContext } from "imagekitio-react";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 
 import {
@@ -23,8 +24,7 @@ import {
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 import { TEST_SECURITY_CONFIG } from "./constants";
-import api, { API_BASE_URL } from "@/hooks/useApi";
-import { getNetworkMonitor } from "@offline";
+import api from "@/hooks/useApi";
 
 export default function GiveTest() {
   const router = useRouter();
@@ -42,12 +42,8 @@ export default function GiveTest() {
   const [showFullscreenModal, setShowFullscreenModal] = useState(false);
   const [startErrors, setStartErrors] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
-  const [initialWebcamStream, setInitialWebcamStream] = useState<
-    MediaStream | undefined
-  >();
-  const [initialScreenStream, setInitialScreenStream] = useState<
-    MediaStream | undefined
-  >();
+  const [initialWebcamStream, setInitialWebcamStream] = useState<MediaStream | undefined>();
+  const [initialScreenStream, setInitialScreenStream] = useState<MediaStream | undefined>();
 
   const {
     test,
@@ -67,7 +63,7 @@ export default function GiveTest() {
     formatTime,
   } = useTestExam(testId);
 
-  useImageKitUploader();
+  const { config } = useImageKitUploader();
   const notifications = useNotifications();
 
   useEffect(() => {
@@ -89,23 +85,13 @@ export default function GiveTest() {
     };
   }, []);
 
-  // Initialize network monitor early to ensure offline logs are captured from the start
-  useEffect(() => {
-    try {
-      const monitor = getNetworkMonitor(API_BASE_URL);
-      monitor.start();
-      console.log("🚀 Network monitor initialized for offline support");
-    } catch (error) {
-      console.error("Failed to initialize network monitor:", error);
-    }
-  }, []);
-
   // Initialize fullscreen monitoring first (needed for useTestMonitoring)
   const {
     isFullscreen,
     violationCount,
     showViolationWarning,
     countdownSeconds,
+    maxViolations,
     isFullscreenSupported,
     enterFullscreen,
     dismissWarning,
@@ -114,9 +100,7 @@ export default function GiveTest() {
     isTestActive: testStarted,
     onViolationLimit: async () => {
       // Auto-submit test when violation limit is reached
-      notifications.showError(
-        "Test auto-submitted due to multiple fullscreen violations."
-      );
+      notifications.showError("Test auto-submitted due to multiple fullscreen violations.");
 
       // Log violation data locally for reference (frontend only)
 
@@ -124,9 +108,7 @@ export default function GiveTest() {
     },
     onExtendedFullscreenExit: async () => {
       // Auto-submit test when user stays out of fullscreen for too long
-      notifications.showError(
-        "Test auto-submitted due to extended fullscreen violation."
-      );
+      notifications.showError("Test auto-submitted due to extended fullscreen violation.");
 
       // Log violation data locally for reference (frontend only)
 
@@ -138,19 +120,14 @@ export default function GiveTest() {
   // Pass isFullscreen to control capture behavior:
   // - NOT in fullscreen: Take ONLY screenshots
   // - IN fullscreen: Take ONLY webcam photos
-  const {
-    videoRef,
-    canvasRef,
-    logs,
-    requestScreenPermission,
-    checkWebcamAvailable,
-  } = useTestMonitoring({
-    submissionId,
-    isTestActive: testStarted,
-    requireWebcam,
-    isFullscreen,
-    initialScreenStream,
-  });
+  const { videoRef, canvasRef, logs, isCapturing, requestScreenPermission, checkWebcamAvailable } =
+    useTestMonitoring({
+      submissionId,
+      isTestActive: testStarted,
+      requireWebcam,
+      isFullscreen,
+      initialScreenStream,
+    });
 
   // Initialize system event monitoring (clicks, keystrokes, focus changes)
   useSystemEventMonitoring({
@@ -166,16 +143,8 @@ export default function GiveTest() {
     }
 
     try {
-      const anyNav = navigator as unknown as {
-        userAgentData?: {
-          getHighEntropyValues: (
-            hints: string[]
-          ) => Promise<{ platform?: string }>;
-        };
-      };
-      const anyWin = window as unknown as {
-        getScreenDetails?: () => Promise<{ screens: unknown[] }>;
-      };
+      const anyNav: any = navigator as unknown as any;
+      const anyWin: any = window as unknown as any;
 
       if (typeof anyWin.getScreenDetails !== "function") {
         // API not supported; we cannot reliably detect multiple screens
@@ -201,9 +170,7 @@ export default function GiveTest() {
       }
 
       const details = await anyWin.getScreenDetails();
-      const count = Array.isArray(details?.screens)
-        ? details.screens.length
-        : 1;
+      const count = Array.isArray(details?.screens) ? details.screens.length : 1;
 
       if (count > 1) {
         return "Multiple displays detected. Disconnect external monitors and use a single display to start the test.";
@@ -274,7 +241,7 @@ export default function GiveTest() {
       }
     } else {
       console.log(
-        "[GiveTest] Using initial screen stream from permission check, skipping requestScreenPermission"
+        "[GiveTest] Using initial screen stream from permission check, skipping requestScreenPermission",
       );
     }
 
@@ -320,9 +287,7 @@ export default function GiveTest() {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-200"></div>
             <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-indigo-600 absolute top-0"></div>
           </div>
-          <p className="mt-6 text-gray-600 font-semibold text-lg">
-            Loading test...
-          </p>
+          <p className="mt-6 text-gray-600 font-semibold text-lg">Loading test...</p>
         </div>
       </div>
     );
@@ -335,12 +300,8 @@ export default function GiveTest() {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">⚠️</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Error Loading Test
-          </h2>
-          <p className="text-gray-600 mb-8 text-lg">
-            {error || "Test not found"}
-          </p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Error Loading Test</h2>
+          <p className="text-gray-600 mb-8 text-lg">{error || "Test not found"}</p>
           <button
             onClick={() => router.push("/student")}
             className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"

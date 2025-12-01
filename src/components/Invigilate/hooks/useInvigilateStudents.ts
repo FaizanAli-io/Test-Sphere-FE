@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "@/hooks/useApi";
-import { Submission } from "@/components/Submissions/types";
 
 export interface InvigilatingStudent {
   id: number;
@@ -44,7 +43,7 @@ export const useInvigilateStudents = (testId: string) => {
 
       // Backend returns: { submissions: [{ id, userId, user: {...}, ... }] }
       if (data && Array.isArray(data.submissions)) {
-        const students = data.submissions.map((submission: Submission) => ({
+        const students = data.submissions.map((submission: any) => ({
           id: submission.user.id,
           name: submission.user.name,
           email: submission.user.email,

@@ -42,33 +42,28 @@ export default function NotificationBar({ notifications, onRemove }: Notificatio
   return (
     <div className="fixed top-0 left-0 right-0 z-50 p-4">
       <div className="max-w-4xl mx-auto space-y-2">
-        {notifications
-          .filter(
-            (notification) =>
-              notification.type !== "error" || !notification.message.includes("Failed to fetch"),
-          )
-          .map((notification) => (
-            <div
-              key={notification.id}
-              className={`
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`
               flex items-center justify-between 
               px-4 py-3 rounded-lg border-2 shadow-lg 
               animate-slide-down
               ${getNotificationStyles(notification.type)}
             `}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-lg">{getIcon(notification.type)}</span>
-                <span className="font-medium">{notification.message}</span>
-              </div>
-              <button
-                onClick={() => onRemove(notification.id)}
-                className="ml-4 text-current opacity-70 hover:opacity-100 transition-opacity"
-              >
-                <span className="text-lg">✕</span>
-              </button>
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">{getIcon(notification.type)}</span>
+              <span className="font-medium">{notification.message}</span>
             </div>
-          ))}
+            <button
+              onClick={() => onRemove(notification.id)}
+              className="ml-4 text-current opacity-70 hover:opacity-100 transition-opacity"
+            >
+              <span className="text-lg">✕</span>
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
