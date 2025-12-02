@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Camera, CameraOff, Loader2, Video } from "lucide-react";
+
+import { debugLogger } from "@/utils/logger";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 
@@ -39,10 +41,10 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
     if (!isOnline) {
       // Connection lost
       wasOfflineRef.current = true;
-      console.log("[StreamingIndicator] Connection lost");
+      debugLogger("[StreamingIndicator] Connection lost");
     } else if (wasOfflineRef.current && isOnline) {
       // Connection restored
-      console.log("[StreamingIndicator] Connection restored, triggering WebRTC reconnection");
+      debugLogger("[StreamingIndicator] Connection restored, triggering WebRTC reconnection");
       wasOfflineRef.current = false;
 
       // Trigger WebRTC reconnection

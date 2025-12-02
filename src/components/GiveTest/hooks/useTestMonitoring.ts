@@ -5,6 +5,7 @@ import { useImageKitUploader } from "@/hooks/useImageKitUploader";
 import api from "@/hooks/useApi";
 import { TEST_SECURITY_CONFIG } from "../constants";
 import { storeOfflineLog } from "@/utils/offlineStorage";
+import { debugLogger } from "@/utils/logger";
 
 interface MonitoringLog {
   image: string;
@@ -120,18 +121,18 @@ export const useTestMonitoring = ({
     try {
       // If we already have a video element set up, we're good
       if (screenStreamRef.current && screenVideoRef.current) {
-        console.log("[TestMonitoring] Screen stream already set up");
+        debugLogger("[TestMonitoring] Screen stream already set up");
         return true;
       }
 
       // Use initialScreenStream if provided and still active
       let stream: MediaStream;
       if (initialScreenStream && initialScreenStream.active) {
-        console.log("[TestMonitoring] Reusing initial screen stream for screenshots");
+        debugLogger("[TestMonitoring] Reusing initial screen stream for screenshots");
         stream = initialScreenStream;
         isUsingInitialScreenStreamRef.current = true;
       } else {
-        console.log("[TestMonitoring] Requesting new screen share (fallback - should not happen)");
+        debugLogger("[TestMonitoring] Requesting new screen share (fallback - should not happen)");
         stream = await navigator.mediaDevices.getDisplayMedia({
           video: {
             displaySurface: "monitor", // Request entire screen
@@ -193,7 +194,7 @@ export const useTestMonitoring = ({
     if (!initialScreenStream || !initialScreenStream.active) return;
     if (screenStreamRef.current) return; // Already initialized
 
-    console.log("[TestMonitoring] Initializing screen stream from initial permission check");
+    debugLogger("[TestMonitoring] Initializing screen stream from initial permission check");
     screenStreamRef.current = initialScreenStream;
     isUsingInitialScreenStreamRef.current = true;
 
@@ -332,12 +333,12 @@ export const useTestMonitoring = ({
       return;
     }
 
-    console.log("� Starting webcam capture...");
+    debugLogger("� Starting webcam capture...");
 
     try {
       const webcamBlob = await captureWebcamPhoto();
       if (!webcamBlob) {
-        console.log("⚠️ No webcam data captured");
+        debugLogger("⚠️ No webcam data captured");
         return;
       }
 
@@ -345,7 +346,7 @@ export const useTestMonitoring = ({
 
       // Check if online before attempting upload
       if (!isOnline) {
-        console.log("🔌 Offline: Storing webcam photo in IndexedDB");
+        debugLogger("🔌 Offline: Storing webcam photo in IndexedDB");
         await storeOfflineLog(submissionId, "WEBCAM_PHOTO", {
           submissionId,
           logType: "WEBCAM_PHOTO",
@@ -364,20 +365,20 @@ export const useTestMonitoring = ({
         webcamCaptureCountRef.current += 1;
         statsRef.current.webcamPhotos.total++;
         setStats({ ...statsRef.current });
-        console.log(`📦 Webcam capture #${webcamCaptureCountRef.current} stored offline`);
+        debugLogger(`📦 Webcam capture #${webcamCaptureCountRef.current} stored offline`);
         return;
       }
 
       // Online: proceed with normal upload flow
       const webcamData = await uploadToImageKit(webcamBlob, "webcam");
       if (!webcamData) {
-        console.log("⚠️ Failed to upload webcam photo to ImageKit");
+        debugLogger("⚠️ Failed to upload webcam photo to ImageKit");
         return;
       }
 
       setLogs((prev) => [...prev, { image: webcamData.url, takenAt: timestamp }]);
 
-      console.log("📤 Uploading webcam photo to backend");
+      debugLogger("📤 Uploading webcam photo to backend");
       await api("/proctoring-logs/batch", {
         auth: true,
         method: "POST",
@@ -402,7 +403,7 @@ export const useTestMonitoring = ({
       statsRef.current.webcamPhotos.total++;
       statsRef.current.webcamPhotos.uploaded++;
       setStats({ ...statsRef.current });
-      console.log(`✅ Webcam capture #${webcamCaptureCountRef.current} completed`);
+      debugLogger(`✅ Webcam capture #${webcamCaptureCountRef.current} completed`);
     } catch (error) {
       console.error("❌ Webcam capture failed:", error);
       // On error, try to store offline as fallback
@@ -410,7 +411,7 @@ export const useTestMonitoring = ({
         try {
           const webcamBlob = await captureWebcamPhoto();
           if (webcamBlob) {
-            console.log("💾 Error occurred: Storing webcam photo offline as fallback");
+            debugLogger("💾 Error occurred: Storing webcam photo offline as fallback");
             await storeOfflineLog(submissionId, "WEBCAM_PHOTO", {
               submissionId,
               logType: "WEBCAM_PHOTO",
@@ -439,12 +440,12 @@ export const useTestMonitoring = ({
       return;
     }
 
-    console.log("🖥️ Starting screenshot capture...");
+    debugLogger("🖥️ Starting screenshot capture...");
 
     try {
       const screenshotBlob = await captureScreenshot();
       if (!screenshotBlob) {
-        console.log("⚠️ No screenshot data captured");
+        debugLogger("⚠️ No screenshot data captured");
         return;
       }
 
@@ -452,7 +453,7 @@ export const useTestMonitoring = ({
 
       // Check if online before attempting upload
       if (!isOnline) {
-        console.log("🔌 Offline: Storing screenshot in IndexedDB");
+        debugLogger("🔌 Offline: Storing screenshot in IndexedDB");
         await storeOfflineLog(submissionId, "SCREENSHOT", {
           submissionId,
           logType: "SCREENSHOT",
@@ -471,20 +472,20 @@ export const useTestMonitoring = ({
         screenshotCaptureCountRef.current += 1;
         statsRef.current.screenshots.total++;
         setStats({ ...statsRef.current });
-        console.log(`📦 Screenshot capture #${screenshotCaptureCountRef.current} stored offline`);
+        debugLogger(`📦 Screenshot capture #${screenshotCaptureCountRef.current} stored offline`);
         return;
       }
 
       // Online: proceed with normal upload flow
       const screenshotData = await uploadToImageKit(screenshotBlob, "screenshot");
       if (!screenshotData) {
-        console.log("⚠️ Failed to upload screenshot to ImageKit");
+        debugLogger("⚠️ Failed to upload screenshot to ImageKit");
         return;
       }
 
       setLogs((prev) => [...prev, { image: screenshotData.url, takenAt: timestamp }]);
 
-      console.log("📤 Uploading screenshot to backend");
+      debugLogger("📤 Uploading screenshot to backend");
       await api("/proctoring-logs/batch", {
         auth: true,
         method: "POST",
@@ -509,7 +510,7 @@ export const useTestMonitoring = ({
       statsRef.current.screenshots.total++;
       statsRef.current.screenshots.uploaded++;
       setStats({ ...statsRef.current });
-      console.log(`✅ Screenshot capture #${screenshotCaptureCountRef.current} completed`);
+      debugLogger(`✅ Screenshot capture #${screenshotCaptureCountRef.current} completed`);
     } catch (error) {
       console.error("❌ Screenshot capture failed:", error);
       // On error, try to store offline as fallback
@@ -517,7 +518,7 @@ export const useTestMonitoring = ({
         try {
           const screenshotBlob = await captureScreenshot();
           if (screenshotBlob) {
-            console.log("💾 Error occurred: Storing screenshot offline as fallback");
+            debugLogger("💾 Error occurred: Storing screenshot offline as fallback");
             await storeOfflineLog(submissionId, "SCREENSHOT", {
               submissionId,
               logType: "SCREENSHOT",
@@ -546,7 +547,7 @@ export const useTestMonitoring = ({
 
     initializeWebcam();
 
-    console.log(
+    debugLogger(
       `📷 Starting webcam capture interval (every ${TEST_SECURITY_CONFIG.WEBCAM_CAPTURE_INTERVAL_SECONDS}s)`,
     );
 
@@ -569,7 +570,7 @@ export const useTestMonitoring = ({
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
-    console.log(
+    debugLogger(
       `�️ Starting screenshot capture interval (every ${TEST_SECURITY_CONFIG.SCREENSHOT_CAPTURE_INTERVAL_SECONDS}s when not in fullscreen)`,
     );
 
@@ -600,10 +601,10 @@ export const useTestMonitoring = ({
 
       // Only stop screen stream tracks if this is NOT the initial screen stream
       if (screenStreamRef.current && !isUsingInitialScreenStreamRef.current) {
-        console.log("[TestMonitoring] Stopping locally created screen stream tracks");
+        debugLogger("[TestMonitoring] Stopping locally created screen stream tracks");
         screenStreamRef.current.getTracks().forEach((t) => t.stop());
       } else if (screenStreamRef.current) {
-        console.log("[TestMonitoring] Preserving initial screen stream for reuse");
+        debugLogger("[TestMonitoring] Preserving initial screen stream for reuse");
       }
 
       if (screenVideoRef.current) {

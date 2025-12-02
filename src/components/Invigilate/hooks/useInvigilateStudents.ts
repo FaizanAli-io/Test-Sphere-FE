@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+
 import api from "@/hooks/useApi";
+import { debugLogger } from "@/utils/logger";
 
 export interface InvigilatingStudent {
   id: number;
@@ -39,7 +41,7 @@ export const useInvigilateStudents = (testId: string) => {
       }
 
       const data = await response.json();
-      console.log("Invigilation API response:", data);
+      debugLogger("Invigilation API response:", data);
 
       // Backend returns: { submissions: [{ id, userId, user: {...}, ... }] }
       if (data && Array.isArray(data.submissions)) {

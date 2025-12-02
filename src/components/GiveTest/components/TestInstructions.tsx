@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { Test } from "../hooks/useTestExam";
 import { Camera, Mic, Check, X } from "lucide-react";
+
+import { Test } from "../hooks/useTestExam";
+import { debugLogger } from "@/utils/logger";
 
 interface TestInstructionsProps {
   test: Test;
@@ -106,7 +108,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
 
       if (screenTrack && screenTrack.readyState === "live" && isEntireScreen) {
         newPerms.screen = true;
-        console.log(
+        debugLogger(
           "[TestInstructions] Screen permission granted (entire screen), stream active:",
           screenStream.active,
         );
@@ -144,7 +146,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
       ]);
       return;
     }
-    console.log("[TestInstructions] Starting test with streams:", {
+    debugLogger("[TestInstructions] Starting test with streams:", {
       webcamActive: initialStream?.active,
       screenActive: initialScreenStream?.active,
       webcamTracks: initialStream?.getTracks().length,

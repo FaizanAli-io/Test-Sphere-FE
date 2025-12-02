@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+
 import api from "./useApi";
+import { debugLogger } from "@/utils/logger";
 
 interface ImageKitConfig {
   publicKey: string;
@@ -62,7 +64,7 @@ export function useImageKitUploader() {
 
     // Return cached signature if less than 1 minute old
     if (cachedSignature && now - cachedSignature.fetchedAt < ONE_MINUTE) {
-      console.log("✅ Using cached ImageKit signature");
+      debugLogger("✅ Using cached ImageKit signature");
       return {
         signature: cachedSignature.signature,
         expire: cachedSignature.expire,
@@ -71,7 +73,7 @@ export function useImageKitUploader() {
     }
 
     // Fetch new signature
-    console.log("📡 Fetching new ImageKit signature");
+    debugLogger("📡 Fetching new ImageKit signature");
     const res = await api("/upload/signature", {
       method: "GET",
       auth: true,

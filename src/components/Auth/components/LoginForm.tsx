@@ -71,21 +71,26 @@ export default function LoginForm({
         throw new Error(data.message || "Login failed");
       }
 
-      if (data.accessToken) localStorage.setItem("token", data.accessToken);
-      if (data.user?.role) localStorage.setItem("role", data.user.role);
-      window.dispatchEvent(new Event("authChange"));
-      if (data.user?.name) setSuccess(`Welcome back, ${data.user.name}!`);
+      if (data.accessToken && data.user?.role) {
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("role", data.user.role);
 
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        window.dispatchEvent(new Event("authChange"));
+        if (data.user.name) setSuccess(`Welcome back, ${data.user.name}!`);
+
+        // Clear any existing timeout
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+
+        // Set timeout with proper cleanup
+        timeoutRef.current = setTimeout(() => {
+          router.push("/" + data.user!.role.toLowerCase());
+          timeoutRef.current = null;
+        }, 1000);
       }
-
-      // Set timeout with proper cleanup
-      timeoutRef.current = setTimeout(() => {
-        if (data.user?.role) router.push("/" + data.user.role.toLowerCase());
-        timeoutRef.current = null;
-      }, 1000);
     } catch (err: unknown) {
       setError(extractErrorMessage(err));
     } finally {

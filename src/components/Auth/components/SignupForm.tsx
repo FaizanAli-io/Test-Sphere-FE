@@ -64,28 +64,35 @@ export default function SignupForm({
         body: JSON.stringify(requestBody),
       });
 
-      const data: { message?: string } = await res.json();
+      const data: {
+        message?: string;
+        accessToken?: string;
+        user?: { role: string; name?: string };
+      } = await res.json();
 
       if (!res.ok) {
-        if (res.status === 409) {
-          setError(
-            "Email already registered. If you haven't verified your account, you can try to verify with OTP or login if already verified.",
-          );
-          setOtpSent(true);
-          return;
-        } else if (res.status === 500) {
-          setError(
-            "Account created but there was an issue sending verification email. You can try to verify with OTP or login if already verified.",
-          );
-          setOtpSent(true);
-          return;
-        } else {
-          throw new Error(data.message || "Signup failed");
-        }
+        setError(data.message || "Signup failed");
+        return;
       }
 
-      setOtpSent(true);
-      setSuccess("OTP sent to your email! Please verify to continue.");
+      if (data.message === "Signup successful. OTP sent to email for verification.") {
+        setOtpSent(true);
+        setSuccess("OTP sent to your email! Please verify to continue.");
+      } else if (data.accessToken && data.user?.role) {
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("role", data.user.role);
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        window.dispatchEvent(new Event("authChange"));
+        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : "Signup successful!");
+
+        setTimeout(() => {
+          router.push("/" + data.user!.role.toLowerCase());
+        }, 1000);
+      } else {
+        setSuccess(data.message || "Signup successful!");
+      }
     } catch (err: unknown) {
       setError(extractErrorMessage(err, "An unexpected error occurred. Please try again."));
     } finally {

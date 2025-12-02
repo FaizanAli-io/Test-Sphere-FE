@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, Camera, Mic, Loader2 } from "lucide-react";
 
+import { debugLogger } from "@/utils/logger";
 import { useWebRTC } from "@/hooks/useWebRTC";
-import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 import type { InvigilatingStudent } from "../hooks";
+import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 
 interface StudentLivestreamModalProps {
   student: InvigilatingStudent | null;
@@ -89,10 +90,10 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     if (!isOnline) {
       // Connection lost
       wasOfflineRef.current = true;
-      console.log("[StudentLivestreamModal] Connection lost");
+      debugLogger("[StudentLivestreamModal] Connection lost");
     } else if (wasOfflineRef.current && isOnline) {
       // Connection restored
-      console.log("[StudentLivestreamModal] Connection restored, triggering WebRTC reconnection");
+      debugLogger("[StudentLivestreamModal] Connection restored, triggering WebRTC reconnection");
       wasOfflineRef.current = false;
 
       // Trigger WebRTC reconnection
@@ -103,7 +104,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
       // If we were viewing a stream before disconnect, request it again
       if (hasRequested && currentStreamType) {
         setTimeout(() => {
-          console.log("[StudentLivestreamModal] Re-requesting stream after reconnection");
+          debugLogger("[StudentLivestreamModal] Re-requesting stream after reconnection");
           requestStream(student.id.toString(), currentStreamType);
         }, 2000); // Wait 2 seconds for socket to fully reconnect
       }

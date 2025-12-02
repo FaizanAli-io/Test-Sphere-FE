@@ -1,11 +1,3 @@
-/**
- * WebRTC Utility Functions
- *
- * This file contains helper functions for WebRTC implementation.
- * These are placeholder functions that should be implemented when
- * the backend signaling server is ready.
- */
-
 export interface WebRTCConfig {
   iceServers: RTCIceServer[];
 }
@@ -104,33 +96,3 @@ export const addIceCandidate = async (
 export const closePeerConnection = (peerConnection: RTCPeerConnection): void => {
   peerConnection.close();
 };
-
-/**
- * Example usage for teacher viewing student stream:
- *
- * const peerConnection = createPeerConnection();
- * const videoElement = document.getElementById('student-video') as HTMLVideoElement;
- *
- * handleRemoteStream(peerConnection, videoElement);
- * handleIceCandidate(peerConnection, (candidate) => {
- *   // Send candidate to signaling server
- *   sendToSignalingServer({ type: 'ice-candidate', candidate });
- * });
- *
- * handleConnectionStateChange(peerConnection, (state) => {
- *   console.log('Connection state:', state);
- * });
- *
- * // Create offer and send to signaling server
- * const offer = await createOffer(peerConnection);
- * sendToSignalingServer({ type: 'offer', offer });
- *
- * // When answer is received from signaling server
- * await handleAnswer(peerConnection, receivedAnswer);
- *
- * // When ICE candidate is received from signaling server
- * await addIceCandidate(peerConnection, receivedCandidate);
- *
- * // Cleanup when done
- * closePeerConnection(peerConnection);
- */

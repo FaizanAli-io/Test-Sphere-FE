@@ -21,9 +21,10 @@ import {
   useSystemEventMonitoring,
 } from "./hooks";
 
-import { useNotifications } from "@/contexts/NotificationContext";
-import { TEST_SECURITY_CONFIG } from "./constants";
 import api from "@/hooks/useApi";
+import { debugLogger } from "@/utils/logger";
+import { TEST_SECURITY_CONFIG } from "./constants";
+import { useNotifications } from "@/contexts/NotificationContext";
 import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 import { useOfflineQueueManager } from "@/hooks/useOfflineQueueManager";
 
@@ -267,7 +268,7 @@ export default function GiveTest() {
         return;
       }
     } else {
-      console.log(
+      debugLogger(
         "[GiveTest] Using initial screen stream from permission check, skipping requestScreenPermission",
       );
     }

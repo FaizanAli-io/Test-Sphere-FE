@@ -13,6 +13,7 @@ import {
 } from "../types/systemEvents";
 import { TEST_SECURITY_CONFIG } from "../constants";
 import { storeOfflineLog } from "@/utils/offlineStorage";
+import { debugLogger } from "@/utils/logger";
 
 interface OfflineUploadedCounts {
   screenshots: number;
@@ -97,7 +98,7 @@ export const useSystemEventMonitoring = ({
 
     // If offline, store all events in IndexedDB
     if (!isOnline) {
-      console.log("🔌 Offline: Storing system events in IndexedDB");
+      debugLogger("🔌 Offline: Storing system events in IndexedDB");
       try {
         const promises = [];
 
@@ -145,7 +146,7 @@ export const useSystemEventMonitoring = ({
         }
 
         await Promise.all(promises);
-        console.log(`📦 Stored ${promises.length} system event batch(es) offline`);
+        debugLogger(`📦 Stored ${promises.length} system event batch(es) offline`);
       } catch (error) {
         console.error("❌ Failed to store system events offline:", error);
       }
@@ -194,7 +195,7 @@ export const useSystemEventMonitoring = ({
       }
 
       if (logsToUpload.length > 0) {
-        console.log(`📤 Uploading ${logsToUpload.length} log type(s) in batch`);
+        debugLogger(`📤 Uploading ${logsToUpload.length} log type(s) in batch`);
         const response = await api("/proctoring-logs/batch", {
           auth: true,
           method: "POST",
@@ -207,7 +208,7 @@ export const useSystemEventMonitoring = ({
           throw new Error(`Failed to upload system events: ${JSON.stringify(errorData)}`);
         }
 
-        console.log("✅ System events uploaded successfully");
+        debugLogger("✅ System events uploaded successfully");
 
         // Update stats on successful upload
         statsRef.current.focusChanges.uploaded += focusChanges.length;
@@ -265,7 +266,7 @@ export const useSystemEventMonitoring = ({
         }
 
         await Promise.all(promises);
-        console.log("💾 Stored failed uploads offline as fallback");
+        debugLogger("💾 Stored failed uploads offline as fallback");
       } catch (fallbackError) {
         console.error("❌ Failed to store offline as fallback:", fallbackError);
       }
@@ -281,7 +282,7 @@ export const useSystemEventMonitoring = ({
     if (document.hidden) {
       // User switched away from the test tab
       lastFocusLostTimeRef.current = Date.now();
-      console.log("👁️ User lost focus at:", new Date().toISOString());
+      debugLogger("👁️ User lost focus at:", new Date().toISOString());
     } else {
       // User returned to the test tab
       if (lastFocusLostTimeRef.current !== null) {
@@ -294,7 +295,7 @@ export const useSystemEventMonitoring = ({
         focusChangeBufferRef.current.push(event);
         statsRef.current.focusChanges.total++;
         setStats({ ...statsRef.current });
-        console.log(`👁️ User regained focus after ${duration}ms`);
+        debugLogger(`👁️ User regained focus after ${duration}ms`);
         lastFocusLostTimeRef.current = null;
       }
     }
@@ -308,7 +309,7 @@ export const useSystemEventMonitoring = ({
 
     if (lastFocusLostTimeRef.current === null) {
       lastFocusLostTimeRef.current = Date.now();
-      console.log("👁️ Window lost focus at:", new Date().toISOString());
+      debugLogger("👁️ Window lost focus at:", new Date().toISOString());
     }
   }, [isTestActive]);
 
@@ -328,7 +329,7 @@ export const useSystemEventMonitoring = ({
       focusChangeBufferRef.current.push(event);
       statsRef.current.focusChanges.total++;
       setStats({ ...statsRef.current });
-      console.log(`👁️ Window regained focus after ${duration}ms`);
+      debugLogger(`👁️ Window regained focus after ${duration}ms`);
       lastFocusLostTimeRef.current = null;
     }
   }, [isTestActive]);
@@ -402,7 +403,7 @@ export const useSystemEventMonitoring = ({
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
-    console.log("🎯 Starting system event monitoring");
+    debugLogger("🎯 Starting system event monitoring");
 
     // Attach event listeners
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -421,7 +422,7 @@ export const useSystemEventMonitoring = ({
       document.removeEventListener("contextmenu", handleContextMenu);
       document.removeEventListener("keydown", handleKeyDown);
 
-      console.log("🛑 Stopped system event monitoring");
+      debugLogger("🛑 Stopped system event monitoring");
     };
   }, [
     isTestActive,
@@ -440,7 +441,7 @@ export const useSystemEventMonitoring = ({
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
-    console.log(
+    debugLogger(
       `⏱️ Starting system events upload interval (every ${TEST_SECURITY_CONFIG.SYSTEM_EVENTS_UPLOAD_INTERVAL_SECONDS}s)`,
     );
 

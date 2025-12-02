@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+
 import api from "./useApi";
+import { debugLogger } from "@/utils/logger";
 
 const HEALTH_CHECK_INTERVAL = 10000; // Check every 10 seconds
 const HEALTH_CHECK_TIMEOUT = 5000; // 5 second timeout for health check
@@ -122,12 +124,12 @@ export const useConnectionMonitor = (enabled: boolean = true): UseConnectionMoni
     if (!enabled) return;
 
     const handleOnline = () => {
-      console.log("Browser reports online status");
+      debugLogger("Browser reports online status");
       checkConnection();
     };
 
     const handleOffline = () => {
-      console.log("Browser reports offline status");
+      debugLogger("Browser reports offline status");
       setIsOnline(false);
       setLastChecked(new Date());
     };

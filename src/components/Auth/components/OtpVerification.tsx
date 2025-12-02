@@ -130,10 +130,14 @@ export default function OtpVerification({
       const data: { message?: string } = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "OTP verification failed");
+        if (data.message === "Account is already verified.") {
+          setSuccess("Account already verified! Logging you in...");
+        } else {
+          throw new Error(data.message || "OTP verification failed");
+        }
+      } else {
+        setSuccess("Account verified successfully! Logging you in...");
       }
-
-      setSuccess("Account verified successfully! Logging you in...");
 
       // Clear any existing timeout
       if (timeoutRef.current) {
@@ -141,22 +145,39 @@ export default function OtpVerification({
       }
 
       timeoutRef.current = setTimeout(async () => {
-        const loginRes = await api("/auth/login", {
-          method: "POST",
-          body: JSON.stringify({ email, password }),
-        });
-        const loginData: {
-          token?: string;
-          user?: { role: string };
-        } = await loginRes.json();
+        try {
+          const loginRes = await api("/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ email, password }),
+          });
+          const loginData: {
+            token?: string;
+            accessToken?: string;
+            user?: { role: string };
+            message?: string;
+          } = await loginRes.json();
 
-        if (loginRes.ok) {
-          if (loginData.token) localStorage.setItem("token", loginData.token);
-          if (loginData.user?.role) {
+          if (!loginRes.ok) {
+            throw new Error(loginData.message || "Auto-login failed");
+          }
+
+          const authToken = loginData.token || loginData.accessToken;
+          if (authToken && loginData.user?.role) {
+            localStorage.setItem("token", String(authToken));
             localStorage.setItem("role", loginData.user.role);
+
+            await new Promise((resolve) => setTimeout(resolve, 50));
+
             window.dispatchEvent(new Event("authChange"));
             router.push("/" + loginData.user.role.toLowerCase());
+          } else {
+            throw new Error("Invalid login response");
           }
+        } catch (err: unknown) {
+          setError(
+            "Verification successful but auto-login failed. Please try logging in manually.",
+          );
+          setLoading(false);
         }
         timeoutRef.current = null;
       }, 1000);

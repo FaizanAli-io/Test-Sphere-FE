@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useCallback, useRef, useState } from "react";
+
 import api from "@/hooks/useApi";
 import {
   getOfflineLogs,
   deleteOfflineLog,
-  incrementUploadAttempts,
   getPendingLogsCount,
+  incrementUploadAttempts,
 } from "@/utils/offlineStorage";
+import { debugLogger } from "@/utils/logger";
 import { decryptData } from "@/utils/encryption";
 import type { OfflineLog } from "@/utils/offlineStorage";
 
@@ -232,7 +234,7 @@ export const useOfflineQueueManager = ({
 
         // Send all logs in one batch to backend
         const logsArray = successfulLogs.map((item) => item.data);
-        console.log("📋 Offline logs being uploaded in batch:", logsArray.length);
+        debugLogger("📋 Offline logs being uploaded in batch:", logsArray.length);
 
         const response = await api("/proctoring-logs/batch", {
           auth: true,
@@ -278,7 +280,7 @@ export const useOfflineQueueManager = ({
               }
             }),
           );
-          console.log(`✅ Successfully uploaded batch of ${successfulLogs.length} offline log(s)`);
+          debugLogger(`✅ Successfully uploaded batch of ${successfulLogs.length} offline log(s)`);
           return []; // All successful
         } else {
           // Batch upload failed, get detailed error
@@ -323,18 +325,18 @@ export const useOfflineQueueManager = ({
     setIsSyncing(true);
 
     try {
-      console.log("📤 Starting offline logs sync...");
+      debugLogger("📤 Starting offline logs sync...");
 
       // Get all pending logs
       const logs = await getOfflineLogs(submissionId);
 
       if (logs.length === 0) {
-        console.log("✅ No offline logs to sync");
+        debugLogger("✅ No offline logs to sync");
         setPendingCount(0);
         return;
       }
 
-      console.log(`📦 Found ${logs.length} offline logs to sync`);
+      debugLogger(`📦 Found ${logs.length} offline logs to sync`);
 
       // Filter out logs that have exceeded max attempts
       const validLogs = logs.filter((log) => log.uploadAttempts < MAX_UPLOAD_ATTEMPTS);
@@ -356,7 +358,7 @@ export const useOfflineQueueManager = ({
       // Update pending count
       await updatePendingCount();
 
-      console.log("✅ Offline logs sync completed");
+      debugLogger("✅ Offline logs sync completed");
     } catch (error) {
       console.error("❌ Error syncing offline logs:", error);
     } finally {

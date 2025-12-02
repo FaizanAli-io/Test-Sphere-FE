@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useSubmissions } from "../Submissions";
 import type { Submission } from "../Submissions/types";
 
+import { debugLogger } from "@/utils/logger";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -68,7 +69,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleBackToClass = () => {
-    console.log("Navigating back to class:", test);
+    debugLogger("Navigating back to class:", test);
     const classId = test?.classId;
     if (classId) {
       router.push(`/class/${classId}`);

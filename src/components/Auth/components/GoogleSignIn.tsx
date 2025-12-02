@@ -61,21 +61,21 @@ export default function GoogleSignIn({
         throw new Error(data.message || "Signup failed");
       }
 
-      if (data.accessToken) localStorage.setItem("token", data.accessToken);
-      if (data.user?.role) localStorage.setItem("role", data.user.role);
+      if (data.accessToken && data.user?.role) {
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("role", data.user.role);
 
-      window.dispatchEvent(new Event("authChange"));
-      setSuccess(data.user?.name ? `Welcome, ${data.user.name}!` : "Success!");
-      setShowModal(false);
-      setPendingUser(null);
+        await new Promise((resolve) => setTimeout(resolve, 50));
 
-      setTimeout(() => {
-        if (data.user?.role) {
-          router.push("/" + data.user.role.toLowerCase());
-        } else {
-          router.push("/");
-        }
-      }, 1000);
+        window.dispatchEvent(new Event("authChange"));
+        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : "Success!");
+        setShowModal(false);
+        setPendingUser(null);
+
+        setTimeout(() => {
+          router.push("/" + data.user!.role.toLowerCase());
+        }, 1000);
+      }
     } catch (err) {
       const errorMessage = extractErrorMessage(err);
       setError(errorMessage);
@@ -129,17 +129,19 @@ export default function GoogleSignIn({
         throw new Error(data.message || "Login failed");
       }
 
-      if (data.accessToken) localStorage.setItem("token", data.accessToken);
-      if (data.user?.role) localStorage.setItem("role", data.user.role);
-      window.dispatchEvent(new Event("authChange"));
-      setSuccess(data.user?.name ? `Welcome, ${data.user.name}!` : "Success!");
-      setTimeout(() => {
-        if (data.user?.role) {
-          router.push("/" + data.user.role.toLowerCase());
-        } else {
-          router.push("/");
-        }
-      }, 1000);
+      if (data.accessToken && data.user?.role) {
+        localStorage.setItem("token", data.accessToken);
+        localStorage.setItem("role", data.user.role);
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        window.dispatchEvent(new Event("authChange"));
+        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : "Success!");
+
+        setTimeout(() => {
+          router.push("/" + data.user!.role.toLowerCase());
+        }, 1000);
+      }
     } catch (err: unknown) {
       const errorMessage = extractErrorMessage(err);
 
