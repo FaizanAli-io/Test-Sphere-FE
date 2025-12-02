@@ -14,8 +14,11 @@ import {
   AddQuestionModal,
   SubmissionsModal,
   EditQuestionModal,
-  ProctoringLogsModal,
 } from "./modals";
+import dynamic from "next/dynamic";
+const ProctoringLogsModal = dynamic(() => import("./modals").then((m) => m.ProctoringLogsModal), {
+  loading: () => null,
+});
 import { HeaderSection, QuestionsSection, SubmissionsSection } from "./components";
 import { Question, Test, QuestionUpdatePayload } from "./types";
 import { useQuestions, useTestDetail, useAIQuestions } from "./hooks";

@@ -11,8 +11,6 @@
   },
   "dependencies": {
     "firebase": "^12.3.0",
-    "framer-motion": "^12.23.12",
-    "idb": "^8.0.3",
     "imagekitio-react": "^4.3.0",
     "lucide-react": "^0.544.0",
     "next": "15.5.3",

@@ -7,7 +7,13 @@ import { useParams, useRouter } from "next/navigation";
 import api from "@/hooks/useApi";
 import { useInvigilateStudents } from "./hooks";
 import type { InvigilatingStudent } from "./hooks";
-import { StudentGrid, StudentLivestreamModal, ProctoringLogsModal } from "./components";
+import { StudentGrid, StudentLivestreamModal } from "./components";
+import dynamic from "next/dynamic";
+
+const ProctoringLogsModal = dynamic(
+  () => import("../Common/ProctoringLogs").then((m) => m.ProctoringLogsModal),
+  { loading: () => null },
+);
 
 export default function Invigilate() {
   const params = useParams();

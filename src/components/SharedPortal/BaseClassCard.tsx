@@ -21,7 +21,7 @@ const colorSchemes = {
   indigo: "from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700",
 };
 
-export default function BaseClassCard({
+function BaseClassCard({
   role,
   actions,
   classData,
@@ -147,3 +147,4 @@ export default function BaseClassCard({
     </div>
   );
 }
+export default React.memo(BaseClassCard);

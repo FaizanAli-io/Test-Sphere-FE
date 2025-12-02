@@ -5,10 +5,11 @@ import AuthGuard from "@/components/AuthGuard";
 import { Inter, Roboto_Mono } from "next/font/google";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const robotoMono = Roboto_Mono({
   subsets: ["latin"],
   variable: "--font-roboto-mono",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

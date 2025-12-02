@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
 import { API_BASE_URL } from "./useApi";
+import { debugLogger } from "@/utils/logger";
 
 interface UseWebRTCProps {
   userId: string;
@@ -68,27 +69,27 @@ export const useWebRTC = ({
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("[WebRTC] Socket connected:", socket.id);
+      debugLogger("[WebRTC] Socket connected:", socket.id);
       socket.emit("register", { userId, role, testId: parseInt(testId) });
     });
 
     socket.on("registered", (data: { success: boolean; socketId: string }) => {
-      console.log("[WebRTC] Registered successfully:", data);
+      debugLogger("[WebRTC] Registered successfully:", data);
       setState((prev) => ({ ...prev, isConnected: true, error: null }));
     });
 
     // Debug: Log all events
     socket.onAny((eventName, ...args) => {
-      console.log("[WebRTC] 📨 Socket event received:", eventName, args);
+      debugLogger("[WebRTC] 📨 Socket event received:", eventName, args);
     });
 
     socket.on("disconnect", (reason: string) => {
-      console.log("[WebRTC] Socket disconnected, reason:", reason);
+      debugLogger("[WebRTC] Socket disconnected, reason:", reason);
       setState((prev) => ({ ...prev, isConnected: false }));
 
       // Close peer connection on disconnect
       if (peerConnectionRef.current) {
-        console.log("[WebRTC] Closing peer connection due to socket disconnect");
+        debugLogger("[WebRTC] Closing peer connection due to socket disconnect");
         try {
           peerConnectionRef.current.close();
         } catch (e) {
@@ -102,7 +103,7 @@ export const useWebRTC = ({
     });
 
     socket.io.on("reconnect", (attempt: number) => {
-      console.log("[WebRTC] Socket reconnected after", attempt, "attempts");
+      debugLogger("[WebRTC] Socket reconnected after", attempt, "attempts");
       setState((prev) => ({ ...prev, error: null }));
       // Re-register after reconnection
       socket.emit("register", { userId, role, testId: parseInt(testId) });
@@ -112,7 +113,7 @@ export const useWebRTC = ({
     });
 
     socket.io.on("reconnect_attempt", (attempt: number) => {
-      console.log("[WebRTC] Reconnection attempt", attempt);
+      debugLogger("[WebRTC] Reconnection attempt", attempt);
     });
 
     socket.io.on("reconnect_error", (error: Error) => {
@@ -137,29 +138,29 @@ export const useWebRTC = ({
     });
 
     // Set up signal handlers in the same effect to ensure they're registered
-    console.log("[WebRTC] Setting up signal handlers");
+    debugLogger("[WebRTC] Setting up signal handlers");
 
     const handleSignal = async (message: {
       type: string;
       data: RTCSessionDescriptionInit | RTCIceCandidateInit;
       from: string;
     }) => {
-      console.log("[WebRTC] ✅ Received signal:", message.type, "from:", message.from);
+      debugLogger("[WebRTC] ✅ Received signal:", message.type, "from:", message.from);
 
       const pc = peerConnectionRef.current || createPeerConnection();
       peerIdRef.current = message.from;
 
       try {
         if (message.type === "offer") {
-          console.log("[WebRTC] Processing offer, current state:", pc.signalingState);
+          debugLogger("[WebRTC] Processing offer, current state:", pc.signalingState);
           await pc.setRemoteDescription(
             new RTCSessionDescription(message.data as RTCSessionDescriptionInit),
           );
-          console.log("[WebRTC] Remote description set, creating answer...");
+          debugLogger("[WebRTC] Remote description set, creating answer...");
 
           // Process any pending ICE candidates after setting remote description
           if (pendingIceCandidatesRef.current.length > 0) {
-            console.log(
+            debugLogger(
               "[WebRTC] Adding",
               pendingIceCandidatesRef.current.length,
               "pending ICE candidates",
@@ -172,7 +173,7 @@ export const useWebRTC = ({
 
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          console.log("[WebRTC] Answer created, emitting to:", message.from);
+          debugLogger("[WebRTC] Answer created, emitting to:", message.from);
 
           socket.emit("signal", {
             type: "answer",
@@ -182,16 +183,16 @@ export const useWebRTC = ({
             testId: parseInt(testId),
             role,
           });
-          console.log("[WebRTC] Answer emitted successfully");
+          debugLogger("[WebRTC] Answer emitted successfully");
         } else if (message.type === "answer") {
-          console.log("[WebRTC] Processing answer");
+          debugLogger("[WebRTC] Processing answer");
           await pc.setRemoteDescription(
             new RTCSessionDescription(message.data as RTCSessionDescriptionInit),
           );
 
           // Process any pending ICE candidates after setting remote description
           if (pendingIceCandidatesRef.current.length > 0) {
-            console.log(
+            debugLogger(
               "[WebRTC] Adding",
               pendingIceCandidatesRef.current.length,
               "pending ICE candidates",
@@ -203,10 +204,10 @@ export const useWebRTC = ({
           }
         } else if (message.type === "ice-candidate") {
           if (pc.remoteDescription) {
-            console.log("[WebRTC] Adding ICE candidate");
+            debugLogger("[WebRTC] Adding ICE candidate");
             await pc.addIceCandidate(new RTCIceCandidate(message.data as RTCIceCandidateInit));
           } else {
-            console.log("[WebRTC] Queueing ICE candidate (no remote description yet)");
+            debugLogger("[WebRTC] Queueing ICE candidate (no remote description yet)");
             pendingIceCandidatesRef.current.push(message.data as RTCIceCandidateInit);
           }
         }
@@ -586,15 +587,15 @@ export const useWebRTC = ({
   // Manual reconnect method
   const reconnect = useCallback(() => {
     if (socketRef.current) {
-      console.log(
+      debugLogger(
         "[WebRTC] Manual reconnect triggered, socket connected:",
         socketRef.current.connected,
       );
       if (!socketRef.current.connected) {
-        console.log("[WebRTC] Attempting to reconnect socket...");
+        debugLogger("[WebRTC] Attempting to reconnect socket...");
         socketRef.current.connect();
       } else {
-        console.log("[WebRTC] Socket already connected");
+        debugLogger("[WebRTC] Socket already connected");
       }
     }
   }, []);

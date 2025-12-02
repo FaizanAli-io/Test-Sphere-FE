@@ -2,11 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { ClipboardCopy, Check } from "lucide-react";
-import rehypeHighlight from "rehype-highlight";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import dynamic from "next/dynamic";
 
 import { useAgentStream } from "./useAgentStream";
+
+const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
 
 interface ChatMessage {
   id: string;
@@ -157,9 +157,7 @@ export default function PrepGuru() {
                     )}
                   </button>
                 )}
-                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-                  {m.content}
-                </ReactMarkdown>
+                <ReactMarkdown>{m.content}</ReactMarkdown>
                 {m.streaming && <span className="opacity-50 animate-pulse">▌</span>}
               </div>
             </div>

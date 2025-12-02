@@ -36,7 +36,7 @@ const colorSchemes = {
   },
 };
 
-export default function BaseQuickActionCard({
+function BaseQuickActionCard({
   onClick,
   icon,
   title,
@@ -67,3 +67,4 @@ export default function BaseQuickActionCard({
     </button>
   );
 }
+export default React.memo(BaseQuickActionCard);
