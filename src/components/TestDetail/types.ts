@@ -5,6 +5,13 @@ import { QuestionType } from "../Submissions/types";
 export type TestStatus = "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
 
 // Core entities
+export interface TestConfig {
+  webcamRequired: boolean;
+  multipleScreens: boolean;
+  maxViolationCount: number;
+  maxViolationDuration: number;
+}
+
 export interface Question {
   id: number;
   testId: number;
@@ -30,6 +37,7 @@ export interface Test {
     id: number;
     name: string;
   };
+  config?: TestConfig;
 }
 
 export interface Student {

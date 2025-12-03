@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../../../hooks/useApi";
-import { Test, NotificationFunctions, ConfirmationFunction } from "../types";
+import { Test, TestConfig, NotificationFunctions, ConfirmationFunction } from "../types";
 
 export const useTestDetail = (
   testId?: string,
@@ -67,6 +67,36 @@ export const useTestDetail = (
     [testId, notifications],
   );
 
+  const updateConfig = useCallback(
+    async (config: TestConfig) => {
+      if (!testId) return false;
+
+      try {
+        const response = await api(`/tests/${testId}/config`, {
+          method: "PATCH",
+          auth: true,
+          body: JSON.stringify(config),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || "Failed to update test configuration");
+        }
+
+        const updatedTest = await response.json();
+        setTestData(updatedTest);
+        notifications?.showSuccess?.("Test configuration updated successfully");
+        return true;
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to update test configuration";
+        notifications?.showError?.(errorMessage);
+        return false;
+      }
+    },
+    [testId, notifications],
+  );
+
   const deleteTest = useCallback(async () => {
     if (!testId || !confirm) return false;
 
@@ -112,10 +142,12 @@ export const useTestDetail = (
     error,
     fetchTestDetails,
     updateTest,
+    updateConfig,
     deleteTest,
     setTestData,
     // Backward compatibility aliases
     handleUpdateTest: updateTest,
+    handleUpdateConfig: updateConfig,
     handleDeleteTest: deleteTest,
   };
 };

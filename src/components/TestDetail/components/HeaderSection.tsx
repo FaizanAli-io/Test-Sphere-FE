@@ -5,6 +5,7 @@ interface HeaderSectionProps {
   test: Test;
   onBack: () => void;
   onEdit: () => void;
+  onConfigure: () => void;
   onDelete: () => void;
 }
 
@@ -33,7 +34,13 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export default function HeaderSection({ test, onBack, onEdit, onDelete }: HeaderSectionProps) {
+export default function HeaderSection({
+  test,
+  onBack,
+  onEdit,
+  onConfigure,
+  onDelete,
+}: HeaderSectionProps) {
   const handleInvigilate = () => {
     window.open(`/test/${test.id}/invigilate`, "_blank");
   };
@@ -90,24 +97,30 @@ export default function HeaderSection({ test, onBack, onEdit, onDelete }: Header
             )}
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="grid grid-cols-2 gap-3 w-fit">
           <button
             onClick={handleInvigilate}
-            className="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl"
+            className="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
           >
             📹 Invigilate
           </button>
           <button
-            onClick={onEdit}
-            className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl"
+            onClick={onConfigure}
+            className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
           >
-            Edit Test
+            ⚙️ Configure
+          </button>
+          <button
+            onClick={onEdit}
+            className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+          >
+            ✏️ Edit Test
           </button>
           <button
             onClick={onDelete}
-            className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg hover:shadow-xl"
+            className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
           >
-            Delete Test
+            🗑️ Delete Test
           </button>
         </div>
       </div>

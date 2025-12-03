@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { FullscreenElement, FullscreenDocument } from "../types/fullscreen";
-import { TEST_SECURITY_CONFIG } from "../constants";
 
 interface UseFullscreenMonitoringProps {
   submissionId: number | null; // Not used in frontend-only implementation but kept for API consistency
   isTestActive: boolean;
   onViolationLimit: () => void;
   onExtendedFullscreenExit: () => void;
+  maxViolationCount: number;
+  maxViolationDuration: number;
 }
 
 interface ViolationLog {
@@ -24,13 +25,13 @@ export const useFullscreenMonitoring = ({
   isTestActive,
   onViolationLimit,
   onExtendedFullscreenExit,
+  maxViolationCount,
+  maxViolationDuration,
 }: UseFullscreenMonitoringProps) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [violationCount, setViolationCount] = useState(0);
   const [showViolationWarning, setShowViolationWarning] = useState(false);
-  const [countdownSeconds, setCountdownSeconds] = useState<number>(
-    TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS,
-  );
+  const [countdownSeconds, setCountdownSeconds] = useState<number>(maxViolationDuration || 10);
   const [violationLogs, setViolationLogs] = useState<ViolationLog[]>([]);
   const hasEnteredFullscreen = useRef(false);
   const warningTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -38,7 +39,10 @@ export const useFullscreenMonitoring = ({
   const isProcessingViolation = useRef(false);
   const reentryAttemptRef = useRef<NodeJS.Timeout | null>(null);
 
-  const MAX_VIOLATIONS = TEST_SECURITY_CONFIG.MAX_FULLSCREEN_VIOLATIONS;
+  const UNLIMITED_COUNT = maxViolationCount === 0;
+  const UNLIMITED_DURATION = maxViolationDuration === 0;
+  const MAX_VIOLATIONS = UNLIMITED_COUNT ? Number.POSITIVE_INFINITY : maxViolationCount;
+  const REENTRY_SECONDS = UNLIMITED_DURATION ? 0 : maxViolationDuration || 10;
 
   // Check if fullscreen is supported
   const isFullscreenSupported = useCallback(() => {
@@ -143,12 +147,22 @@ export const useFullscreenMonitoring = ({
 
   // Start countdown timer for violation warning
   const startViolationCountdown = useCallback(() => {
-    setCountdownSeconds(TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS);
+    setCountdownSeconds(REENTRY_SECONDS);
     setShowViolationWarning(true);
 
     // Clear any existing countdown
     if (countdownInterval.current) {
       clearInterval(countdownInterval.current);
+    }
+
+    // If duration is unlimited, do not auto-submit based on time; just try re-entry
+    if (UNLIMITED_DURATION) {
+      // Attempt to re-enter fullscreen immediately, but keep warning visible
+      enterFullscreen().then(() => {
+        // Regardless of success, don't auto-submit due to time when unlimited
+        isProcessingViolation.current = false;
+      });
+      return;
     }
 
     // Start countdown
@@ -194,9 +208,9 @@ export const useFullscreenMonitoring = ({
           setTimeout(() => onExtendedFullscreenExit(), 0);
         }
       },
-      TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS * 1000 + 500,
+      REENTRY_SECONDS * 1000 + 500,
     );
-  }, [enterFullscreen, onExtendedFullscreenExit]);
+  }, [enterFullscreen, onExtendedFullscreenExit, REENTRY_SECONDS, UNLIMITED_DURATION]);
 
   // Handle fullscreen exit violation
   const handleFullscreenViolation = useCallback(async () => {
@@ -248,12 +262,19 @@ export const useFullscreenMonitoring = ({
     }
 
     setShowViolationWarning(false);
-    setCountdownSeconds(TEST_SECURITY_CONFIG.FULLSCREEN_REENTRY_SECONDS);
+    setCountdownSeconds(REENTRY_SECONDS);
     isProcessingViolation.current = false;
 
-    // Re-enter fullscreen mode
-    enterFullscreen();
-  }, [enterFullscreen]); // Handle fullscreen change events with immediate re-entry
+    // Re-enter fullscreen mode with short retries (within user gesture context)
+    const tryReenter = async () => {
+      const ok = await enterFullscreen();
+      if (!ok) {
+        setTimeout(() => enterFullscreen(), 150);
+        setTimeout(() => enterFullscreen(), 400);
+      }
+    };
+    tryReenter();
+  }, [enterFullscreen, REENTRY_SECONDS]); // Handle fullscreen change events with immediate re-entry
   const handleFullscreenChange = useCallback(() => {
     const isCurrentlyFullscreen = checkFullscreenStatus();
     const wasFullscreen = isFullscreen;
@@ -363,7 +384,7 @@ export const useFullscreenMonitoring = ({
     showViolationWarning,
     countdownSeconds,
     violationLogs,
-    maxViolations: MAX_VIOLATIONS,
+    maxViolations: UNLIMITED_COUNT ? 0 : MAX_VIOLATIONS,
     isFullscreenSupported,
     enterFullscreen,
     exitFullscreen,

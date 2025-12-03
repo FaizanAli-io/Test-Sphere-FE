@@ -11,9 +11,10 @@ import {
   MouseClickMetaPayload,
   KeystrokeMetaPayload,
 } from "../types/systemEvents";
-import { TEST_SECURITY_CONFIG } from "../constants";
-import { storeOfflineLog } from "@/utils/offlineStorage";
 import { debugLogger } from "@/utils/logger";
+import { storeOfflineLog } from "@/utils/offlineStorage";
+
+const systemEventUploadInterval = 10;
 
 interface OfflineUploadedCounts {
   screenshots: number;
@@ -435,22 +436,17 @@ export const useSystemEventMonitoring = ({
     handleKeyDown,
   ]);
 
-  /**
-   * Set up periodic upload interval
-   */
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
-    debugLogger(
-      `⏱️ Starting system events upload interval (every ${TEST_SECURITY_CONFIG.SYSTEM_EVENTS_UPLOAD_INTERVAL_SECONDS}s)`,
-    );
+    debugLogger(`⏱️ Starting system events upload interval (every ${systemEventUploadInterval}s)`);
 
     // Upload immediately on start, then at intervals
     uploadBufferedEvents();
 
     uploadIntervalRef.current = setInterval(() => {
       uploadBufferedEvents();
-    }, TEST_SECURITY_CONFIG.SYSTEM_EVENTS_UPLOAD_INTERVAL_SECONDS * 1000);
+    }, systemEventUploadInterval * 1000);
 
     return () => {
       if (uploadIntervalRef.current) {

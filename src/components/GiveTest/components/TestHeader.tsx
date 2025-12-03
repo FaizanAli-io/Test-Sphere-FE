@@ -46,6 +46,8 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
   captureStats,
   systemEventStats,
 }) => {
+  const showDebug = typeof process !== "undefined" && process.env.NEXT_PUBLIC_DEBUG_MODE === "true";
+  const showStatus = !isOnline || hasPendingLogs;
   return (
     <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b-2 border-gray-200">
       <div className="max-w-7xl mx-auto px-4 py-4">
@@ -58,8 +60,8 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Comprehensive Monitoring Stats */}
-            {(captureStats || systemEventStats || isFullscreen !== undefined) && (
+            {/* Comprehensive Monitoring Stats (debug mode only) */}
+            {showDebug && (captureStats || systemEventStats || isFullscreen !== undefined) && (
               <div className="bg-gray-50 border-2 border-gray-200 rounded-lg px-4 py-2">
                 <div className="grid grid-cols-6 gap-3 text-xs">
                   {/* Screenshots */}
@@ -126,8 +128,8 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
                   )}
                 </div>
 
-                {/* Capturing indicator */}
-                {isCapturing !== undefined && (
+                {/* Capturing indicator (debug only) */}
+                {showDebug && isCapturing !== undefined && (
                   <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-gray-300">
                     <div
                       className={`w-2 h-2 rounded-full ${
@@ -141,30 +143,19 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
                 )}
               </div>
             )}
+            {/* Two-column layout: Left = Submit + Connection, Right = Time Remaining */}
+            <div className={`flex ${showStatus ? "items-start" : "items-center"} gap-6`}>
+              {/* Left column */}
+              <div className={`flex flex-col gap-2 ${showStatus ? "" : "justify-center"}`}>
+                <button
+                  onClick={onSubmitTest}
+                  disabled={submitting}
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+                >
+                  Submit Test
+                </button>
 
-            <div className="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl px-6 py-3">
-              <p className="text-xs font-bold text-gray-600 mb-1">Time Remaining</p>
-              <p
-                className={`text-2xl font-bold ${
-                  timeRemaining < 300 ? "text-red-600" : "text-gray-900"
-                }`}
-              >
-                {formatTime(timeRemaining)}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={onSubmitTest}
-                disabled={submitting}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
-              >
-                Submit Test
-              </button>
-
-              {/* Connection status indicator */}
-              <div className="h-8 flex items-center justify-center">
-                {(!isOnline || hasPendingLogs) && (
+                {showStatus && (
                   <div className="bg-orange-50 border-2 border-orange-300 rounded-lg px-3 py-1">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
@@ -174,6 +165,18 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Right column */}
+              <div className="bg-gradient-to-r from-orange-100 to-red-100 border-2 border-orange-300 rounded-xl px-6 py-3">
+                <p className="text-xs font-bold text-gray-600 mb-1">Time Remaining</p>
+                <p
+                  className={`text-2xl font-bold ${
+                    timeRemaining < 300 ? "text-red-600" : "text-gray-900"
+                  }`}
+                >
+                  {formatTime(timeRemaining)}
+                </p>
               </div>
             </div>
           </div>

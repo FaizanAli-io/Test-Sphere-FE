@@ -15,13 +15,14 @@ import {
   AddQuestionModal,
   SubmissionsModal,
   EditQuestionModal,
+  ConfigureTestModal,
 } from "./modals";
 import dynamic from "next/dynamic";
 const ProctoringLogsModal = dynamic(() => import("./modals").then((m) => m.ProctoringLogsModal), {
   loading: () => null,
 });
 import { HeaderSection, QuestionsSection, SubmissionsSection } from "./components";
-import { Question, Test, QuestionUpdatePayload } from "./types";
+import { Question, Test, QuestionUpdatePayload, TestConfig } from "./types";
 import { useQuestions, useTestDetail, useAIQuestions } from "./hooks";
 
 interface TestDetailProps {
@@ -38,6 +39,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const [redirecting, setRedirecting] = useState(false);
   const [showLogsModal, setShowLogsModal] = useState(false);
   const [showEditTestModal, setShowEditTestModal] = useState(false);
+  const [showConfigureModal, setShowConfigureModal] = useState(false);
   const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
   const [showEditQuestionModal, setShowEditQuestionModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
@@ -82,6 +84,18 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     await testDetailHook.handleUpdateTest(updatedTest);
     setShowEditTestModal(false);
     return true;
+  };
+
+  const handleConfigure = () => {
+    setShowConfigureModal(true);
+  };
+
+  const handleUpdateConfig = async (config: TestConfig) => {
+    const success = await testDetailHook.handleUpdateConfig(config);
+    if (success) {
+      setShowConfigureModal(false);
+    }
+    return success;
   };
 
   const handleDeleteTest = async () => {
@@ -228,6 +242,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           test={test}
           onBack={handleBackToClass}
           onEdit={handleEditTest}
+          onConfigure={handleConfigure}
           onDelete={handleDeleteTest}
         />
 
@@ -280,6 +295,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         }}
         onUpdate={handleUpdateQuestion}
         loadingQuestions={loadingQuestions}
+      />
+
+      <ConfigureTestModal
+        isOpen={showConfigureModal}
+        config={test?.config || null}
+        onClose={() => setShowConfigureModal(false)}
+        onUpdate={handleUpdateConfig}
       />
 
       <AIApprovalModal

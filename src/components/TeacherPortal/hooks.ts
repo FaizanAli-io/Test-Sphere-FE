@@ -263,6 +263,40 @@ export const useClassDetails = () => {
     }
   };
 
+  const handleBulkStudentRequest = async (action: {
+    classId: string;
+    action: "approve-all" | "reject-all";
+  }): Promise<boolean> => {
+    setLoading(true);
+    try {
+      const endpoint = `/classes/${action.classId}/${action.action}`;
+
+      const response = await api(endpoint, {
+        auth: true,
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to ${action.action} students`);
+      }
+
+      const actionText = action.action === "approve-all" ? "approved" : "rejected";
+      notifications.showSuccess(`All pending students have been ${actionText}`);
+
+      // Refresh class details
+      await fetchClassDetails(action.classId);
+      return true;
+    } catch (err) {
+      notifications.showError(
+        err instanceof Error ? err.message : `Failed to ${action.action} students`,
+      );
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     selectedClass,
     loading,
@@ -270,5 +304,6 @@ export const useClassDetails = () => {
     kickStudent,
     clearSelectedClass,
     handleStudentRequest,
+    handleBulkStudentRequest,
   };
 };

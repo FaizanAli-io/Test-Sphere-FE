@@ -5,7 +5,7 @@ import type { ReactElement } from "react";
 
 import CreateTestModal from "../CreateTestModal";
 import { useTeacherPortal, useClassDetails } from "./hooks";
-import { Class, KickConfirm, RequestAction } from "./types";
+import { Class, KickConfirm, RequestAction, BulkRequestAction } from "./types";
 import { useNotifications } from "../../contexts/NotificationContext";
 import { ConfirmationModal, ClassModal, RequestsModal } from "./modals";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../SharedPortal";
@@ -16,7 +16,13 @@ export default function TeacherPortal(): ReactElement {
   // Hooks
   const { classes, loading, error, createClass, updateClass, deleteClass, fetchClasses } =
     useTeacherPortal();
-  const { kickStudent, handleStudentRequest, fetchClassDetails, selectedClass } = useClassDetails();
+  const {
+    kickStudent,
+    handleStudentRequest,
+    handleBulkStudentRequest,
+    fetchClassDetails,
+    selectedClass,
+  } = useClassDetails();
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -74,6 +80,14 @@ export default function TeacherPortal(): ReactElement {
 
   const handleRequestAction = async (action: RequestAction) => {
     const success = await handleStudentRequest(action);
+    if (success) {
+      // Refresh the classes data to update counts
+      await fetchClasses();
+    }
+  };
+
+  const handleBulkRequestAction = async (action: BulkRequestAction) => {
+    const success = await handleBulkStudentRequest(action);
     if (success) {
       // Refresh the classes data to update counts
       await fetchClasses();
@@ -240,6 +254,7 @@ export default function TeacherPortal(): ReactElement {
         }}
         selectedClass={selectedClass}
         onRequestAction={handleRequestAction}
+        onBulkRequestAction={handleBulkRequestAction}
         loading={loading}
       />
     </BasePortal>

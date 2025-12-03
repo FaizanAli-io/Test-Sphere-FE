@@ -22,15 +22,6 @@ export function EditTestModal({
     setLocalEditingTest(editingTest);
   }, [editingTest]);
 
-  // Auto-update endAt when startAt or duration changes
-  useEffect(() => {
-    if (!localEditingTest?.startAt || !localEditingTest?.duration) return;
-    const start = new Date(localEditingTest.startAt);
-    const end = new Date(start.getTime() + localEditingTest.duration * 60000);
-
-    setLocalEditingTest((prev) => (prev ? { ...prev, endAt: end.toISOString() } : prev));
-  }, [localEditingTest?.startAt, localEditingTest?.duration]);
-
   const handleUpdateTest = async () => {
     if (!localEditingTest) return;
 

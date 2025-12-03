@@ -7,13 +7,10 @@ import { debugLogger } from "@/utils/logger";
 interface TestInstructionsProps {
   test: Test;
   onStartTest: (options?: {
-    requireWebcam: boolean;
     initialStream?: MediaStream;
     initialScreenStream?: MediaStream;
   }) => void;
   onCancel: () => void;
-  requireWebcam?: boolean;
-  onToggleRequireWebcam?: (val: boolean) => void;
   errors?: string[];
 }
 
@@ -21,10 +18,14 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
   test,
   onStartTest,
   onCancel,
-  requireWebcam = true,
-  onToggleRequireWebcam,
   errors = [],
 }) => {
+  const testConfig = test.config || {
+    webcamRequired: true,
+    multipleScreens: false,
+    maxViolationCount: 0,
+    maxViolationDuration: 0,
+  };
   const totalMarks = test.questions.reduce((sum, q) => sum + q.maxMarks, 0);
   const [permissionsGranted, setPermissionsGranted] = useState({
     camera: false,
@@ -138,7 +139,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
 
   const handleStartTest = () => {
     if (
-      requireWebcam &&
+      testConfig.webcamRequired &&
       (!permissionsGranted.camera || !permissionsGranted.microphone || !permissionsGranted.screen)
     ) {
       setPermissionErrors([
@@ -153,7 +154,6 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
       screenTracks: initialScreenStream?.getTracks().length,
     });
     onStartTest({
-      requireWebcam,
       initialStream: initialStream || undefined,
       initialScreenStream: initialScreenStream || undefined,
     });
@@ -273,7 +273,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
             </div>
 
             {/* Permission Check Section */}
-            {requireWebcam && (
+            {testConfig.webcamRequired && (
               <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 mb-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                   <span className="text-2xl">🎥</span>
@@ -371,19 +371,6 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
             )}
 
             <div className="flex flex-col gap-6">
-              <div className="flex items-center gap-3 bg-white border-2 border-gray-200 rounded-xl p-4">
-                <input
-                  id="require-webcam"
-                  type="checkbox"
-                  className="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
-                  checked={requireWebcam}
-                  onChange={(e) => onToggleRequireWebcam?.(e.target.checked)}
-                />
-                <label htmlFor="require-webcam" className="text-gray-800 font-medium">
-                  Require webcam monitoring
-                </label>
-              </div>
-
               <div className="flex gap-4">
                 <button
                   onClick={onCancel}
@@ -394,7 +381,8 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 <button
                   onClick={handleStartTest}
                   disabled={
-                    requireWebcam && (!permissionsGranted.camera || !permissionsGranted.microphone)
+                    testConfig.webcamRequired &&
+                    (!permissionsGranted.camera || !permissionsGranted.microphone)
                   }
                   className="flex-1 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >

@@ -173,7 +173,7 @@ export default function OtpVerification({
           } else {
             throw new Error("Invalid login response");
           }
-        } catch (err: unknown) {
+        } catch {
           setError(
             "Verification successful but auto-login failed. Please try logging in manually.",
           );
@@ -181,8 +181,8 @@ export default function OtpVerification({
         }
         timeoutRef.current = null;
       }, 1000);
-    } catch (err: unknown) {
-      setError(extractErrorMessage(err));
+    } catch (error: unknown) {
+      setError(extractErrorMessage(error));
     } finally {
       setLoading(false);
     }

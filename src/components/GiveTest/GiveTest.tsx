@@ -23,7 +23,6 @@ import {
 
 import api from "@/hooks/useApi";
 import { debugLogger } from "@/utils/logger";
-import { TEST_SECURITY_CONFIG } from "./constants";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
 import { useOfflineQueueManager } from "@/hooks/useOfflineQueueManager";
@@ -40,7 +39,6 @@ export default function GiveTest() {
   const testId = testIdParam ? Number(testIdParam) : null;
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
-  const [requireWebcam, setRequireWebcam] = useState(true);
   const [showFullscreenModal, setShowFullscreenModal] = useState(false);
   const [startErrors, setStartErrors] = useState<string[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>("");
@@ -103,6 +101,14 @@ export default function GiveTest() {
     }
   }, [testStarted, timeRemaining, hasPendingLogs, notifications]);
 
+  // Get config with defaults
+  const testConfig = test?.config || {
+    webcamRequired: true,
+    multipleScreens: false,
+    maxViolationCount: 0,
+    maxViolationDuration: 0,
+  };
+
   // Initialize fullscreen monitoring first (needed for useTestMonitoring)
   const {
     isFullscreen,
@@ -115,6 +121,8 @@ export default function GiveTest() {
   } = useFullscreenMonitoring({
     submissionId,
     isTestActive: testStarted,
+    maxViolationCount: testConfig.maxViolationCount,
+    maxViolationDuration: testConfig.maxViolationDuration,
     onViolationLimit: async () => {
       // Auto-submit test when violation limit is reached
       notifications.showError("Test auto-submitted due to multiple fullscreen violations.");
@@ -137,6 +145,7 @@ export default function GiveTest() {
   // Pass isFullscreen to control capture behavior:
   // - NOT in fullscreen: Take ONLY screenshots
   // - IN fullscreen: Take ONLY webcam photos
+
   const {
     videoRef,
     canvasRef,
@@ -146,7 +155,7 @@ export default function GiveTest() {
   } = useTestMonitoring({
     submissionId,
     isTestActive: testStarted,
-    requireWebcam,
+    requireWebcam: testConfig.webcamRequired,
     isFullscreen,
     initialScreenStream,
     isOnline,
@@ -164,7 +173,7 @@ export default function GiveTest() {
   // Detect multiple displays using the Window Management API when available
   const detectMultipleDisplays = async (): Promise<string | null> => {
     // Skip check if multiple displays are allowed
-    if (TEST_SECURITY_CONFIG.ALLOW_MULTIPLE_DISPLAYS) {
+    if (testConfig.multipleScreens) {
       return null;
     }
 
@@ -211,14 +220,11 @@ export default function GiveTest() {
   };
 
   const handleStartTest = async (opts?: {
-    requireWebcam: boolean;
     initialStream?: MediaStream;
     initialScreenStream?: MediaStream;
   }) => {
     // Reset previous persistent errors
     setStartErrors([]);
-
-    const wantWebcam = opts?.requireWebcam ?? requireWebcam;
 
     // Store the initial streams if provided
     if (opts?.initialStream) {
@@ -245,12 +251,12 @@ export default function GiveTest() {
     }
 
     // If webcam is required, ensure it exists before starting
-    if (wantWebcam) {
+    if (testConfig.webcamRequired) {
       const hasWebcam = await checkWebcamAvailable();
       if (!hasWebcam) {
         setStartErrors((prev) => [
           ...prev,
-          "No webcam detected. Please connect a camera or disable 'Require webcam' to start.",
+          "No webcam detected. Please connect a camera to start the test.",
         ]);
         return;
       }
@@ -280,8 +286,6 @@ export default function GiveTest() {
       return;
     }
 
-    // Update state to reflect final choice
-    setRequireWebcam(wantWebcam);
     await startTest();
   };
 
@@ -346,8 +350,6 @@ export default function GiveTest() {
       <TestInstructions
         test={test}
         onStartTest={handleStartTest}
-        requireWebcam={requireWebcam}
-        onToggleRequireWebcam={setRequireWebcam}
         onCancel={() => router.push("/student")}
         errors={startErrors}
       />
@@ -470,10 +472,36 @@ export default function GiveTest() {
         <StreamingIndicator
           userId={currentUserId}
           testId={testId?.toString() || ""}
-          enabled={testStarted && requireWebcam}
+          enabled={testStarted && testConfig.webcamRequired}
           initialStream={initialWebcamStream}
           initialScreenStream={initialScreenStream}
         />
+      )}
+
+      {/* Floating fullscreen button (bottom-right) when not in fullscreen */}
+      {testStarted && isFullscreen === false && (
+        <button
+          onClick={enterFullscreen}
+          title="Enter Fullscreen"
+          className="fixed bottom-6 right-6 w-12 h-12 rounded-lg bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 flex items-center justify-center"
+        >
+          <span className="sr-only">Enter Fullscreen</span>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="15 3 21 3 21 9" />
+            <polyline points="9 21 3 21 3 15" />
+            <line x1="21" y1="3" x2="14" y2="10" />
+            <line x1="3" y1="21" x2="10" y2="14" />
+          </svg>
+        </button>
       )}
     </div>
   );

@@ -20,6 +20,7 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
   initialStream,
   initialScreenStream,
 }) => {
+  const showDebug = typeof process !== "undefined" && process.env.NEXT_PUBLIC_DEBUG_MODE === "true";
   const [isMinimized, setIsMinimized] = useState(false);
   const wasOfflineRef = useRef(false);
 
@@ -63,7 +64,7 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
     };
   }, [stopStreaming]);
 
-  if (!enabled) return null;
+  if (!showDebug || !enabled) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

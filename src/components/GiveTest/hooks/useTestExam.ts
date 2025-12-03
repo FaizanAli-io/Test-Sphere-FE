@@ -12,6 +12,13 @@ export interface Question {
   image?: string;
 }
 
+export interface TestConfig {
+  webcamRequired: boolean;
+  multipleScreens: boolean;
+  maxViolationCount: number;
+  maxViolationDuration: number;
+}
+
 export interface Test {
   id: number;
   title: string;
@@ -21,6 +28,7 @@ export interface Test {
   endAt: string;
   status: string;
   questions: Question[];
+  config?: TestConfig;
 }
 
 export interface Answer {

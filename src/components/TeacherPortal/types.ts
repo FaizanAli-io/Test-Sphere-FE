@@ -50,6 +50,11 @@ export interface RequestAction {
   action: "approve" | "reject";
 }
 
+export interface BulkRequestAction {
+  classId: string;
+  action: "approve-all" | "reject-all";
+}
+
 export interface NewClass {
   name: string;
   description: string;

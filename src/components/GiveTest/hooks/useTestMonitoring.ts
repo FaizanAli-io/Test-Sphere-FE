@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useImageKitUploader } from "@/hooks/useImageKitUploader";
+
 import api from "@/hooks/useApi";
-import { TEST_SECURITY_CONFIG } from "../constants";
-import { storeOfflineLog } from "@/utils/offlineStorage";
 import { debugLogger } from "@/utils/logger";
+import { storeOfflineLog } from "@/utils/offlineStorage";
+import { useImageKitUploader } from "@/hooks/useImageKitUploader";
+
+const webcamCaptureInterval = 10;
+const screenshotCaptureInterval = 5;
 
 interface MonitoringLog {
   image: string;
@@ -56,6 +59,8 @@ export const useTestMonitoring = ({
   const [logs, setLogs] = useState<MonitoringLog[]>([]);
   const webcamCaptureCountRef = useRef(0);
   const screenshotCaptureCountRef = useRef(0);
+  const webcamNoDataCountRef = useRef(0);
+  const screenshotNoDataCountRef = useRef(0);
 
   // Stats tracking
   const statsRef = useRef<CaptureStats>({
@@ -242,26 +247,80 @@ export const useTestMonitoring = ({
         return;
       }
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const drawFrame = () => {
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+          // Wait for metadata to be loaded
+          video.addEventListener(
+            "loadedmetadata",
+            () => {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              context.drawImage(video, 0, 0, canvas.width, canvas.height);
+              canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.8);
+            },
+            { once: true },
+          );
+          return;
+        }
 
-      canvas.toBlob(
-        (blob) => {
-          resolve(blob);
-        },
-        "image/jpeg",
-        0.8,
-      );
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => resolve(blob), "image/jpeg", 0.8);
+      };
+
+      if (video.readyState < 2) {
+        // Ensure playback started
+        video.play().finally(drawFrame);
+      } else {
+        drawFrame();
+      }
     });
   }, [requireWebcam]);
 
   const captureScreenshot = useCallback(async (): Promise<Blob | null> => {
     try {
       const vid = screenVideoRef.current;
-      if (!vid || vid.videoWidth === 0 || vid.videoHeight === 0) {
-        return null;
+      if (!vid) return null;
+
+      const ensureReady = async () => {
+        if (vid.videoWidth === 0 || vid.videoHeight === 0) {
+          await new Promise<void>((resolve) => {
+            vid.addEventListener("loadedmetadata", () => resolve(), { once: true });
+          });
+        }
+        if (vid.readyState < 2) {
+          await vid.play().catch(() => {});
+        }
+      };
+
+      await ensureReady();
+
+      // Wait for a rendered frame for accurate dimensions
+      await new Promise<void>((resolve) => {
+        const raf = () => requestAnimationFrame(() => resolve());
+        // Prefer requestVideoFrameCallback if available
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const anyVid = vid as any;
+        if (typeof anyVid.requestVideoFrameCallback === "function") {
+          try {
+            anyVid.requestVideoFrameCallback(() => resolve());
+          } catch {
+            raf();
+          }
+        } else {
+          raf();
+        }
+      });
+
+      // Retry a few times if dimensions still 0
+      let attempts = 0;
+      while ((vid.videoWidth === 0 || vid.videoHeight === 0) && attempts < 3) {
+        await new Promise((r) => setTimeout(r, 250));
+        attempts += 1;
       }
+
+      if (vid.videoWidth === 0 || vid.videoHeight === 0) return null;
 
       const canvas = document.createElement("canvas");
       canvas.width = vid.videoWidth;
@@ -286,43 +345,63 @@ export const useTestMonitoring = ({
     ): Promise<{ fileId: string; url: string } | null> => {
       if (!config) {
         // ImageKit config not loaded
+        debugLogger("⚠️ ImageKit config unavailable; deferring upload");
         return null;
       }
 
-      try {
-        const formData = new FormData();
-        const fileName = `${type}_${Date.now()}.jpg`;
-        formData.append("file", blob, fileName);
-        formData.append("fileName", fileName);
-        formData.append("folder", "/test-monitoring");
+      const fileName = `${type}_${Date.now()}.jpg`;
+      const formData = new FormData();
+      formData.append("file", blob, fileName);
+      formData.append("fileName", fileName);
+      formData.append("folder", "/test-monitoring");
 
-        const authParams = await authenticator();
-        formData.append("signature", authParams.signature);
-        formData.append("expire", authParams.expire.toString());
-        formData.append("token", authParams.token);
-        formData.append("publicKey", config.publicKey);
+      const attemptUpload = async (attempt: number) => {
+        try {
+          const authParams = await authenticator();
+          formData.set("signature", authParams.signature);
+          formData.set("expire", authParams.expire.toString());
+          formData.set("token", authParams.token);
+          formData.set("publicKey", config.publicKey);
 
-        const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
-          method: "POST",
-          body: formData,
-        });
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 10000);
 
-        if (!response.ok) {
-          throw new Error(`Upload failed with status ${response.status}`);
+          const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+            method: "POST",
+            body: formData,
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+
+          if (!response.ok) {
+            const text = await response.text().catch(() => "");
+            throw new Error(`ImageKit ${response.status}: ${text || response.statusText}`);
+          }
+
+          const result = await response.json();
+          handleUploadSuccess(result);
+          return { fileId: result.fileId, url: result.url };
+        } catch (err) {
+          debugLogger(`❌ ImageKit upload attempt ${attempt} failed: ${String(err)}`);
+          return null;
         }
+      };
 
-        const result = await response.json();
-        handleUploadSuccess(result);
-
-        return {
-          fileId: result.fileId,
-          url: result.url,
-        };
-      } catch (err) {
-        // Upload failed
-        handleUploadError(err);
-        return null;
+      // Try up to 3 times with backoff
+      let res = await attemptUpload(1);
+      if (!res) {
+        await new Promise((r) => setTimeout(r, 500));
+        res = await attemptUpload(2);
       }
+      if (!res) {
+        await new Promise((r) => setTimeout(r, 1000));
+        res = await attemptUpload(3);
+      }
+
+      if (!res) {
+        handleUploadError(new Error("Failed to upload to ImageKit after retries"));
+      }
+      return res;
     },
     [config, authenticator, handleUploadSuccess, handleUploadError],
   );
@@ -339,8 +418,15 @@ export const useTestMonitoring = ({
       const webcamBlob = await captureWebcamPhoto();
       if (!webcamBlob) {
         debugLogger("⚠️ No webcam data captured");
+        webcamNoDataCountRef.current += 1;
+        if (webcamNoDataCountRef.current >= 3) {
+          debugLogger("🔄 Reinitializing webcam stream after repeated no-data frames");
+          await initializeWebcam();
+          webcamNoDataCountRef.current = 0;
+        }
         return;
       }
+      webcamNoDataCountRef.current = 0;
 
       const timestamp = new Date().toISOString();
 
@@ -432,7 +518,14 @@ export const useTestMonitoring = ({
         }
       }
     }
-  }, [submissionId, requireWebcam, captureWebcamPhoto, uploadToImageKit, isOnline]);
+  }, [
+    submissionId,
+    requireWebcam,
+    captureWebcamPhoto,
+    uploadToImageKit,
+    isOnline,
+    initializeWebcam,
+  ]);
 
   const captureAndUploadScreenshot = useCallback(async () => {
     if (!submissionId || isFullscreen) {
@@ -446,8 +539,28 @@ export const useTestMonitoring = ({
       const screenshotBlob = await captureScreenshot();
       if (!screenshotBlob) {
         debugLogger("⚠️ No screenshot data captured");
+        screenshotNoDataCountRef.current += 1;
+        if (screenshotNoDataCountRef.current >= 3) {
+          debugLogger("🔄 Reinitializing screen video element after repeated no-data frames");
+          // Try to rebuild screen video element from existing stream or request permission again
+          if (screenStreamRef.current && screenStreamRef.current.active) {
+            const video = document.createElement("video");
+            video.style.position = "fixed";
+            video.style.right = "-9999px";
+            video.style.bottom = "-9999px";
+            video.muted = true;
+            video.playsInline = true;
+            video.srcObject = screenStreamRef.current;
+            await video.play().catch(() => {});
+            screenVideoRef.current = video;
+          } else {
+            await requestScreenPermission();
+          }
+          screenshotNoDataCountRef.current = 0;
+        }
         return;
       }
+      screenshotNoDataCountRef.current = 0;
 
       const timestamp = new Date().toISOString();
 
@@ -539,7 +652,14 @@ export const useTestMonitoring = ({
         }
       }
     }
-  }, [submissionId, isFullscreen, captureScreenshot, uploadToImageKit, isOnline]);
+  }, [
+    submissionId,
+    isFullscreen,
+    captureScreenshot,
+    uploadToImageKit,
+    isOnline,
+    requestScreenPermission,
+  ]);
 
   // Webcam capture interval (runs every 10 seconds)
   useEffect(() => {
@@ -547,16 +667,14 @@ export const useTestMonitoring = ({
 
     initializeWebcam();
 
-    debugLogger(
-      `📷 Starting webcam capture interval (every ${TEST_SECURITY_CONFIG.WEBCAM_CAPTURE_INTERVAL_SECONDS}s)`,
-    );
+    debugLogger(`📷 Starting webcam capture interval (every ${webcamCaptureInterval}s)`);
 
     // Start immediately, then repeat
     captureAndUploadWebcam();
 
     webcamIntervalRef.current = setInterval(() => {
       captureAndUploadWebcam();
-    }, TEST_SECURITY_CONFIG.WEBCAM_CAPTURE_INTERVAL_SECONDS * 1000);
+    }, webcamCaptureInterval * 1000);
 
     return () => {
       if (webcamIntervalRef.current) {
@@ -566,25 +684,33 @@ export const useTestMonitoring = ({
     };
   }, [isTestActive, submissionId, requireWebcam, initializeWebcam, captureAndUploadWebcam]);
 
-  // Screenshot capture interval (runs every 5 seconds when not in fullscreen)
+  // Screenshot capture: immediate on exit + every 5s while out of fullscreen
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
-    debugLogger(
-      `�️ Starting screenshot capture interval (every ${TEST_SECURITY_CONFIG.SCREENSHOT_CAPTURE_INTERVAL_SECONDS}s when not in fullscreen)`,
-    );
-
-    // Start immediately if not in fullscreen
-    if (!isFullscreen) {
-      captureAndUploadScreenshot();
+    // Reset any existing interval when fullscreen state changes
+    if (screenshotIntervalRef.current) {
+      clearInterval(screenshotIntervalRef.current);
+      screenshotIntervalRef.current = null;
     }
 
-    screenshotIntervalRef.current = setInterval(() => {
-      // Only capture if not in fullscreen
-      if (!isFullscreen) {
-        captureAndUploadScreenshot();
-      }
-    }, TEST_SECURITY_CONFIG.SCREENSHOT_CAPTURE_INTERVAL_SECONDS * 1000);
+    if (!isFullscreen) {
+      debugLogger(
+        `🖼️ Screenshot capture active (every ${screenshotCaptureInterval}s while not fullscreen)`,
+      );
+
+      // Immediate capture on transition to not-fullscreen
+      captureAndUploadScreenshot();
+
+      // Continue capturing every 5 seconds while not fullscreen
+      screenshotIntervalRef.current = setInterval(() => {
+        if (!isFullscreen) {
+          captureAndUploadScreenshot();
+        }
+      }, screenshotCaptureInterval * 1000);
+    } else {
+      debugLogger("🖼️ Screenshot capture paused (fullscreen active)");
+    }
 
     return () => {
       if (screenshotIntervalRef.current) {
