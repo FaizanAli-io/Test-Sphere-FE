@@ -39,6 +39,17 @@ const getStatusColor = (status: Test["status"]) => {
   return colors[status] || colors.DRAFT;
 };
 
+const formatDateLocal = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
+};
+
 const getTimeStatus = (startAt: string, endAt: string): TimeStatus => {
   const now = new Date();
   const start = new Date(startAt);
@@ -119,12 +130,7 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold">Schedule</p>
                       <p className="text-sm font-semibold text-gray-900">
-                        {new Date(test.startAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatDateLocal(test.startAt)}
                       </p>
                     </div>
                   </div>

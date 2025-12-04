@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../hooks/useApi";
 import { useNotifications } from "../../contexts/NotificationContext";
+import { localDatetimeToUtcIso } from "../../utils/timezone";
 import CreateTestModalHeader from "./Header";
 import ClassSelector from "./ClassSelector";
 import DateTimeWindow from "./DateTimeWindow";
@@ -189,8 +190,8 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
         title: formData.title.trim(),
         description: formData.description.trim(),
         duration: Number(formData.duration),
-        startAt: formData.startAt,
-        endAt: formData.endAt,
+        startAt: localDatetimeToUtcIso(formData.startAt),
+        endAt: localDatetimeToUtcIso(formData.endAt),
         status: formData.status,
       };
       if (formData.numQuestions !== undefined && formData.numQuestions > 0) {

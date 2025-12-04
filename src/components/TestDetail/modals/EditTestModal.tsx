@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Test } from "../types";
+import { localDatetimeToUtcIso, utcIsoToLocalDatetime } from "../../../utils/timezone";
 
 interface EditTestModalProps {
   showEditTestModal: boolean;
@@ -41,8 +42,8 @@ export function EditTestModal({
         description: localEditingTest.description,
         duration: localEditingTest.duration,
         status: localEditingTest.status,
-        startAt: new Date(localEditingTest.startAt).toISOString(),
-        endAt: new Date(localEditingTest.endAt).toISOString(),
+        startAt: localDatetimeToUtcIso(localEditingTest.startAt),
+        endAt: localDatetimeToUtcIso(localEditingTest.endAt),
         numQuestions: localEditingTest.numQuestions,
       };
 
@@ -57,10 +58,7 @@ export function EditTestModal({
   };
 
   const toLocalDatetimeValue = (isoString: string) => {
-    if (!isoString) return "";
-    const d = new Date(isoString);
-    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 16);
+    return utcIsoToLocalDatetime(isoString);
   };
 
   if (!showEditTestModal || !editingTest) return null;
@@ -166,7 +164,7 @@ export function EditTestModal({
                     prev
                       ? {
                           ...prev,
-                          startAt: new Date(e.target.value).toISOString(),
+                          startAt: e.target.value,
                         }
                       : null,
                   )
@@ -185,7 +183,7 @@ export function EditTestModal({
                     prev
                       ? {
                           ...prev,
-                          endAt: new Date(e.target.value).toISOString(),
+                          endAt: e.target.value,
                         }
                       : null,
                   )
