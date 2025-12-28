@@ -48,13 +48,7 @@ export default function HeaderSection({
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-xl p-8 mb-8 relative">
-      <button
-        onClick={onBack}
-        className="absolute top-4 right-4 px-4 py-2 bg-gray-100 text-gray-900 font-semibold rounded-lg hover:bg-gray-200 transition-all shadow"
-      >
-        ← Back to Class
-      </button>
+    <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
@@ -99,31 +93,39 @@ export default function HeaderSection({
             )}
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 w-fit">
+        <div className="flex flex-col gap-4 w-fit shrink-0">
           <button
-            onClick={handleInvigilate}
-            className="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+            onClick={onBack}
+            className="px-6 py-3 bg-gray-100 text-gray-900 font-bold rounded-xl hover:bg-gray-200 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
           >
-            📹 Invigilate
+            ← Back to Class
           </button>
-          <button
-            onClick={onConfigure}
-            className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-          >
-            ⚙️ Configure
-          </button>
-          <button
-            onClick={onEdit}
-            className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-          >
-            ✏️ Edit Test
-          </button>
-          <button
-            onClick={onDelete}
-            className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-          >
-            🗑️ Delete Test
-          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={handleInvigilate}
+              className="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+            >
+              📹 Invigilate
+            </button>
+            <button
+              onClick={onConfigure}
+              className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+            >
+              ⚙️ Configure
+            </button>
+            <button
+              onClick={onEdit}
+              className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+            >
+              ✏️ Edit Test
+            </button>
+            <button
+              onClick={onDelete}
+              className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+            >
+              🗑️ Delete Test
+            </button>
+          </div>
         </div>
       </div>
     </div>

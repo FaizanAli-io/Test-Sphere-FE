@@ -156,6 +156,24 @@ export const useAIQuestions = (
 
   const uploadPDFForQuestions = useCallback(
     async (file: File) => {
+      if (!file) {
+        notifications?.showError?.("No file selected. Please choose a PDF file.");
+        return false;
+      }
+
+      if (!file.type || !file.type.includes("pdf")) {
+        notifications?.showError?.("Invalid file type. Please select a PDF file.");
+        return false;
+      }
+
+      // Log file details for debugging
+      console.log("PDF Upload - File Details:", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+      });
+
       setAiPdfUploading(true);
 
       try {
@@ -165,13 +183,18 @@ export const useAIQuestions = (
         const response = await api("/agent/generate-questions/pdf", {
           method: "POST",
           auth: true,
-          headers: {},
           body: formData,
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to process PDF");
+          const errorMessage = errorData.message || "Failed to process PDF";
+          console.error("PDF Processing Error:", {
+            status: response.status,
+            error: errorData,
+            message: errorMessage,
+          });
+          throw new Error(errorMessage);
         }
 
         const result = await response.json();
@@ -189,6 +212,7 @@ export const useAIQuestions = (
         return true;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to process PDF";
+        console.error("PDF Upload Error:", err);
         notifications?.showError?.(errorMessage);
         return false;
       } finally {

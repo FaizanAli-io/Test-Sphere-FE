@@ -47,6 +47,8 @@ export function AddQuestionModal({
     "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER" | "LONG_ANSWER"
   >("MULTIPLE_CHOICE");
   const [numberOfQuestions, setNumberOfQuestions] = useState(1);
+  const [isCustomizingPrompt, setIsCustomizingPrompt] = useState(false);
+  const [customPrompt, setCustomPrompt] = useState("");
 
   const resetQuestion = () => {
     setNewQuestion(baseQuestionState);
@@ -65,6 +67,8 @@ export function AddQuestionModal({
     if (!subject) return "";
     return `Generate ${numberOfQuestions} ${difficulty} difficulty ${aiType.replace("_", " ")} question(s) for ${subject}.`;
   }, [subject, difficulty, aiType, numberOfQuestions]);
+
+  const promptToUse = isCustomizingPrompt ? customPrompt : generatedPrompt;
 
   if (!showAddQuestionModal) return null;
 
@@ -147,34 +151,66 @@ export function AddQuestionModal({
 
                 {/* Generated Prompt */}
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    Generated Prompt
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-bold text-gray-700">
+                      Generated Prompt
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={isCustomizingPrompt}
+                        onChange={(e) => {
+                          setIsCustomizingPrompt(e.target.checked);
+                          if (e.target.checked && !customPrompt) {
+                            setCustomPrompt(generatedPrompt);
+                          }
+                        }}
+                        className="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+                      />
+                      <span className="text-sm font-semibold text-gray-700">Customize</span>
+                    </label>
+                  </div>
                   <textarea
-                    value={generatedPrompt}
-                    readOnly
+                    value={isCustomizingPrompt ? customPrompt : generatedPrompt}
+                    onChange={(e) => {
+                      if (isCustomizingPrompt) {
+                        setCustomPrompt(e.target.value);
+                      }
+                    }}
+                    readOnly={!isCustomizingPrompt}
                     rows={2}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl bg-gray-100 text-gray-900 resize-none"
+                    className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-gray-900 resize-none transition-all ${
+                      isCustomizingPrompt
+                        ? "bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        : "bg-gray-100"
+                    }`}
                   />
                 </div>
 
                 {/* Buttons */}
                 <div className="flex gap-4 justify-center">
                   <button
-                    onClick={() => handleGenerateFromPrompt(generatedPrompt)}
-                    disabled={aiPdfUploading || aiGenerating || !generatedPrompt}
+                    onClick={() => handleGenerateFromPrompt(promptToUse)}
+                    disabled={aiPdfUploading || aiGenerating || !promptToUse}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
                     {aiGenerating ? "Generating..." : "Generate from Prompt"}
                   </button>
 
-                  {/* PDF Flow unchanged */}
+                  {/* PDF Upload */}
                   <input
                     type="file"
                     accept=".pdf"
                     className="hidden"
                     id="pdf-upload"
-                    onChange={(e) => handleGenerateFromPdf(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        handleGenerateFromPdf(file);
+                        // Reset the input so the same file can be uploaded again
+                        e.target.value = "";
+                      }
+                    }}
                   />
                   <label htmlFor="pdf-upload" className="flex-1">
                     <button

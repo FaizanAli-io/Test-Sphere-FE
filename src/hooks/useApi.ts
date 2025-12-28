@@ -32,6 +32,11 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
     "Content-Type": "application/json",
   };
 
+  // If body is FormData, don't set Content-Type (let fetch handle it)
+  if (options?.body instanceof FormData) {
+    headers = {};
+  }
+
   if (options?.headers) {
     if (options.headers instanceof Headers) {
       headers = {
@@ -90,9 +95,11 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   }
 
   const requestBody =
-    body && typeof body === "object" && Object.keys(body).length > 0
-      ? JSON.stringify(body)
-      : undefined;
+    options?.body instanceof FormData
+      ? options.body
+      : body && typeof body === "object" && Object.keys(body).length > 0
+        ? JSON.stringify(body)
+        : undefined;
 
   const payload: RequestInit = {
     ...options,
