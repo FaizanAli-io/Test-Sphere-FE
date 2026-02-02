@@ -12,6 +12,8 @@ export interface TestConfig {
   maxViolationDuration: number;
 }
 
+export type TestMode = "STATIC" | "POOL";
+
 export interface Question {
   id: number;
   testId: number;
@@ -21,6 +23,16 @@ export interface Question {
   correctAnswer?: number;
   maxMarks: number;
   image?: string;
+  questionPoolId?: number | null;
+}
+
+export interface QuestionPool {
+  id: number;
+  testId: number;
+  title: string;
+  config: Record<string, number>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Test {
@@ -55,6 +67,17 @@ export interface QuestionCreatePayload {
   options?: string[];
   correctAnswer?: number;
   image?: string;
+  questionPoolId?: number | null;
+}
+
+export interface QuestionUpdatePayload {
+  text: string;
+  type: QuestionType;
+  maxMarks: number;
+  options?: string[];
+  correctAnswer?: number;
+  image?: string;
+  questionPoolId?: number | null;
 }
 
 export interface QuestionUpdatePayload {

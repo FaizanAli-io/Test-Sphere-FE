@@ -10,10 +10,13 @@ interface AddQuestionModalProps {
   aiMessages: string[];
   showAiSection: boolean;
   setShowAiSection: (show: boolean) => void;
-  handleGenerateFromPrompt: (prompt: string) => void;
-  handleGenerateFromPdf: (file: File | null) => void;
+  handleGenerateFromPrompt: (prompt: string, poolId?: number) => void;
+  handleGenerateFromPdf: (file: File | null, poolId?: number) => void;
   loadingQuestions: boolean;
+  testId?: string;
 }
+
+import { useQuestionPools } from "../hooks";
 
 export function AddQuestionModal({
   showAddQuestionModal,
@@ -27,7 +30,9 @@ export function AddQuestionModal({
   handleGenerateFromPrompt,
   handleGenerateFromPdf,
   loadingQuestions,
+  testId,
 }: AddQuestionModalProps) {
+  const { pools, loadingPools } = useQuestionPools(testId); // loadingPools used to disable pool selector while fetching
   const baseQuestionState: Question = {
     id: 0,
     testId: 0,
@@ -37,9 +42,11 @@ export function AddQuestionModal({
     correctAnswer: 0,
     maxMarks: 1,
     image: "",
+    questionPoolId: undefined,
   };
 
   const [newQuestion, setNewQuestion] = useState<Question>(baseQuestionState);
+  const [selectedPool, setSelectedPool] = useState<number | "">("");
 
   const [subject, setSubject] = useState("");
   const [difficulty, setDifficulty] = useState("Easy");
@@ -49,6 +56,7 @@ export function AddQuestionModal({
   const [numberOfQuestions, setNumberOfQuestions] = useState(1);
   const [isCustomizingPrompt, setIsCustomizingPrompt] = useState(false);
   const [customPrompt, setCustomPrompt] = useState("");
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const resetQuestion = () => {
     setNewQuestion(baseQuestionState);
@@ -56,10 +64,21 @@ export function AddQuestionModal({
 
   const handleAddQuestion = async () => {
     if (loadingQuestions) return;
-    const success = await onAdd(newQuestion);
+    if (selectedPool !== "" && (selectedPool as number) < 0) {
+      setLocalError("Invalid pool selected");
+      return;
+    }
+    const payload = {
+      ...newQuestion,
+      questionPoolId: selectedPool === "" ? undefined : (selectedPool as number),
+    };
+    const success = await onAdd(payload);
     if (success) {
       resetQuestion();
+      setSelectedPool("");
       onClose();
+    } else {
+      setLocalError("Failed to add question. Check fields and try again.");
     }
   };
 
@@ -103,6 +122,26 @@ export function AddQuestionModal({
         </div>
 
         <div className="p-8 space-y-6">
+          {/* Pool assignment (optional) - Moved to top */}
+          {pools && pools.length > 0 && (
+            <div className="bg-purple-50 p-4 rounded-xl border-2 border-purple-100">
+              <label className="block text-sm font-bold text-purple-900 mb-2">Assign to Pool (optional)</label>
+              <select
+                value={selectedPool}
+                onChange={(e) => setSelectedPool(e.target.value === "" ? "" : Number(e.target.value))}
+                className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
+                disabled={loadingPools}
+              >
+                <option value="">None (Unassigned)</option>
+                {pools.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* AI Section */}
           <div className="border-2 border-emerald-200 rounded-2xl p-4 bg-gradient-to-br from-green-50 to-emerald-50">
             <button
@@ -190,7 +229,7 @@ export function AddQuestionModal({
                 {/* Buttons */}
                 <div className="flex gap-4 justify-center">
                   <button
-                    onClick={() => handleGenerateFromPrompt(promptToUse)}
+                    onClick={() => handleGenerateFromPrompt(promptToUse, selectedPool === "" ? undefined : (selectedPool as number))}
                     disabled={aiPdfUploading || aiGenerating || !promptToUse}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
@@ -206,7 +245,7 @@ export function AddQuestionModal({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        handleGenerateFromPdf(file);
+                        handleGenerateFromPdf(file, selectedPool === "" ? undefined : (selectedPool as number));
                         // Reset the input so the same file can be uploaded again
                         e.target.value = "";
                       }
@@ -309,6 +348,10 @@ export function AddQuestionModal({
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
             />
           </div>
+
+
+
+          {localError && <p className="text-sm text-red-600 mt-2">{localError}</p>}
 
           {/* Dynamic Options */}
           {newQuestion.type === "MULTIPLE_CHOICE" && (

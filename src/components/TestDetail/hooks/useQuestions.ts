@@ -15,51 +15,123 @@ export const useQuestions = (
   testId?: string,
   notifications?: NotificationFunctions,
   confirm?: ConfirmationFunction,
+  mode: "STATIC" | "POOL" = "STATIC",
 ) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const hasFetchedRef = useRef<string | null>(null);
+  const invalidPoolTestsRef = useRef<Set<string>>(new Set());
+  const lastErrorRef = useRef<{ message: string; ts: number } | null>(null);
+
+  const makeFetchKey = (t?: string, m?: string) => `${t || ""}:${m || ""}`;
 
   const fetchQuestions = useCallback(async () => {
     if (!testId) return;
 
-    if (hasFetchedRef.current === testId) return;
+    const key = makeFetchKey(testId, mode);
+    if (hasFetchedRef.current === key) return;
 
     setLoadingQuestions(true);
 
     try {
-      const response = await api(`/tests/${testId}/questions`, {
+      // If we've already seen that POOL is invalid for this test, use STATIC directly
+      const usePool = mode === "POOL" && !invalidPoolTestsRef.current.has(testId);
+      const fetchMode = usePool ? "POOL" : "STATIC";
+      const url = `/tests/${testId}/questions?mode=${fetchMode}`;
+      const { debugLogger } = await import("@/utils/logger");
+      debugLogger("Fetching questions", { testId, fetchMode, usePool, key });
+      const response = await api(url, {
         method: "GET",
         auth: true,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: { message?: string } = {};
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { message: `HTTP ${response.status}` };
+        }
 
-        if (errorData.message === "No questions found for this test.") {
-          setQuestions([]);
-          hasFetchedRef.current = testId;
+        const errorMsg = errorData?.message || "";
+
+        // If server validation fails for mode (e.g., enum validation), fall back to STATIC
+        if (
+          usePool &&
+          (errorMsg.toLowerCase().includes("enum") || errorMsg.toLowerCase().includes("validation failed"))
+        ) {
+          // Record that POOL is invalid for this test so future attempts use STATIC directly
+          invalidPoolTestsRef.current.add(testId);
+          // Mark we've attempted POOL for this key to avoid immediate retry loops
+          hasFetchedRef.current = key;
+          // Notify user and try fetching without mode (suppress duplicate warnings)
+          const warnMsg = "Pool mode is not supported for this test — showing static questions instead";
+          const now = Date.now();
+          if (lastErrorRef.current?.message !== warnMsg || now - lastErrorRef.current.ts > 2000) {
+            notifications?.showWarning?.(warnMsg);
+            lastErrorRef.current = { message: warnMsg, ts: now };
+          }
+
+          try {
+            const fallback = await api(`/tests/${testId}/questions?mode=STATIC`, { method: "GET", auth: true });
+            if (!fallback.ok) {
+              const fallbackErr = await fallback.json();
+              throw new Error(fallbackErr.message || "Failed to fetch questions (fallback)");
+            }
+            const fallbackData = await fallback.json();
+            setQuestions(Array.isArray(fallbackData) ? fallbackData : []);
+            // Record that we've fetched static as well
+            hasFetchedRef.current = makeFetchKey(testId, "STATIC");
+          } catch (fallbackErr) {
+            // If fallback also fails, just set empty and mark as fetched to avoid infinite retries
+            const fallbackMessage = fallbackErr instanceof Error ? fallbackErr.message : "Fallback fetch failed";
+            const fallbackNow = Date.now();
+            if (lastErrorRef.current?.message !== fallbackMessage || fallbackNow - lastErrorRef.current.ts > 2000) {
+              console.warn("Fallback fetch failed, showing empty questions:", fallbackMessage);
+              lastErrorRef.current = { message: fallbackMessage, ts: fallbackNow };
+            }
+            setQuestions([]);
+            hasFetchedRef.current = makeFetchKey(testId, "STATIC");
+          }
           return;
         }
-        throw new Error(errorData.message || "Failed to fetch questions");
+
+        if (errorMsg === "No questions found for this test.") {
+          setQuestions([]);
+          // record that we've fetched for this mode to prevent refetch loops
+          hasFetchedRef.current = key;
+          return;
+        }
+
+        throw new Error(errorMsg || "Failed to fetch questions");
       }
 
       const questionsData = await response.json();
       setQuestions(Array.isArray(questionsData) ? questionsData : []);
-      hasFetchedRef.current = testId;
+      hasFetchedRef.current = key;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch questions";
-      console.error("Error fetching questions:", errorMessage);
+
+      // Suppress duplicate identical errors that occur in a short window (e.g., React Strict double-invoke)
+      const now = Date.now();
+      if (lastErrorRef.current?.message !== errorMessage || now - lastErrorRef.current.ts > 2000) {
+        console.error("Error fetching questions:", errorMessage);
+        lastErrorRef.current = { message: errorMessage, ts: now };
+      }
 
       if (!errorMessage.includes("No questions found")) {
-        notifications?.showError?.(errorMessage);
+        // Also suppress duplicate notification spam
+        if (lastErrorRef.current?.message !== errorMessage || now - lastErrorRef.current.ts > 2000) {
+          notifications?.showError?.(errorMessage);
+        }
       }
       setQuestions([]);
-      hasFetchedRef.current = testId;
+      // mark we've attempted this mode for this test to avoid infinite retries
+      hasFetchedRef.current = key;
     } finally {
       setLoadingQuestions(false);
     }
-  }, [testId, notifications]);
+  }, [testId, notifications, mode]);
 
   const refreshQuestions = useCallback(async () => {
     hasFetchedRef.current = null;
@@ -72,8 +144,7 @@ export const useQuestions = (
         const payload = {
           questions: [
             {
-              testId: Number(testId),
-              text: questionData.text,
+            text: questionData.text,
               type: questionData.type,
               maxMarks: questionData.maxMarks || 1,
               ...(questionData.options && { options: questionData.options }),
@@ -81,6 +152,9 @@ export const useQuestions = (
                 correctAnswer: questionData.correctAnswer,
               }),
               ...(questionData.image && { image: questionData.image }),
+              ...(typeof questionData.questionPoolId !== "undefined" && {
+                questionPoolId: questionData.questionPoolId,
+              }),
             },
           ],
         };
@@ -117,7 +191,10 @@ export const useQuestions = (
         const response = await api(`/tests/questions/${questionId}`, {
           method: "PATCH",
           auth: true,
-          body: JSON.stringify(updates),
+          body: JSON.stringify({
+            ...updates,
+            ...(typeof updates.questionPoolId !== "undefined" && { questionPoolId: updates.questionPoolId }),
+          }),
         });
 
         if (!response.ok) {
@@ -181,7 +258,6 @@ export const useQuestions = (
       try {
         const payload = {
           questions: questions.map((question) => ({
-            testId: Number(testId),
             text: question.text,
             type: question.type,
             maxMarks: question.maxMarks || 1,

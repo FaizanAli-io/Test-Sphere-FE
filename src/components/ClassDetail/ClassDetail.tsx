@@ -55,7 +55,7 @@ export default function ClassDetail(): ReactElement {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"students" | "tests">("students");
   const [showCreateTestModal, setShowCreateTestModal] = useState(false);
-  const [loadingQuestionCounts, setLoadingQuestionCounts] = useState(false);
+  /* const [loadingQuestionCounts, setLoadingQuestionCounts] = useState(false); // Removed */
   const [kickingStudent, setKickingStudent] = useState<number | null>(null);
 
   const fetchingClassRef = useRef(false);
@@ -115,37 +115,7 @@ export default function ClassDetail(): ReactElement {
     }
   }, [classId]);
 
-  const fetchQuestionCounts = useCallback(async (testsData: Test[]) => {
-    setLoadingQuestionCounts(true);
-    try {
-      const testsWithCounts = await Promise.all(
-        testsData.map(async (test) => {
-          try {
-            const res = await api(`/tests/${test.id}/questions`, {
-              method: "GET",
-              auth: true,
-            });
-            if (res.ok) {
-              const questions = await res.json();
-              return {
-                ...test,
-                questionCount: Array.isArray(questions) ? questions.length : 0,
-              };
-            }
-            return { ...test, questionCount: 0 };
-          } catch (error) {
-            console.error(error);
-            return { ...test, questionCount: 0 };
-          }
-        }),
-      );
-      setTests(testsWithCounts);
-    } catch (err) {
-      console.error("Failed to fetch question counts:", err);
-    } finally {
-      setLoadingQuestionCounts(false);
-    }
-  }, []);
+  /* Removed fetchQuestionCounts as per user request, API returns questions now */
 
   const fetchTests = useCallback(async () => {
     if (!classId || fetchingTestsRef.current) return;
@@ -160,14 +130,22 @@ export default function ClassDetail(): ReactElement {
         throw new Error(errorData.message || "Failed to fetch tests");
       }
       const testsData = await testsRes.json();
-      setTests(testsData);
-      await fetchQuestionCounts(testsData);
+      
+      // Assume questions are included in the testsData response or handle accordingly
+      const testsWithCounts = Array.isArray(testsData) 
+        ? testsData.map((test: any) => ({
+            ...test,
+            questionCount: Array.isArray(test.questions) ? test.questions.length : (test.questionCount || 0)
+          }))
+        : [];
+        
+      setTests(testsWithCounts);
     } catch (err) {
       console.error("Failed to fetch tests:", err);
     } finally {
       fetchingTestsRef.current = false;
     }
-  }, [classId, fetchQuestionCounts]);
+  }, [classId]);
 
   const handleNavigateToTestDetails = (testId: number) => {
     window.open(`/test/${testId}`, "_blank");
@@ -288,7 +266,6 @@ export default function ClassDetail(): ReactElement {
             {activeTab === "tests" && (
               <TestsSection
                 tests={tests}
-                loadingQuestionCounts={loadingQuestionCounts}
                 onCreateTest={() => setShowCreateTestModal(true)}
                 onNavigate={handleNavigateToTestDetails}
               />

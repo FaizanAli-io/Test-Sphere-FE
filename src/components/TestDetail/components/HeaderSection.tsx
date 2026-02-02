@@ -7,6 +7,8 @@ interface HeaderSectionProps {
   onEdit: () => void;
   onConfigure: () => void;
   onDelete: () => void;
+  mode?: "STATIC" | "POOL";
+  onModeChange?: (mode: "STATIC" | "POOL") => void;
 }
 
 const formatDate = (dateString: string) => {
@@ -42,6 +44,8 @@ export default function HeaderSection({
   onEdit,
   onConfigure,
   onDelete,
+  mode,
+  onModeChange,
 }: HeaderSectionProps) {
   const handleInvigilate = () => {
     window.open(`/test/${test.id}/invigilate`, "_blank");
@@ -94,12 +98,33 @@ export default function HeaderSection({
           </div>
         </div>
         <div className="flex flex-col gap-4 w-fit shrink-0">
-          <button
-            onClick={onBack}
-            className="px-6 py-3 bg-gray-100 text-gray-900 font-bold rounded-xl hover:bg-gray-200 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-          >
-            ← Back to Class
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="inline-flex rounded-xl bg-gray-100 p-1">
+              <button
+                onClick={() => onModeChange?.("STATIC")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  ("STATIC" as string) === mode ? "bg-white shadow" : "text-gray-600"
+                }`}
+              >
+                Static
+              </button>
+              <button
+                onClick={() => onModeChange?.("POOL")}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  ("POOL" as string) === mode ? "bg-white shadow" : "text-gray-600"
+                }`}
+              >
+                Pool
+              </button>
+            </div>
+            <button
+              onClick={onBack}
+              className="px-6 py-3 bg-gray-100 text-gray-900 font-bold rounded-xl hover:bg-gray-200 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+            >
+              ← Back to Class
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleInvigilate}

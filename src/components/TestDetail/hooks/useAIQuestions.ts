@@ -18,6 +18,7 @@ export const useAIQuestions = (
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<Question[]>([]);
   const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(new Set());
+  const [targetPoolId, setTargetPoolId] = useState<number | undefined>(undefined);
 
   const normalizeAIQuestion = useCallback(
     (q: Record<string, unknown>): Question | null => {
@@ -98,7 +99,7 @@ export const useAIQuestions = (
   );
 
   const generateAIQuestions = useCallback(
-    async (prompt: string) => {
+    async (prompt: string, poolId?: number) => {
       if (!prompt.trim()) {
         notifications?.showError?.("Please enter a prompt for AI question generation");
         return false;
@@ -132,6 +133,7 @@ export const useAIQuestions = (
 
           if (normalized.length > 0) {
             setPendingApprovalQuestions(normalized);
+            setTargetPoolId(poolId);
             setShowApprovalModal(true);
             closeModal?.();
             notifications?.showSuccess?.(
@@ -155,7 +157,7 @@ export const useAIQuestions = (
   );
 
   const uploadPDFForQuestions = useCallback(
-    async (file: File) => {
+    async (file: File, poolId?: number) => {
       if (!file) {
         notifications?.showError?.("No file selected. Please choose a PDF file.");
         return false;
@@ -202,6 +204,7 @@ export const useAIQuestions = (
 
         if (normalized.length > 0) {
           setPendingApprovalQuestions(normalized);
+          setTargetPoolId(poolId);
           setShowApprovalModal(true);
           closeModal?.();
           notifications?.showSuccess?.(`Extracted ${normalized.length} questions from PDF`);
@@ -229,7 +232,6 @@ export const useAIQuestions = (
       try {
         const questionsToCreate = questions.map((q) => {
           const questionData: {
-            testId: number;
             text: string;
             type: Question["type"];
             maxMarks: number;
@@ -237,7 +239,6 @@ export const useAIQuestions = (
             correctAnswer?: number;
             image?: string;
           } = {
-            testId: Number(testId),
             text: q.text?.trim() || "Question text not provided",
             type: q.type || "MULTIPLE_CHOICE",
             maxMarks: q.maxMarks || 1,
@@ -256,11 +257,14 @@ export const useAIQuestions = (
             questionData.image = q.image.trim();
           }
 
-          return questionData;
+            return questionData;
         });
 
         const payload = {
-          questions: questionsToCreate,
+          questions: questionsToCreate.map(q => ({
+            ...q,
+            questionPoolId: targetPoolId ?? undefined
+          })),
         };
 
         const response = await api(`/tests/${testId}/questions`, {
@@ -306,6 +310,7 @@ export const useAIQuestions = (
     setShowAiSection(false);
     setPendingApprovalQuestions([]);
     setApprovedQuestionIds(new Set());
+    setTargetPoolId(undefined);
     setShowApprovalModal(false);
   }, []);
 

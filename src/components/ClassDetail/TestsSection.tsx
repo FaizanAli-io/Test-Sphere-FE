@@ -19,7 +19,6 @@ interface TimeStatus {
 
 interface TestsSectionProps {
   tests: Test[];
-  loadingQuestionCounts: boolean;
   onCreateTest: () => void;
   onNavigate: (testId: number) => void;
 }
@@ -63,7 +62,6 @@ const getTimeStatus = (startAt: string, endAt: string): TimeStatus => {
 
 const TestsSection: React.FC<TestsSectionProps> = ({
   tests,
-  loadingQuestionCounts,
   onCreateTest,
   onNavigate,
 }) => {
@@ -110,7 +108,7 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold">Questions</p>
                       <p className="text-lg font-bold text-gray-900">
-                        {loadingQuestionCounts ? "..." : test.questionCount || 0}
+                        {test.questionCount || 0}
                       </p>
                     </div>
                   </div>

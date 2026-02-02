@@ -7,7 +7,10 @@ interface EditQuestionModalProps {
   onClose: () => void;
   onUpdate: (question: Question) => Promise<boolean>;
   loadingQuestions: boolean;
+  testId?: string;
 }
+
+import { useQuestionPools } from "../hooks";
 
 export function EditQuestionModal({
   showEditQuestionModal,
@@ -15,8 +18,10 @@ export function EditQuestionModal({
   onClose,
   onUpdate,
   loadingQuestions,
+  testId,
 }: EditQuestionModalProps) {
   const [localEditingQuestion, setLocalEditingQuestion] = useState<Question | null>(null);
+  const { pools } = useQuestionPools(testId);
 
   useEffect(() => {
     setLocalEditingQuestion(editingQuestion);
@@ -108,6 +113,30 @@ export function EditQuestionModal({
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition-all text-gray-900"
             />
           </div>
+
+          {/* Pool assignment (optional) */}
+          {pools && pools.length > 0 && (
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Assign to Pool (optional)</label>
+              <select
+                value={localEditingQuestion.questionPoolId ?? ""}
+                onChange={(e) =>
+                  setLocalEditingQuestion({
+                    ...localEditingQuestion,
+                    questionPoolId: e.target.value === "" ? null : Number(e.target.value),
+                  })
+                }
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl"
+              >
+                <option value="">None</option>
+                {pools.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {localEditingQuestion.type === "MULTIPLE_CHOICE" && (
             <div>

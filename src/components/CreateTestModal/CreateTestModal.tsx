@@ -26,7 +26,6 @@ interface TestData {
   startAt: string;
   endAt: string;
   status: "DRAFT" | "ACTIVE" | "CLOSED";
-  numQuestions?: number;
 }
 
 interface CreateTestModalProps {
@@ -194,9 +193,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
         endAt: localDatetimeToUtcIso(formData.endAt),
         status: formData.status,
       };
-      if (formData.numQuestions !== undefined && formData.numQuestions > 0) {
-        payload.numQuestions = Number(formData.numQuestions);
-      }
+
       const res = await api("/tests", {
         body: JSON.stringify(payload),
         method: "POST",
@@ -238,7 +235,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
           />
 
           {/* Title & Description */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
                 <span className="text-lg">📖</span>
@@ -263,20 +260,6 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
                 value={formData.duration}
                 onChange={(e) => handleChange("duration", Number(e.target.value))}
                 placeholder="60"
-                className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
-                <span className="text-lg">❓</span>
-                Number of Questions
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.numQuestions || ""}
-                onChange={(e) => handleChange("numQuestions", Number(e.target.value))}
-                placeholder="e.g., 10"
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
               />
             </div>

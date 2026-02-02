@@ -16,14 +16,16 @@ import {
   SubmissionsModal,
   EditQuestionModal,
   ConfigureTestModal,
+  PoolModal,
+  AddQuestionsToPoolModal,
 } from "./modals";
 import dynamic from "next/dynamic";
 const ProctoringLogsModal = dynamic(() => import("./modals").then((m) => m.ProctoringLogsModal), {
   loading: () => null,
 });
-import { HeaderSection, QuestionsSection, SubmissionsSection } from "./components";
-import { Question, Test, QuestionUpdatePayload, TestConfig } from "./types";
-import { useQuestions, useTestDetail, useAIQuestions } from "./hooks";
+import { HeaderSection, QuestionsSection, SubmissionsSection, PoolsSection } from "./components";
+import { Question, Test, QuestionUpdatePayload, TestConfig, QuestionPool } from "./types";
+import { useQuestions, useTestDetail, useAIQuestions, useQuestionPools } from "./hooks";
 
 interface TestDetailProps {
   testId?: string;
@@ -45,11 +47,27 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [logsSubmissionId, setLogsSubmissionId] = useState<number | null>(null);
 
+  const [showCreatePoolModal, setShowCreatePoolModal] = useState(false);
+  const [editingPool, setEditingPool] = useState<QuestionPool | null>(null);
+  const [showAddQuestionsToPoolModal, setShowAddQuestionsToPoolModal] = useState(false);
+  const [targetPoolForAddQuestions, setTargetPoolForAddQuestions] = useState<QuestionPool | null>(null);
+
   const testIdOrNull = redirecting ? undefined : testId;
 
+  const [mode, setMode] = React.useState<"STATIC" | "POOL">("STATIC");
+
   const testDetailHook = useTestDetail(testIdOrNull, notifications, confirmation.confirm);
-  const questionsHook = useQuestions(testIdOrNull, notifications, confirmation.confirm);
+  const questionsHook = useQuestions(testIdOrNull, notifications, confirmation.confirm, mode);
   const submissionsHook = useSubmissions(testIdOrNull, "teacher", notifications);
+  const {
+    pools,
+    loadingPools,
+    createPool,
+    updatePool,
+    deletePool,
+    addQuestionsToPool,
+    removeQuestionsFromPool,
+  } = useQuestionPools(testIdOrNull, notifications, confirmation.confirm);
   const aiQuestionsHook = useAIQuestions(
     testIdOrNull,
     questionsHook.refreshQuestions,
@@ -65,6 +83,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const [submissionsState, setSubmissionsState] = useState<Submission[]>([]);
   const submissions: Submission[] =
     submissionsState.length > 0 ? submissionsState : submissionsHook.submissions;
+
+  const role = typeof window !== "undefined" ? (localStorage.getItem("role") || "teacher") : "teacher";
+  const isTeacher = role === "teacher";
+
+  // If in pool mode, warn teacher if selected response is shorter than requested counts
+  const requestedCount = pools.reduce((acc, p) => acc + Object.values(p.config).reduce((a, b) => a + b, 0), 0);
+  const poolWarning = mode === "POOL" && isTeacher && questions.length < requestedCount;
 
   const handleEditTest = () => {
     setShowEditTestModal(true);
@@ -148,6 +173,10 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       updates.image = question.image;
     }
 
+    if (typeof question.questionPoolId !== "undefined") {
+      updates.questionPoolId = question.questionPoolId ?? null;
+    }
+
     const success = await questionsHook.updateQuestion(id, updates);
     if (success) {
       setShowEditQuestionModal(false);
@@ -158,6 +187,22 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
   const handleDeleteQuestion = async (questionId: number) => {
     await questionsHook.handleDeleteQuestion(questionId);
+  };
+
+  const handleUnassignQuestion = async (questionId: number, poolId: number) => {
+    const success = await removeQuestionsFromPool(poolId, [questionId]);
+    if (success) {
+      await questionsHook.refreshQuestions();
+    }
+  };
+
+  const handleAddQuestionsToPool = async (poolId: number, questionIds: number[]) => {
+    const success = await addQuestionsToPool(poolId, questionIds);
+    if (success) {
+      await questionsHook.refreshQuestions();
+      setShowAddQuestionsToPoolModal(false);
+      setTargetPoolForAddQuestions(null);
+    }
   };
 
   const handleViewSubmissions = () => {
@@ -187,13 +232,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     await submissionsHook.deleteSubmission(submissionId);
   };
 
-  const handleGenerateFromPrompt = (prompt: string) => {
-    aiQuestionsHook.generateAIQuestions(prompt);
+  const handleGenerateFromPrompt = (prompt: string, poolId?: number) => {
+    aiQuestionsHook.generateAIQuestions(prompt, poolId);
   };
 
-  const handleGenerateFromPdf = (file: File | null) => {
+  const handleGenerateFromPdf = (file: File | null, poolId?: number) => {
     if (file) {
-      aiQuestionsHook.uploadPDFForQuestions(file);
+      aiQuestionsHook.uploadPDFForQuestions(file, poolId);
     }
   };
 
@@ -244,6 +289,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           onEdit={handleEditTest}
           onConfigure={handleConfigure}
           onDelete={handleDeleteTest}
+          mode={mode}
+          onModeChange={(m) => setMode(m)}
         />
 
         {/* Questions Section */}
@@ -253,7 +300,43 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           onAddQuestion={handleAddQuestion}
           onEditQuestion={handleEditQuestion}
           onDeleteQuestion={handleDeleteQuestion}
+          isPoolMode={mode === "POOL"}
+          poolInfo={poolWarning ? { type: "warning", message: "Pool requested more questions than available; selected list is shorter." } : undefined}
+          pools={pools}
+          onUnassignQuestion={handleUnassignQuestion}
+          onAddPool={() => setShowCreatePoolModal(true)}
+          onEditPool={(pool) => {
+            setEditingPool(pool);
+            setShowCreatePoolModal(true);
+          }}
+          onDeletePool={(id) => deletePool(id)}
+          onAssignQuestionsToPool={(pool) => {
+            setTargetPoolForAddQuestions(pool);
+            setShowAddQuestionsToPoolModal(true);
+          }}
+          isTeacher={isTeacher}
         />
+
+        {/* Pools Section (Teacher only) */}
+        {isTeacher && (
+          <PoolsSection
+            pools={pools}
+            loading={loadingPools}
+            onCreate={() => {
+              setShowCreatePoolModal(true);
+            }}
+            onEdit={(pool) => {
+              setEditingPool(pool);
+              setShowCreatePoolModal(true);
+            }}
+            onDelete={(id) => deletePool(id)}
+            onAddQuestions={(pool) => {
+              setTargetPoolForAddQuestions(pool);
+              setShowAddQuestionsToPoolModal(true);
+            }}
+            questions={questions}
+          />
+        )}
         {/* Submissions Section */}
         <SubmissionsSection
           submissions={submissions}
@@ -284,6 +367,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         handleGenerateFromPrompt={handleGenerateFromPrompt}
         handleGenerateFromPdf={handleGenerateFromPdf}
         loadingQuestions={loadingQuestions}
+        testId={testId}
       />
 
       <EditQuestionModal
@@ -295,6 +379,37 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         }}
         onUpdate={handleUpdateQuestion}
         loadingQuestions={loadingQuestions}
+        testId={testId}
+      />
+
+      <PoolModal
+        isOpen={showCreatePoolModal}
+        editingPool={editingPool}
+        onClose={() => {
+          setShowCreatePoolModal(false);
+          setEditingPool(null);
+        }}
+        onCreate={async (payload) => {
+          const ok = await createPool(payload);
+          return ok;
+        }}
+        onUpdate={async (id, payload) => {
+          const ok = await updatePool(id, payload);
+          return ok;
+        }}
+      />
+
+      <AddQuestionsToPoolModal
+        isOpen={showAddQuestionsToPoolModal}
+        onClose={() => {
+          setShowAddQuestionsToPoolModal(false);
+          setTargetPoolForAddQuestions(null);
+        }}
+        pool={targetPoolForAddQuestions || { id: 0, testId: 0, title: "", config: {}, createdAt: "", updatedAt: "" }}
+        allQuestions={questions}
+        pools={pools}
+        onAddQuestions={handleAddQuestionsToPool}
+        loading={loadingQuestions}
       />
 
       <ConfigureTestModal
