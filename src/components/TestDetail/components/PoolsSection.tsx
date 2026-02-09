@@ -11,7 +11,15 @@ interface PoolsSectionProps {
   questions: Question[];
 }
 
-export default function PoolsSection({ pools, loading, onCreate, onEdit, onDelete, onAddQuestions, questions }: PoolsSectionProps) {
+export default function PoolsSection({
+  pools,
+  loading,
+  onCreate,
+  onEdit,
+  onDelete,
+  onAddQuestions,
+  questions,
+}: PoolsSectionProps) {
   const assignedCount = (poolId: number) =>
     questions.filter((q) => q.questionPoolId === poolId).length;
 
@@ -42,7 +50,9 @@ export default function PoolsSection({ pools, loading, onCreate, onEdit, onDelet
         <div className="text-center py-8">
           <div className="text-6xl mb-4">🧩</div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">No Pools Created</h3>
-          <p className="text-gray-600 mb-6">Create a question pool to enable dynamic test generation.</p>
+          <p className="text-gray-600 mb-6">
+            Create a question pool to enable dynamic test generation.
+          </p>
           <button
             onClick={onCreate}
             className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
@@ -53,11 +63,20 @@ export default function PoolsSection({ pools, loading, onCreate, onEdit, onDelet
       ) : (
         <div className="space-y-4">
           {pools.map((pool) => (
-            <div key={pool.id} className="border-2 border-gray-200 rounded-2xl p-6 flex items-center justify-between">
+            <div
+              key={pool.id}
+              className="border-2 border-gray-200 rounded-2xl p-6 flex items-center justify-between"
+            >
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">{pool.title}</h3>
-                <p className="text-sm text-gray-600">{Object.entries(pool.config).map(([k, v]) => `${k}: ${v}`).join(" • ")}</p>
-                <p className="text-sm text-gray-500 mt-2">Assigned Questions: {assignedCount(pool.id)}</p>
+                <p className="text-sm text-gray-600">
+                  {Object.entries(pool.config)
+                    .map(([k, v]) => `${k}: ${v}`)
+                    .join(" • ")}
+                </p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Assigned Questions: {assignedCount(pool.id)}
+                </p>
               </div>
               <div className="flex gap-2">
                 <button

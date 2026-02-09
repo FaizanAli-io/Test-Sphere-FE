@@ -60,9 +60,19 @@ function BaseClassCard({
               >
                 <Copy size={16} className={isCopied ? "text-green-500" : "text-gray-600"} />
               </button>
-              <span className="text-xs font-mono text-gray-500 bg-white px-3 py-1.5 rounded-lg border border-gray-200">
-                #{classData.id}
-              </span>
+              {isTeacher && classData.role && (
+                <span
+                  className={`text-xs font-bold px-3 py-1.5 rounded-lg ${
+                    classData.role === "OWNER"
+                      ? "bg-purple-100 text-purple-800 border border-purple-300"
+                      : classData.role === "EDITOR"
+                        ? "bg-blue-100 text-blue-800 border border-blue-300"
+                        : "bg-gray-100 text-gray-800 border border-gray-300"
+                  }`}
+                >
+                  {classData.role}
+                </span>
+              )}
             </div>
             {isTeacher ? (
               <Link href={`/class/${classData.id}`}>

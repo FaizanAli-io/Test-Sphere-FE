@@ -37,8 +37,8 @@ export default function AddQuestionsToPoolModal({
   };
 
   const selectAll = () => {
-    const questionsToSelect = showUnassignedOnly 
-      ? allQuestions.filter(q => !q.questionPoolId)
+    const questionsToSelect = showUnassignedOnly
+      ? allQuestions.filter((q) => !q.questionPoolId)
       : allQuestions;
     setSelectedQuestionIds(new Set(questionsToSelect.map((q) => q.id)));
   };
@@ -73,10 +73,7 @@ export default function AddQuestionsToPoolModal({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">Add Questions to {pool.title}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
-          >
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">
             ✕
           </button>
         </div>
@@ -95,9 +92,9 @@ export default function AddQuestionsToPoolModal({
           >
             Clear Selection
           </button>
-          
+
           <label className="flex items-center gap-2 ml-4 cursor-pointer select-none">
-            <input 
+            <input
               type="checkbox"
               checked={showUnassignedOnly}
               onChange={(e) => setShowUnassignedOnly(e.target.checked)}
@@ -113,60 +110,62 @@ export default function AddQuestionsToPoolModal({
 
         {/* Questions List */}
         <div className="space-y-3 mb-6">
-          {allQuestions.filter(q => !showUnassignedOnly || !q.questionPoolId).length === 0 ? (
+          {allQuestions.filter((q) => !showUnassignedOnly || !q.questionPoolId).length === 0 ? (
             <div className="text-center py-8 text-gray-600">
               No questions available {showUnassignedOnly ? "matching filter" : "for this test"}.
             </div>
           ) : (
             allQuestions
-              .filter(q => !showUnassignedOnly || !q.questionPoolId)
+              .filter((q) => !showUnassignedOnly || !q.questionPoolId)
               .map((question) => {
-              const isSelected = selectedQuestionIds.has(question.id);
-              const currentPool = pools?.find((p) => p.id === question.questionPoolId);
+                const isSelected = selectedQuestionIds.has(question.id);
+                const currentPool = pools?.find((p) => p.id === question.questionPoolId);
 
-              return (
-                <div
-                  key={question.id}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                    isSelected
-                      ? "bg-blue-50 border-blue-400"
-                      : "bg-white border-gray-200 hover:border-gray-300"
-                  }`}
-                  onClick={() => toggleQuestion(question.id)}
-                >
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleQuestion(question.id)}
-                      className="mt-1 w-5 h-5 rounded border-gray-300 cursor-pointer"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900">{question.text}</h3>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className="px-2 py-1 bg-blue-50 rounded text-blue-700 text-xs font-medium">
-                            {question.type === "MULTIPLE_CHOICE"
-                              ? "MC"
-                              : question.type === "TRUE_FALSE"
-                                ? "T/F"
-                                : question.type === "SHORT_ANSWER"
-                                  ? "SA"
-                                  : "LA"}
-                          </span>
-                          <span className="text-xs text-gray-600">{question.maxMarks}m</span>
+                return (
+                  <div
+                    key={question.id}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                      isSelected
+                        ? "bg-blue-50 border-blue-400"
+                        : "bg-white border-gray-200 hover:border-gray-300"
+                    }`}
+                    onClick={() => toggleQuestion(question.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleQuestion(question.id)}
+                        className="mt-1 w-5 h-5 rounded border-gray-300 cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-semibold text-gray-900">{question.text}</h3>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="px-2 py-1 bg-blue-50 rounded text-blue-700 text-xs font-medium">
+                              {question.type === "MULTIPLE_CHOICE"
+                                ? "MC"
+                                : question.type === "TRUE_FALSE"
+                                  ? "T/F"
+                                  : question.type === "SHORT_ANSWER"
+                                    ? "SA"
+                                    : "LA"}
+                            </span>
+                            <span className="text-xs text-gray-600">{question.maxMarks}m</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        Current pool:{" "}
-                        <span className="font-medium text-gray-900">{getPoolTitle(question.questionPoolId ?? null)}</span>
+                        <div className="text-sm text-gray-600">
+                          Current pool:{" "}
+                          <span className="font-medium text-gray-900">
+                            {getPoolTitle(question.questionPoolId ?? null)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })
           )}
         </div>
 
@@ -183,7 +182,9 @@ export default function AddQuestionsToPoolModal({
             disabled={selectedQuestionIds.size === 0 || isSubmitting || loading}
             className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all"
           >
-            {isSubmitting || loading ? "Adding..." : `Add ${selectedQuestionIds.size} Question${selectedQuestionIds.size !== 1 ? "s" : ""}`}
+            {isSubmitting || loading
+              ? "Adding..."
+              : `Add ${selectedQuestionIds.size} Question${selectedQuestionIds.size !== 1 ? "s" : ""}`}
           </button>
         </div>
       </div>

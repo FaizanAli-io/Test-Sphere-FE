@@ -11,6 +11,8 @@ import { useConfirmation } from "../../hooks/useConfirmation"; // adjusted path
 import ClassHeader from "./ClassHeader";
 import StudentsSection from "./StudentsSection";
 import TestsSection from "./TestsSection";
+import TeachersSection from "./TeachersSection";
+import InviteTeacherModal from "./InviteTeacherModal";
 
 interface Test {
   id: number;
@@ -53,9 +55,12 @@ export default function ClassDetail(): ReactElement {
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [tests, setTests] = useState<Test[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"students" | "tests">("students");
+  const [activeTab, setActiveTab] = useState<"students" | "teachers" | "tests">("students");
   const [showCreateTestModal, setShowCreateTestModal] = useState(false);
-  /* const [loadingQuestionCounts, setLoadingQuestionCounts] = useState(false); // Removed */
+  const [showInviteTeacherModal, setShowInviteTeacherModal] = useState(false);
+  const [teacherRefreshTrigger, setTeacherRefreshTrigger] = useState(0);
+  const [isCurrentUserOwner, setIsCurrentUserOwner] = useState(false);
+  const [userRole, setUserRole] = useState<string>("VIEWER");
   const [kickingStudent, setKickingStudent] = useState<number | null>(null);
 
   const fetchingClassRef = useRef(false);
@@ -106,12 +111,41 @@ export default function ClassDetail(): ReactElement {
           : [],
       };
       setClassData(normalized);
+
+      // Determine if current user is owner
+      if (Array.isArray(data.teachers) && data.teachers.length > 0) {
+        const currentUserEmail = localStorage.getItem("userEmail");
+
+        console.group("👤 Owner Detection Debug");
+        console.log("Current User Email from localStorage:", currentUserEmail);
+        console.log("Teachers array:", data.teachers);
+        console.log("Teachers details:");
+
+        data.teachers.forEach((t: any, idx: number) => {
+          console.log(`  [${idx}] Role: ${t.role}, Teacher Email: ${t.teacher?.email}`);
+        });
+
+        const isOwner = data.teachers.some(
+          (t: any) => t.role === "OWNER" && t.teacher?.email === currentUserEmail,
+        );
+
+        console.log("Is Owner?", isOwner);
+        console.groupEnd();
+
+        setIsCurrentUserOwner(isOwner);
+      } else {
+        console.warn("No teachers array found in class data");
+        setIsCurrentUserOwner(false);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch class data";
       console.error(message);
     } finally {
       setLoading(false);
       fetchingClassRef.current = false;
+      // Get user role from localStorage
+      const role = localStorage.getItem("role") || "VIEWER";
+      setUserRole(role);
     }
   }, [classId]);
 
@@ -130,15 +164,17 @@ export default function ClassDetail(): ReactElement {
         throw new Error(errorData.message || "Failed to fetch tests");
       }
       const testsData = await testsRes.json();
-      
+
       // Assume questions are included in the testsData response or handle accordingly
-      const testsWithCounts = Array.isArray(testsData) 
+      const testsWithCounts = Array.isArray(testsData)
         ? testsData.map((test: any) => ({
             ...test,
-            questionCount: Array.isArray(test.questions) ? test.questions.length : (test.questionCount || 0)
+            questionCount: Array.isArray(test.questions)
+              ? test.questions.length
+              : test.questionCount || 0,
           }))
         : [];
-        
+
       setTests(testsWithCounts);
     } catch (err) {
       console.error("Failed to fetch tests:", err);
@@ -243,6 +279,17 @@ export default function ClassDetail(): ReactElement {
               Students
             </button>
             <button
+              onClick={() => setActiveTab("teachers")}
+              className={`flex-1 px-8 py-5 font-bold text-lg transition-all ${
+                activeTab === "teachers"
+                  ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              <span className="mr-2">👨‍🏫</span>
+              Teachers
+            </button>
+            <button
               onClick={() => setActiveTab("tests")}
               className={`flex-1 px-8 py-5 font-bold text-lg transition-all ${
                 activeTab === "tests"
@@ -261,6 +308,15 @@ export default function ClassDetail(): ReactElement {
                 kickingStudent={kickingStudent}
                 onKick={handleKickStudent}
                 classCode={classData.code}
+                userRole={userRole}
+              />
+            )}
+            {activeTab === "teachers" && (
+              <TeachersSection
+                classId={classId}
+                onInviteClick={() => setShowInviteTeacherModal(true)}
+                refreshTrigger={teacherRefreshTrigger}
+                isCurrentUserOwner={isCurrentUserOwner}
               />
             )}
             {activeTab === "tests" && (
@@ -268,6 +324,7 @@ export default function ClassDetail(): ReactElement {
                 tests={tests}
                 onCreateTest={() => setShowCreateTestModal(true)}
                 onNavigate={handleNavigateToTestDetails}
+                userRole={userRole}
               />
             )}
           </div>
@@ -278,6 +335,15 @@ export default function ClassDetail(): ReactElement {
         onClose={() => setShowCreateTestModal(false)}
         onTestCreated={handleTestCreated}
         prefilledClassId={classData?.id ? Number(classData.id) : undefined}
+      />
+      <InviteTeacherModal
+        isOpen={showInviteTeacherModal}
+        onClose={() => setShowInviteTeacherModal(false)}
+        classId={classId}
+        onInviteSuccess={() => {
+          setActiveTab("teachers");
+          setTeacherRefreshTrigger((prev) => prev + 1);
+        }}
       />
       <ConfirmationModal
         isOpen={confirmation.isOpen}

@@ -87,7 +87,8 @@ export const useQuestionPools = (
       if (!confirm) return false;
       const confirmed = await confirm({
         title: "Delete Pool",
-        message: "Are you sure you want to delete this pool? This will unassign any questions in the pool.",
+        message:
+          "Are you sure you want to delete this pool? This will unassign any questions in the pool.",
         confirmText: "Delete",
         type: "danger",
       });

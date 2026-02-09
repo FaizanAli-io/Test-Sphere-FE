@@ -29,6 +29,8 @@ export interface Class {
   code: string;
   createdBy: string;
   teacherId?: number;
+  role?: string; // OWNER, EDITOR, VIEWER, etc.
+  assignedAt?: string;
   students?: ClassStudent[];
   tests?: Array<{ id: number; title: string; [key: string]: unknown }>;
   studentCount?: number;

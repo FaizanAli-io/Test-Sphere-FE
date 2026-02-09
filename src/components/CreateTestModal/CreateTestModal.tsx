@@ -69,7 +69,29 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
         throw new Error(errorData.message || "Failed to fetch classes");
       }
       const data = await response.json();
-      setClasses(data);
+      // Extract class data from wrapper structure
+      const normalized = Array.isArray(data)
+        ? (data
+            .map((wrapper: unknown) => {
+              if (!wrapper || typeof wrapper !== "object") return null;
+              const w = wrapper as Record<string, unknown>;
+              // Get class data from nested property or use wrapper as fallback
+              const classData = (w.class as Record<string, unknown> | undefined) || w;
+              return {
+                id: classData.id as string,
+                code: classData.code as string,
+                name: classData.name as string,
+                createdBy: w.teacherId as string | undefined,
+                createdAt: classData.createdAt as string | undefined,
+                description: classData.description as string,
+                students: classData.students as
+                  | Array<{ id: number; name: string; email: string }>
+                  | undefined,
+              } as Class;
+            })
+            .filter(Boolean) as Class[])
+        : [];
+      setClasses(normalized);
     } catch (err) {
       setClassesError(err instanceof Error ? err.message : "Failed to fetch classes");
     } finally {

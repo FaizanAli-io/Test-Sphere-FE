@@ -12,6 +12,7 @@ interface StudentsSectionProps {
   kickingStudent: number | null;
   onKick: (studentId: number, studentName: string) => void;
   classCode: string;
+  userRole?: string;
 }
 
 const StudentsSection: React.FC<StudentsSectionProps> = ({
@@ -19,7 +20,9 @@ const StudentsSection: React.FC<StudentsSectionProps> = ({
   kickingStudent,
   onKick,
   classCode,
+  userRole = "VIEWER",
 }) => {
+  const canRemoveStudent = userRole === "OWNER" || userRole === "EDITOR";
   return (
     <div>
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Enrolled Students</h3>
@@ -39,26 +42,28 @@ const StudentsSection: React.FC<StudentsSectionProps> = ({
                   <p className="text-sm text-gray-600 truncate">{student.email}</p>
                 </div>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onKick(student.id, student.name);
-                }}
-                disabled={kickingStudent === student.id}
-                className="w-full px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-lg hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {kickingStudent === student.id ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                    <span>Removing...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>🚫</span>
-                    <span>Remove Student</span>
-                  </>
-                )}
-              </button>
+              {canRemoveStudent && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onKick(student.id, student.name);
+                  }}
+                  disabled={kickingStudent === student.id}
+                  className="w-full px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-lg hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {kickingStudent === student.id ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                      <span>Removing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>🚫</span>
+                      <span>Remove Student</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           ))}
         </div>

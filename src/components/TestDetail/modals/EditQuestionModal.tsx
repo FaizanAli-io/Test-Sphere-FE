@@ -117,7 +117,9 @@ export function EditQuestionModal({
           {/* Pool assignment (optional) */}
           {pools && pools.length > 0 && (
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Assign to Pool (optional)</label>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Assign to Pool (optional)
+              </label>
               <select
                 value={localEditingQuestion.questionPoolId ?? ""}
                 onChange={(e) =>

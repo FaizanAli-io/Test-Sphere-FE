@@ -20,9 +20,11 @@ export const useTeacherPortal = () => {
       }
       const data = await response.json();
 
-      // Normalize the data to ensure correct counts
+      // Normalize the data to ensure correct counts and extract class from wrapper
       const normalized = Array.isArray(data)
-        ? data.map((cls: Record<string, unknown>) => {
+        ? data.map((wrapper: Record<string, unknown>) => {
+            // Extract class data from nested property
+            const cls = (wrapper.class as Record<string, unknown> | undefined) || wrapper;
             const c = cls as unknown as {
               tests?: unknown[];
               testCount?: number;
@@ -32,6 +34,9 @@ export const useTeacherPortal = () => {
 
             return {
               ...cls,
+              teacherId: wrapper.teacherId ?? cls.teacherId,
+              role: wrapper.role as string | undefined,
+              assignedAt: wrapper.assignedAt as string | undefined,
               testCount: Array.isArray(c.tests)
                 ? c.tests.length
                 : typeof c.testCount === "number"

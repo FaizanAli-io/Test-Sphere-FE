@@ -6,12 +6,21 @@ interface PoolModalProps {
   editingPool?: QuestionPool | null;
   onClose: () => void;
   onCreate: (payload: { title: string; config: Record<string, number> }) => Promise<boolean>;
-  onUpdate: (id: number, payload: { title?: string; config?: Record<string, number> }) => Promise<boolean>;
+  onUpdate: (
+    id: number,
+    payload: { title?: string; config?: Record<string, number> },
+  ) => Promise<boolean>;
 }
 
 const QUESTION_TYPES = ["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER", "LONG_ANSWER"];
 
-export default function PoolModal({ isOpen, editingPool, onClose, onCreate, onUpdate }: PoolModalProps) {
+export default function PoolModal({
+  isOpen,
+  editingPool,
+  onClose,
+  onCreate,
+  onUpdate,
+}: PoolModalProps) {
   const [title, setTitle] = useState("");
   const [config, setConfig] = useState<Record<string, number>>({});
   const [errors, setErrors] = useState<string | null>(null);
@@ -63,12 +72,18 @@ export default function PoolModal({ isOpen, editingPool, onClose, onCreate, onUp
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden">
         <div className="px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 sticky top-0 z-10">
-          <h3 className="text-2xl font-bold text-white">{editingPool ? "Edit Pool" : "Create Pool"}</h3>
+          <h3 className="text-2xl font-bold text-white">
+            {editingPool ? "Edit Pool" : "Create Pool"}
+          </h3>
         </div>
         <div className="p-6 space-y-4">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Title</label>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl" />
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl"
+            />
           </div>
 
           <div>
@@ -81,7 +96,9 @@ export default function PoolModal({ isOpen, editingPool, onClose, onCreate, onUp
                     type="number"
                     min={0}
                     value={config[q] ?? 0}
-                    onChange={(e) => setConfig({ ...config, [q]: Math.max(0, Number(e.target.value)) })}
+                    onChange={(e) =>
+                      setConfig({ ...config, [q]: Math.max(0, Number(e.target.value)) })
+                    }
                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl"
                   />
                 </div>
@@ -92,8 +109,16 @@ export default function PoolModal({ isOpen, editingPool, onClose, onCreate, onUp
           {errors && <p className="text-sm text-red-600">{errors}</p>}
 
           <div className="flex gap-3 pt-4">
-            <button onClick={onClose} className="flex-1 px-6 py-3 bg-gray-100 rounded-xl">Cancel</button>
-            <button onClick={handleSubmit} disabled={submitting} className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl">{submitting ? "Saving..." : "Save"}</button>
+            <button onClick={onClose} className="flex-1 px-6 py-3 bg-gray-100 rounded-xl">
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl"
+            >
+              {submitting ? "Saving..." : "Save"}
+            </button>
           </div>
         </div>
       </div>

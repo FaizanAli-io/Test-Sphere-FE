@@ -125,10 +125,14 @@ export function AddQuestionModal({
           {/* Pool assignment (optional) - Moved to top */}
           {pools && pools.length > 0 && (
             <div className="bg-purple-50 p-4 rounded-xl border-2 border-purple-100">
-              <label className="block text-sm font-bold text-purple-900 mb-2">Assign to Pool (optional)</label>
+              <label className="block text-sm font-bold text-purple-900 mb-2">
+                Assign to Pool (optional)
+              </label>
               <select
                 value={selectedPool}
-                onChange={(e) => setSelectedPool(e.target.value === "" ? "" : Number(e.target.value))}
+                onChange={(e) =>
+                  setSelectedPool(e.target.value === "" ? "" : Number(e.target.value))
+                }
                 className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
                 disabled={loadingPools}
               >
@@ -229,7 +233,12 @@ export function AddQuestionModal({
                 {/* Buttons */}
                 <div className="flex gap-4 justify-center">
                   <button
-                    onClick={() => handleGenerateFromPrompt(promptToUse, selectedPool === "" ? undefined : (selectedPool as number))}
+                    onClick={() =>
+                      handleGenerateFromPrompt(
+                        promptToUse,
+                        selectedPool === "" ? undefined : (selectedPool as number),
+                      )
+                    }
                     disabled={aiPdfUploading || aiGenerating || !promptToUse}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
@@ -245,7 +254,10 @@ export function AddQuestionModal({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        handleGenerateFromPdf(file, selectedPool === "" ? undefined : (selectedPool as number));
+                        handleGenerateFromPdf(
+                          file,
+                          selectedPool === "" ? undefined : (selectedPool as number),
+                        );
                         // Reset the input so the same file can be uploaded again
                         e.target.value = "";
                       }
@@ -348,8 +360,6 @@ export function AddQuestionModal({
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
             />
           </div>
-
-
 
           {localError && <p className="text-sm text-red-600 mt-2">{localError}</p>}
 

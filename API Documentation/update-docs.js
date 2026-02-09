@@ -58,10 +58,7 @@ function writeTagFiles(openapi, tagBuckets) {
     };
 
     const filename = `${tag.toLowerCase().replace(/\s+/g, "-")}.json`;
-    fs.writeFileSync(
-      path.join(OUTPUT_DIR, filename),
-      JSON.stringify(doc, null, 2)
-    );
+    fs.writeFileSync(path.join(OUTPUT_DIR, filename), JSON.stringify(doc, null, 2));
 
     console.log(`✅ Generated ${filename}`);
   }

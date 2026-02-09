@@ -257,13 +257,13 @@ export const useAIQuestions = (
             questionData.image = q.image.trim();
           }
 
-            return questionData;
+          return questionData;
         });
 
         const payload = {
-          questions: questionsToCreate.map(q => ({
+          questions: questionsToCreate.map((q) => ({
             ...q,
-            questionPoolId: targetPoolId ?? undefined
+            questionPoolId: targetPoolId ?? undefined,
           })),
         };
 

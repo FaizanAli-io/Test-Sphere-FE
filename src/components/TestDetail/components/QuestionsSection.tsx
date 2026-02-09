@@ -157,7 +157,9 @@ export default function QuestionsSection({
               </span>
             </div>
             {isPoolMode && (
-              <p className="mt-1 text-sm text-gray-600">Questions are dynamically selected from pools on each request</p>
+              <p className="mt-1 text-sm text-gray-600">
+                Questions are dynamically selected from pools on each request
+              </p>
             )}
           </div>
 
@@ -242,29 +244,36 @@ export default function QuestionsSection({
                   const poolData = getPoolInfo(poolId);
 
                   return (
-                    <div key={poolIdStr} className="border-2 border-purple-200 rounded-2xl overflow-hidden bg-white">
+                    <div
+                      key={poolIdStr}
+                      className="border-2 border-purple-200 rounded-2xl overflow-hidden bg-white"
+                    >
                       {/* Pool Header */}
-                      <div
-                        className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 transition-all"
-                      >
+                      <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 transition-all">
                         <div className="flex flex-col gap-3">
-                          <div 
+                          <div
                             className="flex items-center justify-between cursor-pointer select-none"
                             onClick={() => {
                               if (poolId !== null) togglePoolOpen(poolId);
                             }}
                           >
                             <div className="flex items-center gap-3">
-                              <h3 className="text-lg font-bold text-purple-900">{getPoolTitle(poolId)}</h3>
+                              <h3 className="text-lg font-bold text-purple-900">
+                                {getPoolTitle(poolId)}
+                              </h3>
                               <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm font-medium">
-                                {poolQuestions.length} {poolQuestions.length === 1 ? "question" : "questions"}
+                                {poolQuestions.length}{" "}
+                                {poolQuestions.length === 1 ? "question" : "questions"}
                               </span>
                             </div>
-                            
+
                             <div className="flex items-center gap-3">
                               {/* Pool Actions */}
                               {poolId !== null && (
-                                <div className="flex gap-2 mr-4" onClick={(e) => e.stopPropagation()}>
+                                <div
+                                  className="flex gap-2 mr-4"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
                                   {onAssignQuestionsToPool && poolData && (
                                     <button
                                       onClick={() => onAssignQuestionsToPool(poolData)}
@@ -294,9 +303,11 @@ export default function QuestionsSection({
                                   )}
                                 </div>
                               )}
-                              
+
                               {poolId !== null && (
-                                <span className={`text-purple-600 transition-transform ${isPoolOpen ? "rotate-180" : ""}`}>
+                                <span
+                                  className={`text-purple-600 transition-transform ${isPoolOpen ? "rotate-180" : ""}`}
+                                >
                                   ▼
                                 </span>
                               )}
@@ -305,7 +316,7 @@ export default function QuestionsSection({
 
                           {/* Pool Stats Bar */}
                           {isPoolOpen && poolQuestions.length > 0 && (
-                             <StatsBar questions={poolQuestions} />
+                            <StatsBar questions={poolQuestions} />
                           )}
                         </div>
                       </div>
@@ -323,155 +334,165 @@ export default function QuestionsSection({
                             </div>
                           ) : (
                             poolQuestions.map((question, idx) => {
-                            const isOpen = openQuestionIds.has(question.id);
-                            return (
-                              <div
-                                key={question.id}
-                                className="border-2 border-gray-200 rounded-2xl p-6 hover:border-yellow-300 transition-all"
-                              >
+                              const isOpen = openQuestionIds.has(question.id);
+                              return (
                                 <div
-                                  className="flex items-start justify-between cursor-pointer select-none"
-                                  onClick={() => toggleQuestionOpen(question.id)}
+                                  key={question.id}
+                                  className="border-2 border-gray-200 rounded-2xl p-6 hover:border-yellow-300 transition-all"
                                 >
-                                  <div className="flex items-center gap-3 flex-1">
-                                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-                                      Q{idx + 1}
-                                    </span>
-                                    <h3 className="text-lg font-semibold text-gray-900">{question.text}</h3>
-                                    {!isOpen && (
-                                      <div className="flex items-center gap-2 ml-auto text-xs text-gray-600">
-                                        <span className="px-2 py-1 bg-blue-50 rounded text-blue-700 font-medium">
-                                          {question.type === "MULTIPLE_CHOICE"
-                                            ? "MCQ"
-                                            : question.type === "TRUE_FALSE"
-                                              ? "T/F"
-                                              : question.type === "SHORT_ANSWER"
-                                                ? "Short"
-                                                : "Long"}
-                                        </span>
-                                        <span className="px-2 py-1 bg-orange-50 rounded text-orange-700 font-medium">
-                                          {question.maxMarks} mark{question.maxMarks !== 1 ? "s" : ""}
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  <span
-                                    className={`text-gray-500 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
-                                  > 
-                                    ▼
-                                  </span>
-                                </div>
-
-                                {isOpen && (
-                                  <div className="mt-4 border-t pt-4">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                        {question.type === "MULTIPLE_CHOICE"
-                                          ? "Multiple Choice"
-                                          : question.type === "TRUE_FALSE"
-                                            ? "True/False"
-                                            : question.type === "SHORT_ANSWER"
-                                              ? "Short Answer"
-                                              : "Long Answer"}
+                                  <div
+                                    className="flex items-start justify-between cursor-pointer select-none"
+                                    onClick={() => toggleQuestionOpen(question.id)}
+                                  >
+                                    <div className="flex items-center gap-3 flex-1">
+                                      <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                                        Q{idx + 1}
                                       </span>
-                                      <span className="text-sm text-gray-600">
-                                        {question.maxMarks} {question.maxMarks === 1 ? "mark" : "marks"}
-                                      </span>
+                                      <h3 className="text-lg font-semibold text-gray-900">
+                                        {question.text}
+                                      </h3>
+                                      {!isOpen && (
+                                        <div className="flex items-center gap-2 ml-auto text-xs text-gray-600">
+                                          <span className="px-2 py-1 bg-blue-50 rounded text-blue-700 font-medium">
+                                            {question.type === "MULTIPLE_CHOICE"
+                                              ? "MCQ"
+                                              : question.type === "TRUE_FALSE"
+                                                ? "T/F"
+                                                : question.type === "SHORT_ANSWER"
+                                                  ? "Short"
+                                                  : "Long"}
+                                          </span>
+                                          <span className="px-2 py-1 bg-orange-50 rounded text-orange-700 font-medium">
+                                            {question.maxMarks} mark
+                                            {question.maxMarks !== 1 ? "s" : ""}
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
+                                    <span
+                                      className={`text-gray-500 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                                    >
+                                      ▼
+                                    </span>
+                                  </div>
 
-                                    {question.image && (
-                                      <div className="mb-4 relative w-full" style={{ maxHeight: "300px" }}>
-                                        <Image
-                                          src={question.image}
-                                          alt="Question image"
-                                          width={0}
-                                          height={0}
-                                          sizes="100vw"
-                                          className="w-full h-auto rounded-lg border border-gray-200"
-                                          style={{ maxHeight: "300px", width: "auto" }}
-                                        />
+                                  {isOpen && (
+                                    <div className="mt-4 border-t pt-4">
+                                      <div className="flex items-center gap-3 mb-2">
+                                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                                          {question.type === "MULTIPLE_CHOICE"
+                                            ? "Multiple Choice"
+                                            : question.type === "TRUE_FALSE"
+                                              ? "True/False"
+                                              : question.type === "SHORT_ANSWER"
+                                                ? "Short Answer"
+                                                : "Long Answer"}
+                                        </span>
+                                        <span className="text-sm text-gray-600">
+                                          {question.maxMarks}{" "}
+                                          {question.maxMarks === 1 ? "mark" : "marks"}
+                                        </span>
                                       </div>
-                                    )}
 
-                                    {question.type === "MULTIPLE_CHOICE" && question.options && (
-                                      <div className="space-y-2">
-                                        {question.options.map((option, optIndex) => (
+                                      {question.image && (
+                                        <div
+                                          className="mb-4 relative w-full"
+                                          style={{ maxHeight: "300px" }}
+                                        >
+                                          <Image
+                                            src={question.image}
+                                            alt="Question image"
+                                            width={0}
+                                            height={0}
+                                            sizes="100vw"
+                                            className="w-full h-auto rounded-lg border border-gray-200"
+                                            style={{ maxHeight: "300px", width: "auto" }}
+                                          />
+                                        </div>
+                                      )}
+
+                                      {question.type === "MULTIPLE_CHOICE" && question.options && (
+                                        <div className="space-y-2">
+                                          {question.options.map((option, optIndex) => (
+                                            <div
+                                              key={optIndex}
+                                              className={`p-3 rounded-lg border ${
+                                                question.correctAnswer === optIndex
+                                                  ? "bg-green-50 border-green-200 text-green-800"
+                                                  : "bg-gray-50 border-gray-200 text-gray-900"
+                                              }`}
+                                            >
+                                              <span className="font-medium">
+                                                {String.fromCharCode(65 + optIndex)}.
+                                              </span>{" "}
+                                              {option}
+                                              {question.correctAnswer === optIndex && (
+                                                <span className="text-green-600 font-bold ml-2">
+                                                  ✓
+                                                </span>
+                                              )}
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+
+                                      {question.type === "TRUE_FALSE" && (
+                                        <div className="flex gap-4">
                                           <div
-                                            key={optIndex}
                                             className={`p-3 rounded-lg border ${
-                                              question.correctAnswer === optIndex
+                                              question.correctAnswer === 1
                                                 ? "bg-green-50 border-green-200 text-green-800"
                                                 : "bg-gray-50 border-gray-200 text-gray-900"
                                             }`}
                                           >
-                                            <span className="font-medium">
-                                              {String.fromCharCode(65 + optIndex)}.
-                                            </span>{" "}
-                                            {option}
-                                            {question.correctAnswer === optIndex && (
-                                              <span className="text-green-600 font-bold ml-2">✓</span>
+                                            True{" "}
+                                            {question.correctAnswer === 1 && (
+                                              <span className="text-green-600 font-bold">✓</span>
                                             )}
                                           </div>
-                                        ))}
-                                      </div>
-                                    )}
-
-                                    {question.type === "TRUE_FALSE" && (
-                                      <div className="flex gap-4">
-                                        <div
-                                          className={`p-3 rounded-lg border ${
-                                            question.correctAnswer === 1
-                                              ? "bg-green-50 border-green-200 text-green-800"
-                                              : "bg-gray-50 border-gray-200 text-gray-900"
-                                          }`}
-                                        >
-                                          True{" "}
-                                          {question.correctAnswer === 1 && (
-                                            <span className="text-green-600 font-bold">✓</span>
-                                          )}
+                                          <div
+                                            className={`p-3 rounded-lg border ${
+                                              question.correctAnswer === 0
+                                                ? "bg-green-50 border-green-200 text-green-800"
+                                                : "bg-gray-50 border-gray-200 text-gray-900"
+                                            }`}
+                                          >
+                                            False{" "}
+                                            {question.correctAnswer === 0 && (
+                                              <span className="text-green-600 font-bold">✓</span>
+                                            )}
+                                          </div>
                                         </div>
-                                        <div
-                                          className={`p-3 rounded-lg border ${
-                                            question.correctAnswer === 0
-                                              ? "bg-green-50 border-green-200 text-green-800"
-                                              : "bg-gray-50 border-gray-200 text-gray-900"
-                                          }`}
-                                        >
-                                          False{" "}
-                                          {question.correctAnswer === 0 && (
-                                            <span className="text-green-600 font-bold">✓</span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    )}
-
-                                    <div className="flex gap-2 mt-4">
-                                      <button
-                                        onClick={() => onEditQuestion(question)}
-                                        className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
-                                      >
-                                        Edit
-                                      </button>
-                                      <button
-                                        onClick={() => onDeleteQuestion(question.id)}
-                                        className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
-                                      >
-                                        Delete
-                                      </button>
-                                      {poolId !== null && onUnassignQuestion && (
-                                        <button
-                                          onClick={() => onUnassignQuestion(question.id, poolId)}
-                                          className="px-4 py-2 bg-orange-100 text-orange-700 font-medium rounded-lg hover:bg-orange-200 transition-all"
-                                        >
-                                          Unassign
-                                        </button>
                                       )}
+
+                                      <div className="flex gap-2 mt-4">
+                                        <button
+                                          onClick={() => onEditQuestion(question)}
+                                          className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() => onDeleteQuestion(question.id)}
+                                          className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
+                                        >
+                                          Delete
+                                        </button>
+                                        {poolId !== null && onUnassignQuestion && (
+                                          <button
+                                            onClick={() => onUnassignQuestion(question.id, poolId)}
+                                            className="px-4 py-2 bg-orange-100 text-orange-700 font-medium rounded-lg hover:bg-orange-200 transition-all"
+                                          >
+                                            Unassign
+                                          </button>
+                                        )}
+                                      </div>
                                     </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          }))}
+                                  )}
+                                </div>
+                              );
+                            })
+                          )}
                         </div>
                       </div>
                     </div>

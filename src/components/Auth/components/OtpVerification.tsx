@@ -153,7 +153,7 @@ export default function OtpVerification({
           const loginData: {
             token?: string;
             accessToken?: string;
-            user?: { role: string };
+            user?: { role: string; email?: string };
             message?: string;
           } = await loginRes.json();
 
@@ -165,6 +165,11 @@ export default function OtpVerification({
           if (authToken && loginData.user?.role) {
             localStorage.setItem("token", String(authToken));
             localStorage.setItem("role", loginData.user.role);
+            if (loginData.user.email) {
+              localStorage.setItem("userEmail", loginData.user.email);
+            } else {
+              localStorage.setItem("userEmail", email);
+            }
 
             await new Promise((resolve) => setTimeout(resolve, 50));
 

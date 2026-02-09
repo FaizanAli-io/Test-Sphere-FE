@@ -4,6 +4,8 @@ export interface ClassData {
   description?: string;
   code: string;
   teacherId: number;
+  role?: string; // OWNER, EDITOR, VIEWER, etc.
+  assignedAt?: string;
   teacher?: {
     id: number;
     name: string;
@@ -14,6 +16,7 @@ export interface ClassData {
   studentCount?: number;
   testCount?: number;
   createdAt?: string;
+  updatedAt?: string;
   approved?: boolean;
 }
 

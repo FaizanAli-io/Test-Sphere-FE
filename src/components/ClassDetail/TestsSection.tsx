@@ -21,6 +21,7 @@ interface TestsSectionProps {
   tests: Test[];
   onCreateTest: () => void;
   onNavigate: (testId: number) => void;
+  userRole?: string;
 }
 
 const BUTTON_STYLES = {
@@ -64,15 +65,19 @@ const TestsSection: React.FC<TestsSectionProps> = ({
   tests,
   onCreateTest,
   onNavigate,
+  userRole = "VIEWER",
 }) => {
+  const canCreateTest = userRole === "OWNER" || userRole === "EDITOR";
   return (
     <div>
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
         <h3 className="text-2xl font-bold text-gray-900">Scheduled Tests</h3>
-        <button onClick={onCreateTest} className={BUTTON_STYLES.secondary}>
-          <span className="mr-2">+</span>
-          Create Test
-        </button>
+        {canCreateTest && (
+          <button onClick={onCreateTest} className={BUTTON_STYLES.secondary}>
+            <span className="mr-2">+</span>
+            Create Test
+          </button>
+        )}
       </div>
       {tests.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -107,9 +112,7 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                     </div>
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold">Questions</p>
-                      <p className="text-lg font-bold text-gray-900">
-                        {test.questionCount || 0}
-                      </p>
+                      <p className="text-lg font-bold text-gray-900">{test.questionCount || 0}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

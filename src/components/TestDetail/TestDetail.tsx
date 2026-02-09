@@ -50,7 +50,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const [showCreatePoolModal, setShowCreatePoolModal] = useState(false);
   const [editingPool, setEditingPool] = useState<QuestionPool | null>(null);
   const [showAddQuestionsToPoolModal, setShowAddQuestionsToPoolModal] = useState(false);
-  const [targetPoolForAddQuestions, setTargetPoolForAddQuestions] = useState<QuestionPool | null>(null);
+  const [targetPoolForAddQuestions, setTargetPoolForAddQuestions] = useState<QuestionPool | null>(
+    null,
+  );
 
   const testIdOrNull = redirecting ? undefined : testId;
 
@@ -84,11 +86,15 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const submissions: Submission[] =
     submissionsState.length > 0 ? submissionsState : submissionsHook.submissions;
 
-  const role = typeof window !== "undefined" ? (localStorage.getItem("role") || "teacher") : "teacher";
+  const role =
+    typeof window !== "undefined" ? localStorage.getItem("role") || "teacher" : "teacher";
   const isTeacher = role === "teacher";
 
   // If in pool mode, warn teacher if selected response is shorter than requested counts
-  const requestedCount = pools.reduce((acc, p) => acc + Object.values(p.config).reduce((a, b) => a + b, 0), 0);
+  const requestedCount = pools.reduce(
+    (acc, p) => acc + Object.values(p.config).reduce((a, b) => a + b, 0),
+    0,
+  );
   const poolWarning = mode === "POOL" && isTeacher && questions.length < requestedCount;
 
   const handleEditTest = () => {
@@ -301,7 +307,15 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           onEditQuestion={handleEditQuestion}
           onDeleteQuestion={handleDeleteQuestion}
           isPoolMode={mode === "POOL"}
-          poolInfo={poolWarning ? { type: "warning", message: "Pool requested more questions than available; selected list is shorter." } : undefined}
+          poolInfo={
+            poolWarning
+              ? {
+                  type: "warning",
+                  message:
+                    "Pool requested more questions than available; selected list is shorter.",
+                }
+              : undefined
+          }
           pools={pools}
           onUnassignQuestion={handleUnassignQuestion}
           onAddPool={() => setShowCreatePoolModal(true)}
@@ -405,7 +419,16 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           setShowAddQuestionsToPoolModal(false);
           setTargetPoolForAddQuestions(null);
         }}
-        pool={targetPoolForAddQuestions || { id: 0, testId: 0, title: "", config: {}, createdAt: "", updatedAt: "" }}
+        pool={
+          targetPoolForAddQuestions || {
+            id: 0,
+            testId: 0,
+            title: "",
+            config: {},
+            createdAt: "",
+            updatedAt: "",
+          }
+        }
         allQuestions={questions}
         pools={pools}
         onAddQuestions={handleAddQuestionsToPool}

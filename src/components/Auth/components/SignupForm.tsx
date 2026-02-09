@@ -67,7 +67,7 @@ export default function SignupForm({
       const data: {
         message?: string;
         accessToken?: string;
-        user?: { role: string; name?: string };
+        user?: { role: string; name?: string; email?: string };
       } = await res.json();
 
       if (!res.ok) {
@@ -81,6 +81,11 @@ export default function SignupForm({
       } else if (data.accessToken && data.user?.role) {
         localStorage.setItem("token", data.accessToken);
         localStorage.setItem("role", data.user.role);
+        if (data.user.email) {
+          localStorage.setItem("userEmail", data.user.email);
+        } else {
+          localStorage.setItem("userEmail", email);
+        }
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 

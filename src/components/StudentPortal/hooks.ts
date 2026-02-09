@@ -29,7 +29,7 @@ export function useStudentClasses() {
               if (!raw || typeof raw !== "object") return null;
               const value = raw as Record<string, unknown>;
 
-              // Case 1: shape already a class
+              // Extract class data from nested property
               const source =
                 "class" in value ? (value.class as Record<string, unknown> | undefined) : value;
               if (!source) return null;
@@ -44,7 +44,9 @@ export function useStudentClasses() {
                 name: source.name as string,
                 description: source.description as string | undefined,
                 code: source.code as string,
-                teacherId: Number(source.teacherId),
+                teacherId: Number(value.teacherId ?? source.teacherId),
+                role: value.role as string | undefined,
+                assignedAt: value.assignedAt as string | undefined,
                 teacher: source.teacher as ClassData["teacher"],
                 studentCount: Array.isArray(source.students)
                   ? source.students.length
@@ -57,6 +59,7 @@ export function useStudentClasses() {
                     ? source.testCount
                     : 0,
                 createdAt: source.createdAt as string | undefined,
+                updatedAt: source.updatedAt as string | undefined,
                 approved,
                 disabled: approved === false,
                 statusLabel: approved === false ? "Pending Approval" : undefined,
@@ -74,10 +77,9 @@ export function useStudentClasses() {
   }, []);
 
   const joinClass = useCallback(async (classCode: string) => {
-    const response = await api("/classes/join", {
+    const response = await api(`/classes/${classCode}/join`, {
       method: "POST",
       auth: true,
-      body: JSON.stringify({ code: classCode.trim().toUpperCase() }),
     });
 
     if (!response.ok) {
