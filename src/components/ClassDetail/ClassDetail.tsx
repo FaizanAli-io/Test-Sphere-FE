@@ -60,7 +60,7 @@ export default function ClassDetail(): ReactElement {
   const [showInviteTeacherModal, setShowInviteTeacherModal] = useState(false);
   const [teacherRefreshTrigger, setTeacherRefreshTrigger] = useState(0);
   const [isCurrentUserOwner, setIsCurrentUserOwner] = useState(false);
-  const [userRole, setUserRole] = useState<string>("VIEWER");
+  const [userRole, setUserRole] = useState<TeacherRole>("VIEWER");
   const [kickingStudent, setKickingStudent] = useState<number | null>(null);
 
   const fetchingClassRef = useRef(false);
@@ -112,7 +112,7 @@ export default function ClassDetail(): ReactElement {
       };
       setClassData(normalized);
 
-      // Determine if current user is owner
+      // Determine if current user is owner and get teacher role for this class
       if (Array.isArray(data.teachers) && data.teachers.length > 0) {
         const currentUserEmail = localStorage.getItem("userEmail");
 
@@ -125,17 +125,23 @@ export default function ClassDetail(): ReactElement {
           console.log(`  [${idx}] Role: ${t.role}, Teacher Email: ${t.teacher?.email}`);
         });
 
-        const isOwner = data.teachers.some(
-          (t: any) => t.role === "OWNER" && t.teacher?.email === currentUserEmail,
+        const currentTeacherData = data.teachers.find(
+          (t: any) => t.teacher?.email === currentUserEmail,
         );
 
+        const isOwner = currentTeacherData?.role === "OWNER";
+        const teacherRole = currentTeacherData?.role || "VIEWER";
+
         console.log("Is Owner?", isOwner);
+        console.log("Teacher Role for this class:", teacherRole);
         console.groupEnd();
 
         setIsCurrentUserOwner(isOwner);
+        setUserRole(teacherRole);
       } else {
         console.warn("No teachers array found in class data");
         setIsCurrentUserOwner(false);
+        setUserRole("VIEWER");
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch class data";
@@ -143,9 +149,6 @@ export default function ClassDetail(): ReactElement {
     } finally {
       setLoading(false);
       fetchingClassRef.current = false;
-      // Get user role from localStorage
-      const role = localStorage.getItem("role") || "VIEWER";
-      setUserRole(role);
     }
   }, [classId]);
 

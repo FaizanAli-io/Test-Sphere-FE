@@ -9,6 +9,7 @@ import { Class, KickConfirm, RequestAction, BulkRequestAction } from "./types";
 import { useNotifications } from "../../contexts/NotificationContext";
 import { ConfirmationModal, ClassModal, RequestsModal } from "./modals";
 import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../SharedPortal";
+import { canEdit, canDelete } from "@/utils/rolePermissions";
 
 export default function TeacherPortal(): ReactElement {
   const notifications = useNotifications();
@@ -144,7 +145,7 @@ export default function TeacherPortal(): ReactElement {
     },
   ];
 
-  // Class card actions configuration
+  // Class card actions configuration - filter based on teacher role
   const classCardActions: ClassCardAction[] = [
     {
       label: "Edit",
@@ -153,6 +154,11 @@ export default function TeacherPortal(): ReactElement {
         setShowEditModal(true);
       },
       colorScheme: "green",
+      isVisible: (classData) => {
+        const fullClass = classes.find((cls) => cls.id === classData.id);
+        const role = fullClass?.role as "OWNER" | "EDITOR" | "VIEWER" | undefined;
+        return canEdit(role);
+      },
     },
     {
       label: "Requests",
@@ -169,6 +175,11 @@ export default function TeacherPortal(): ReactElement {
         const pendingCount = fullClass?.students?.filter((s) => !s.approved).length ?? 0;
         return pendingCount > 0 ? pendingCount : undefined;
       },
+      isVisible: (classData) => {
+        const fullClass = classes.find((cls) => cls.id === classData.id);
+        const role = fullClass?.role as "OWNER" | "EDITOR" | "VIEWER" | undefined;
+        return canEdit(role);
+      },
     },
     {
       label: "Delete",
@@ -177,6 +188,11 @@ export default function TeacherPortal(): ReactElement {
         setShowDeleteConfirm(true);
       },
       colorScheme: "red",
+      isVisible: (classData) => {
+        const fullClass = classes.find((cls) => cls.id === classData.id);
+        const role = fullClass?.role as "OWNER" | "EDITOR" | "VIEWER" | undefined;
+        return canDelete(role);
+      },
     },
   ];
 

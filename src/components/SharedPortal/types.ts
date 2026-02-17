@@ -32,6 +32,7 @@ export interface ClassCardAction {
   colorScheme: "green" | "blue" | "yellow" | "red" | "orange";
   variant?: "primary" | "secondary";
   badge?: (classData: BaseClass) => number | undefined;
+  isVisible?: (classData: BaseClass) => boolean; // Optional visibility check based on class data
 }
 
 export interface BasePortalProps {

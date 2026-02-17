@@ -1,6 +1,8 @@
 import React from "react";
 import Image from "next/image";
 import type { Question, QuestionPool } from "../types";
+import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface QuestionsSectionProps {
   questions: Question[];
@@ -17,6 +19,7 @@ interface QuestionsSectionProps {
   onDeletePool?: (poolId: number) => void;
   onAssignQuestionsToPool?: (pool: QuestionPool) => void;
   isTeacher?: boolean;
+  teacherRole?: TeacherRole;
 }
 
 const StatsBar = ({ questions }: { questions: Question[] }) => {
@@ -79,11 +82,14 @@ export default function QuestionsSection({
   onDeletePool,
   onAssignQuestionsToPool,
   isTeacher,
+  teacherRole = "VIEWER",
 }: QuestionsSectionProps) {
   const [isSectionOpen, setIsSectionOpen] = React.useState(true);
   const [openQuestionIds, setOpenQuestionIds] = React.useState<Set<number>>(() => new Set());
   const [openPoolIds, setOpenPoolIds] = React.useState<Set<number>>(() => new Set());
   const [sortBy, setSortBy] = React.useState<"default" | "type">("default");
+
+  const canEditQuestions = checkCanEdit(teacherRole);
 
   const toggleQuestionOpen = (id: number) => {
     setOpenQuestionIds((prev) => {
@@ -179,7 +185,7 @@ export default function QuestionsSection({
               </div>
             </div>
 
-            {isPoolMode && onAddPool && (
+            {canEditQuestions && isPoolMode && onAddPool && (
               <button
                 onClick={onAddPool}
                 className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
@@ -187,12 +193,14 @@ export default function QuestionsSection({
                 <span>+</span> Add Pool
               </button>
             )}
-            <button
-              onClick={onAddQuestion}
-              className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-            >
-              <span>+</span> Add Question
-            </button>
+            {canEditQuestions && (
+              <button
+                onClick={onAddQuestion}
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+              >
+                <span>+</span> Add Question
+              </button>
+            )}
           </div>
         </div>
 
@@ -268,8 +276,8 @@ export default function QuestionsSection({
                             </div>
 
                             <div className="flex items-center gap-3">
-                              {/* Pool Actions */}
-                              {poolId !== null && (
+                              {/* Pool Actions - Only show for editors */}
+                              {canEditQuestions && poolId !== null && (
                                 <div
                                   className="flex gap-2 mr-4"
                                   onClick={(e) => e.stopPropagation()}
@@ -466,25 +474,31 @@ export default function QuestionsSection({
                                       )}
 
                                       <div className="flex gap-2 mt-4">
-                                        <button
-                                          onClick={() => onEditQuestion(question)}
-                                          className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
-                                        >
-                                          Edit
-                                        </button>
-                                        <button
-                                          onClick={() => onDeleteQuestion(question.id)}
-                                          className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
-                                        >
-                                          Delete
-                                        </button>
-                                        {poolId !== null && onUnassignQuestion && (
-                                          <button
-                                            onClick={() => onUnassignQuestion(question.id, poolId)}
-                                            className="px-4 py-2 bg-orange-100 text-orange-700 font-medium rounded-lg hover:bg-orange-200 transition-all"
-                                          >
-                                            Unassign
-                                          </button>
+                                        {canEditQuestions && (
+                                          <>
+                                            <button
+                                              onClick={() => onEditQuestion(question)}
+                                              className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
+                                            >
+                                              Edit
+                                            </button>
+                                            <button
+                                              onClick={() => onDeleteQuestion(question.id)}
+                                              className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
+                                            >
+                                              Delete
+                                            </button>
+                                            {poolId !== null && onUnassignQuestion && (
+                                              <button
+                                                onClick={() =>
+                                                  onUnassignQuestion(question.id, poolId)
+                                                }
+                                                className="px-4 py-2 bg-orange-100 text-orange-700 font-medium rounded-lg hover:bg-orange-200 transition-all"
+                                              >
+                                                Unassign
+                                              </button>
+                                            )}
+                                          </>
                                         )}
                                       </div>
                                     </div>
@@ -626,18 +640,22 @@ export default function QuestionsSection({
                           )}
 
                           <div className="flex gap-2 mt-4">
-                            <button
-                              onClick={() => onEditQuestion(question)}
-                              className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => onDeleteQuestion(question.id)}
-                              className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
-                            >
-                              Delete
-                            </button>
+                            {canEditQuestions && (
+                              <>
+                                <button
+                                  onClick={() => onEditQuestion(question)}
+                                  className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => onDeleteQuestion(question.id)}
+                                  className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
+                                >
+                                  Delete
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
                       )}

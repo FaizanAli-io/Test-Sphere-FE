@@ -1,5 +1,6 @@
 import React from "react";
 import { Class, RequestAction, BulkRequestAction } from "../types";
+import { canManageMembers } from "@/utils/rolePermissions";
 
 interface RequestsModalProps {
   isOpen: boolean;
@@ -23,6 +24,9 @@ export default function RequestsModal({
   // Filter only pending requests (students who are not approved)
   const pendingStudents =
     selectedClass.students?.filter((classStudent) => !classStudent.approved) || [];
+
+  // Check if the current teacher can approve/reject requests (OWNER only)
+  const canApproveRequests = canManageMembers(selectedClass.role);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">
@@ -61,32 +65,42 @@ export default function RequestsModal({
 
         {pendingStudents.length > 0 ? (
           <>
-            <div className="flex gap-3 mb-4">
-              <button
-                onClick={() =>
-                  onBulkRequestAction({
-                    classId: selectedClass.id,
-                    action: "approve-all",
-                  })
-                }
-                disabled={loading}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ✅ Approve All
-              </button>
-              <button
-                onClick={() =>
-                  onBulkRequestAction({
-                    classId: selectedClass.id,
-                    action: "reject-all",
-                  })
-                }
-                disabled={loading}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-xl hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ❌ Reject All
-              </button>
-            </div>
+            {!canApproveRequests && (
+              <div className="mb-4 p-4 bg-gray-50 border-l-4 border-gray-400 rounded-lg">
+                <p className="text-sm text-gray-700 font-medium">
+                  ⚠️ You do not have permission to approve or reject student requests. Only the
+                  class owner can manage student requests.
+                </p>
+              </div>
+            )}
+            {canApproveRequests && (
+              <div className="flex gap-3 mb-4">
+                <button
+                  onClick={() =>
+                    onBulkRequestAction({
+                      classId: selectedClass.id,
+                      action: "approve-all",
+                    })
+                  }
+                  disabled={loading}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ✅ Approve All
+                </button>
+                <button
+                  onClick={() =>
+                    onBulkRequestAction({
+                      classId: selectedClass.id,
+                      action: "reject-all",
+                    })
+                  }
+                  disabled={loading}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-xl hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  ❌ Reject All
+                </button>
+              </div>
+            )}
             <div className="space-y-3">
               {pendingStudents.map((classStudent, index) => (
                 <div
@@ -105,36 +119,38 @@ export default function RequestsModal({
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() =>
-                        onRequestAction({
-                          classId: selectedClass.id,
-                          studentId: classStudent.student.id,
-                          studentName: classStudent.student.name,
-                          action: "approve",
-                        })
-                      }
-                      disabled={loading}
-                      className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      onClick={() =>
-                        onRequestAction({
-                          classId: selectedClass.id,
-                          studentId: classStudent.student.id,
-                          studentName: classStudent.student.name,
-                          action: "reject",
-                        })
-                      }
-                      disabled={loading}
-                      className="px-4 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-lg hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      Reject
-                    </button>
-                  </div>
+                  {canApproveRequests && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() =>
+                          onRequestAction({
+                            classId: selectedClass.id,
+                            studentId: classStudent.student.id,
+                            studentName: classStudent.student.name,
+                            action: "approve",
+                          })
+                        }
+                        disabled={loading}
+                        className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() =>
+                          onRequestAction({
+                            classId: selectedClass.id,
+                            studentId: classStudent.student.id,
+                            studentName: classStudent.student.name,
+                            action: "reject",
+                          })
+                        }
+                        disabled={loading}
+                        className="px-4 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-lg hover:from-red-600 hover:to-rose-700 transition-all shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

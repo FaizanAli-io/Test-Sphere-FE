@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface Test {
   id: number;
@@ -21,7 +23,7 @@ interface TestsSectionProps {
   tests: Test[];
   onCreateTest: () => void;
   onNavigate: (testId: number) => void;
-  userRole?: string;
+  userRole?: TeacherRole;
 }
 
 const BUTTON_STYLES = {
@@ -67,7 +69,7 @@ const TestsSection: React.FC<TestsSectionProps> = ({
   onNavigate,
   userRole = "VIEWER",
 }) => {
-  const canCreateTest = userRole === "OWNER" || userRole === "EDITOR";
+  const canCreateTest = checkCanEdit(userRole);
   return (
     <div>
       <div className="flex justify-between items-center mb-6 flex-wrap gap-4">

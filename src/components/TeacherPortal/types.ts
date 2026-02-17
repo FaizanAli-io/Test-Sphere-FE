@@ -1,3 +1,5 @@
+import type { TeacherRole } from "@/utils/rolePermissions";
+
 export interface Student {
   id: number;
   email: string;
@@ -29,7 +31,7 @@ export interface Class {
   code: string;
   createdBy: string;
   teacherId?: number;
-  role?: string; // OWNER, EDITOR, VIEWER, etc.
+  role?: TeacherRole;
   assignedAt?: string;
   students?: ClassStudent[];
   tests?: Array<{ id: number; title: string; [key: string]: unknown }>;

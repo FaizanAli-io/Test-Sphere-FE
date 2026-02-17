@@ -2,6 +2,8 @@ import React from "react";
 import { Trash2 } from "lucide-react";
 import type { Submission } from "../../Submissions/types";
 import { calculateCurrentTotalMarks } from "../../Submissions/utils";
+import { canDelete as checkCanDelete } from "@/utils/rolePermissions";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface SubmissionsSectionProps {
   submissions: Submission[];
@@ -9,6 +11,7 @@ interface SubmissionsSectionProps {
   onViewSubmissions: () => void;
   onViewIndividualSubmission: (id: number) => void;
   onDeleteSubmission?: (id: number) => void | Promise<void>;
+  teacherRole?: TeacherRole;
 }
 
 const calculateObjectiveMarks = (submission: Submission) => {
@@ -51,7 +54,9 @@ export default function SubmissionsSection({
   onViewSubmissions,
   onViewIndividualSubmission,
   onDeleteSubmission,
+  teacherRole = "VIEWER",
 }: SubmissionsSectionProps) {
+  const canDeleteSubmissions = checkCanDelete(teacherRole);
   return (
     <div className="bg-white rounded-3xl shadow-xl p-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -200,20 +205,20 @@ export default function SubmissionsSection({
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          title="Delete submission"
-                          aria-label={`Delete submission #${submission.id}`}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors shadow-sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (onDeleteSubmission) {
+                        {canDeleteSubmissions && onDeleteSubmission && (
+                          <button
+                            type="button"
+                            title="Delete submission"
+                            aria-label={`Delete submission #${submission.id}`}
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 transition-colors shadow-sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
                               onDeleteSubmission(submission.id);
-                            }
-                          }}
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
+                            }}
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

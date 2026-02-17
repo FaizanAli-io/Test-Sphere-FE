@@ -1,5 +1,7 @@
 import React from "react";
 import { QuestionPool, Question } from "../types";
+import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface PoolsSectionProps {
   pools: QuestionPool[];
@@ -9,6 +11,7 @@ interface PoolsSectionProps {
   onDelete: (id: number) => void;
   onAddQuestions: (pool: QuestionPool) => void;
   questions: Question[];
+  teacherRole?: TeacherRole;
 }
 
 export default function PoolsSection({
@@ -19,9 +22,12 @@ export default function PoolsSection({
   onDelete,
   onAddQuestions,
   questions,
+  teacherRole = "VIEWER",
 }: PoolsSectionProps) {
   const assignedCount = (poolId: number) =>
     questions.filter((q) => q.questionPoolId === poolId).length;
+
+  const canEditPools = checkCanEdit(teacherRole);
 
   if (loading) {
     return (
@@ -38,12 +44,14 @@ export default function PoolsSection({
     <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Question Pools ({pools.length})</h2>
-        <button
-          onClick={onCreate}
-          className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
-        >
-          + Create Pool
-        </button>
+        {canEditPools && (
+          <button
+            onClick={onCreate}
+            className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
+          >
+            + Create Pool
+          </button>
+        )}
       </div>
 
       {pools.length === 0 ? (
@@ -53,12 +61,14 @@ export default function PoolsSection({
           <p className="text-gray-600 mb-6">
             Create a question pool to enable dynamic test generation.
           </p>
-          <button
-            onClick={onCreate}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
-          >
-            Create Pool
-          </button>
+          {canEditPools && (
+            <button
+              onClick={onCreate}
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all"
+            >
+              Create Pool
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
@@ -78,27 +88,29 @@ export default function PoolsSection({
                   Assigned Questions: {assignedCount(pool.id)}
                 </p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => onAddQuestions(pool)}
-                  className="px-4 py-2 bg-green-100 text-green-700 font-medium rounded-lg hover:bg-green-200 transition-all"
-                  title="Add questions to this pool"
-                >
-                  + Add Qs
-                </button>
-                <button
-                  onClick={() => onEdit(pool)}
-                  className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => onDelete(pool.id)}
-                  className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
-                >
-                  Delete
-                </button>
-              </div>
+              {canEditPools && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onAddQuestions(pool)}
+                    className="px-4 py-2 bg-green-100 text-green-700 font-medium rounded-lg hover:bg-green-200 transition-all"
+                    title="Add questions to this pool"
+                  >
+                    + Add Qs
+                  </button>
+                  <button
+                    onClick={() => onEdit(pool)}
+                    className="px-4 py-2 bg-blue-100 text-blue-700 font-medium rounded-lg hover:bg-blue-200 transition-all"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => onDelete(pool.id)}
+                    className="px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-all"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

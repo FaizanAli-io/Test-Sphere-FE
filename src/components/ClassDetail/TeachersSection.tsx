@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import api from "../../hooks/useApi";
+import { canManageMembers } from "@/utils/rolePermissions";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface ClassTeacher {
   teacherId: number;
   classId: number;
-  role: "OWNER" | "EDITOR" | "VIEWER";
+  role: TeacherRole;
   assignedAt: string;
   teacher: {
     id: number;
@@ -51,6 +53,9 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const fetchingRef = useRef(false);
+
+  // Only OWNER can manage teachers
+  const canManageTeachers = isCurrentUserOwner;
 
   const fetchTeachers = useCallback(async () => {
     if (fetchingRef.current) return;
@@ -162,7 +167,7 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
     <div>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold text-gray-900">Teachers in this class</h3>
-        {isCurrentUserOwner && (
+        {canManageTeachers && (
           <button
             onClick={onInviteClick}
             className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
@@ -210,7 +215,7 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
                   Added {new Date(item.assignedAt).toLocaleDateString()}
                 </p>
               )}
-              {isCurrentUserOwner && (
+              {canManageTeachers && (
                 <div className="flex flex-col gap-2 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => handleEditRole(item)}

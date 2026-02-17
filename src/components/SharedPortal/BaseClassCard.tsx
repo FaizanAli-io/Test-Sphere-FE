@@ -125,33 +125,41 @@ function BaseClassCard({
         </div>
 
         <div
-          className={`grid gap-3 ${actions.length === 3 ? "grid-cols-3" : actions.length === 2 ? "grid-cols-2" : "grid-cols-1"}`}
+          className={`grid gap-3 ${
+            actions.filter((a) => !a.isVisible || a.isVisible(classData)).length === 3
+              ? "grid-cols-3"
+              : actions.filter((a) => !a.isVisible || a.isVisible(classData)).length === 2
+                ? "grid-cols-2"
+                : "grid-cols-1"
+          }`}
         >
-          {actions.map((action, index) => {
-            const badgeCount = action.badge ? action.badge(classData) : undefined;
-            return (
-              <button
-                key={index}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!classData.disabled) action.onClick(classData);
-                }}
-                disabled={classData.disabled}
-                className={`relative px-4 py-3 bg-gradient-to-r ${colorSchemes[action.colorScheme]} text-white text-sm font-bold rounded-xl transition-all shadow-md ${
-                  classData.disabled
-                    ? "opacity-50 cursor-not-allowed hover:scale-100 hover:shadow-none"
-                    : "hover:shadow-lg hover:scale-105"
-                }`}
-              >
-                {action.label}
-                {badgeCount && badgeCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg border-2 border-white animate-pulse">
-                    {badgeCount > 99 ? "99+" : badgeCount}
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          {actions
+            .filter((action) => !action.isVisible || action.isVisible(classData))
+            .map((action, index) => {
+              const badgeCount = action.badge ? action.badge(classData) : undefined;
+              return (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!classData.disabled) action.onClick(classData);
+                  }}
+                  disabled={classData.disabled}
+                  className={`relative px-4 py-3 bg-gradient-to-r ${colorSchemes[action.colorScheme]} text-white text-sm font-bold rounded-xl transition-all shadow-md ${
+                    classData.disabled
+                      ? "opacity-50 cursor-not-allowed hover:scale-100 hover:shadow-none"
+                      : "hover:shadow-lg hover:scale-105"
+                  }`}
+                >
+                  {action.label}
+                  {badgeCount && badgeCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg border-2 border-white animate-pulse">
+                      {badgeCount > 99 ? "99+" : badgeCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
         </div>
       </div>
     </div>

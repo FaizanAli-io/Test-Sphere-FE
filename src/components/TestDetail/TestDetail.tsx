@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
+import api from "@/hooks/useApi";
 import { useSubmissions } from "../Submissions";
 import type { Submission } from "../Submissions/types";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 import { debugLogger } from "@/utils/logger";
 import { useConfirmation } from "@/hooks/useConfirmation";
@@ -89,6 +91,40 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const role =
     typeof window !== "undefined" ? localStorage.getItem("role") || "teacher" : "teacher";
   const isTeacher = role === "teacher";
+  const [teacherRole, setTeacherRole] = useState<TeacherRole>("VIEWER");
+
+  // Fetch teacher role for this class
+  useEffect(() => {
+    const fetchTeacherRole = async () => {
+      if (!test?.classId) return;
+
+      try {
+        const response = await api(`/classes/${test.classId}`, {
+          method: "GET",
+          auth: true,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const currentUserEmail = localStorage.getItem("userEmail");
+
+          if (Array.isArray(data.teachers)) {
+            const currentTeacherData = data.teachers.find(
+              (t: any) => t.teacher?.email === currentUserEmail,
+            );
+
+            if (currentTeacherData?.role) {
+              setTeacherRole(currentTeacherData.role);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch teacher role:", err);
+      }
+    };
+
+    fetchTeacherRole();
+  }, [test?.classId]);
 
   // If in pool mode, warn teacher if selected response is shorter than requested counts
   const requestedCount = pools.reduce(
@@ -297,6 +333,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           onDelete={handleDeleteTest}
           mode={mode}
           onModeChange={(m) => setMode(m)}
+          teacherRole={teacherRole}
         />
 
         {/* Questions Section */}
@@ -329,6 +366,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
             setShowAddQuestionsToPoolModal(true);
           }}
           isTeacher={isTeacher}
+          teacherRole={teacherRole}
         />
 
         {/* Pools Section (Teacher only) */}
@@ -349,6 +387,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               setShowAddQuestionsToPoolModal(true);
             }}
             questions={questions}
+            teacherRole={teacherRole}
           />
         )}
         {/* Submissions Section */}
@@ -358,6 +397,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           onViewSubmissions={handleViewSubmissions}
           onViewIndividualSubmission={handleViewIndividualSubmission}
           onDeleteSubmission={handleDeleteSubmission}
+          teacherRole={teacherRole}
         />
       </div>
 

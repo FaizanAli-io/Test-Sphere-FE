@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface Student {
   id: number;
@@ -12,7 +14,7 @@ interface StudentsSectionProps {
   kickingStudent: number | null;
   onKick: (studentId: number, studentName: string) => void;
   classCode: string;
-  userRole?: string;
+  userRole?: TeacherRole;
 }
 
 const StudentsSection: React.FC<StudentsSectionProps> = ({

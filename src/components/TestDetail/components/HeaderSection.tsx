@@ -1,5 +1,7 @@
 import React from "react";
 import type { Test } from "../types";
+import { canEdit as checkCanEdit, canDelete as checkCanDelete } from "@/utils/rolePermissions";
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface HeaderSectionProps {
   test: Test;
@@ -9,6 +11,7 @@ interface HeaderSectionProps {
   onDelete: () => void;
   mode?: "STATIC" | "POOL";
   onModeChange?: (mode: "STATIC" | "POOL") => void;
+  teacherRole?: TeacherRole;
 }
 
 const formatDate = (dateString: string) => {
@@ -46,10 +49,14 @@ export default function HeaderSection({
   onDelete,
   mode,
   onModeChange,
+  teacherRole = "VIEWER",
 }: HeaderSectionProps) {
   const handleInvigilate = () => {
     window.open(`/test/${test.id}/invigilate`, "_blank");
   };
+
+  const canEditTest = checkCanEdit(teacherRole);
+  const canDeleteTest = checkCanDelete(teacherRole);
 
   return (
     <div className="bg-white rounded-3xl shadow-xl p-8 mb-8">
@@ -132,24 +139,30 @@ export default function HeaderSection({
             >
               📹 Invigilate
             </button>
-            <button
-              onClick={onConfigure}
-              className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-            >
-              ⚙️ Configure
-            </button>
-            <button
-              onClick={onEdit}
-              className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-            >
-              ✏️ Edit Test
-            </button>
-            <button
-              onClick={onDelete}
-              className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-            >
-              🗑️ Delete Test
-            </button>
+            {canEditTest && (
+              <button
+                onClick={onConfigure}
+                className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+              >
+                ⚙️ Configure
+              </button>
+            )}
+            {canEditTest && (
+              <button
+                onClick={onEdit}
+                className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+              >
+                ✏️ Edit Test
+              </button>
+            )}
+            {canDeleteTest && (
+              <button
+                onClick={onDelete}
+                className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+              >
+                🗑️ Delete Test
+              </button>
+            )}
           </div>
         </div>
       </div>
