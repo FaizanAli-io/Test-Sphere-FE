@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import api from "../../hooks/useApi";
 import { Class, NewClass, KickConfirm, RequestAction } from "./types";
+import type { TeacherRole } from "@/utils/rolePermissions";
 import { useNotifications } from "../../contexts/NotificationContext";
 
 export const useTeacherPortal = () => {
@@ -166,8 +167,14 @@ export const useClassDetails = () => {
   const [selectedClass, setSelectedClass] = useState<Class | null>(null);
   const [loading, setLoading] = useState(false);
   const notifications = useNotifications();
+  // Preserve the current teacher's role across refreshes since the detail
+  // endpoint (/classes/:id) doesn't return the caller's role.
+  const currentClassRoleRef = useRef<TeacherRole | undefined>(undefined);
 
-  const fetchClassDetails = async (classId: string): Promise<Class | null> => {
+  const fetchClassDetails = async (classId: string, role?: TeacherRole): Promise<Class | null> => {
+    if (role !== undefined) {
+      currentClassRoleRef.current = role;
+    }
     setLoading(true);
     try {
       const response = await api(`/classes/${classId}`, {
@@ -180,9 +187,11 @@ export const useClassDetails = () => {
       }
       const data = await response.json();
 
-      // Normalize the class data to ensure correct counts
+      // Normalize the class data to ensure correct counts.
+      // Merge the preserved role since the detail endpoint doesn't return it.
       const normalized = {
         ...data,
+        role: currentClassRoleRef.current ?? (data.role as TeacherRole | undefined),
         testCount: Array.isArray(data.tests)
           ? data.tests.length
           : typeof data.testCount === "number"

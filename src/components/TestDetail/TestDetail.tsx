@@ -25,7 +25,13 @@ import dynamic from "next/dynamic";
 const ProctoringLogsModal = dynamic(() => import("./modals").then((m) => m.ProctoringLogsModal), {
   loading: () => null,
 });
-import { HeaderSection, QuestionsSection, SubmissionsSection, PoolsSection } from "./components";
+import {
+  HeaderSection,
+  QuestionsSection,
+  SubmissionsSection,
+  PoolsSection,
+  AnalyticsSection,
+} from "./components";
 import { Question, Test, QuestionUpdatePayload, TestConfig, QuestionPool } from "./types";
 import { useQuestions, useTestDetail, useAIQuestions, useQuestionPools } from "./hooks";
 
@@ -59,6 +65,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const testIdOrNull = redirecting ? undefined : testId;
 
   const [mode, setMode] = React.useState<"STATIC" | "POOL">("STATIC");
+  const [activeTab, setActiveTab] = React.useState<"overview" | "analytics">("overview");
 
   const testDetailHook = useTestDetail(testIdOrNull, notifications, confirmation.confirm);
   const questionsHook = useQuestions(testIdOrNull, notifications, confirmation.confirm, mode);
@@ -336,69 +343,101 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           teacherRole={teacherRole}
         />
 
-        {/* Questions Section */}
-        <QuestionsSection
-          questions={questions}
-          loadingQuestions={loadingQuestions}
-          onAddQuestion={handleAddQuestion}
-          onEditQuestion={handleEditQuestion}
-          onDeleteQuestion={handleDeleteQuestion}
-          isPoolMode={mode === "POOL"}
-          poolInfo={
-            poolWarning
-              ? {
-                  type: "warning",
-                  message:
-                    "Pool requested more questions than available; selected list is shorter.",
-                }
-              : undefined
-          }
-          pools={pools}
-          onUnassignQuestion={handleUnassignQuestion}
-          onAddPool={() => setShowCreatePoolModal(true)}
-          onEditPool={(pool) => {
-            setEditingPool(pool);
-            setShowCreatePoolModal(true);
-          }}
-          onDeletePool={(id) => deletePool(id)}
-          onAssignQuestionsToPool={(pool) => {
-            setTargetPoolForAddQuestions(pool);
-            setShowAddQuestionsToPoolModal(true);
-          }}
-          isTeacher={isTeacher}
-          teacherRole={teacherRole}
-        />
+        {/* Tab Navigation */}
+        <div className="flex gap-1 p-1 bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm mb-6 border border-white/80">
+          {(
+            [
+              { key: "overview", label: "Overview", icon: "📋" },
+              { key: "analytics", label: "Analytics", icon: "📊" },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === tab.key
+                  ? "bg-white shadow text-gray-900"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <span>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-        {/* Pools Section (Teacher only) */}
-        {isTeacher && (
-          <PoolsSection
-            pools={pools}
-            loading={loadingPools}
-            onCreate={() => {
-              setShowCreatePoolModal(true);
-            }}
-            onEdit={(pool) => {
-              setEditingPool(pool);
-              setShowCreatePoolModal(true);
-            }}
-            onDelete={(id) => deletePool(id)}
-            onAddQuestions={(pool) => {
-              setTargetPoolForAddQuestions(pool);
-              setShowAddQuestionsToPoolModal(true);
-            }}
-            questions={questions}
-            teacherRole={teacherRole}
-          />
+        {/* Overview Tab */}
+        {activeTab === "overview" && (
+          <>
+            {/* Questions Section */}
+            <QuestionsSection
+              questions={questions}
+              loadingQuestions={loadingQuestions}
+              onAddQuestion={handleAddQuestion}
+              onEditQuestion={handleEditQuestion}
+              onDeleteQuestion={handleDeleteQuestion}
+              isPoolMode={mode === "POOL"}
+              poolInfo={
+                poolWarning
+                  ? {
+                      type: "warning",
+                      message:
+                        "Pool requested more questions than available; selected list is shorter.",
+                    }
+                  : undefined
+              }
+              pools={pools}
+              onUnassignQuestion={handleUnassignQuestion}
+              onAddPool={() => setShowCreatePoolModal(true)}
+              onEditPool={(pool) => {
+                setEditingPool(pool);
+                setShowCreatePoolModal(true);
+              }}
+              onDeletePool={(id) => deletePool(id)}
+              onAssignQuestionsToPool={(pool) => {
+                setTargetPoolForAddQuestions(pool);
+                setShowAddQuestionsToPoolModal(true);
+              }}
+              isTeacher={isTeacher}
+              teacherRole={teacherRole}
+            />
+
+            {/* Pools Section (Teacher only) */}
+            {isTeacher && (
+              <PoolsSection
+                pools={pools}
+                loading={loadingPools}
+                onCreate={() => {
+                  setShowCreatePoolModal(true);
+                }}
+                onEdit={(pool) => {
+                  setEditingPool(pool);
+                  setShowCreatePoolModal(true);
+                }}
+                onDelete={(id) => deletePool(id)}
+                onAddQuestions={(pool) => {
+                  setTargetPoolForAddQuestions(pool);
+                  setShowAddQuestionsToPoolModal(true);
+                }}
+                questions={questions}
+                teacherRole={teacherRole}
+              />
+            )}
+
+            {/* Submissions Section */}
+            <SubmissionsSection
+              submissions={submissions}
+              loadingSubmissions={loadingSubmissions}
+              onViewSubmissions={handleViewSubmissions}
+              onViewIndividualSubmission={handleViewIndividualSubmission}
+              onDeleteSubmission={handleDeleteSubmission}
+              teacherRole={teacherRole}
+            />
+          </>
         )}
-        {/* Submissions Section */}
-        <SubmissionsSection
-          submissions={submissions}
-          loadingSubmissions={loadingSubmissions}
-          onViewSubmissions={handleViewSubmissions}
-          onViewIndividualSubmission={handleViewIndividualSubmission}
-          onDeleteSubmission={handleDeleteSubmission}
-          teacherRole={teacherRole}
-        />
+
+        {/* Analytics Tab */}
+        {activeTab === "analytics" && <AnalyticsSection testId={testId} />}
       </div>
 
       {/* Modals */}

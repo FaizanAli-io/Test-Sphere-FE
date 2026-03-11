@@ -1,6 +1,6 @@
 import React from "react";
 import { Class, RequestAction, BulkRequestAction } from "../types";
-import { canManageMembers } from "@/utils/rolePermissions";
+import { canEdit } from "@/utils/rolePermissions";
 
 interface RequestsModalProps {
   isOpen: boolean;
@@ -25,8 +25,8 @@ export default function RequestsModal({
   const pendingStudents =
     selectedClass.students?.filter((classStudent) => !classStudent.approved) || [];
 
-  // Check if the current teacher can approve/reject requests (OWNER only)
-  const canApproveRequests = canManageMembers(selectedClass.role);
+  // OWNER and EDITOR can approve/reject requests (backend: ClassRole: EDITOR)
+  const canApproveRequests = canEdit(selectedClass.role);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fadeIn">

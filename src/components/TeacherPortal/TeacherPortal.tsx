@@ -165,7 +165,7 @@ export default function TeacherPortal(): ReactElement {
       onClick: async (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
         if (fullClass) {
-          await fetchClassDetails(fullClass.id as string);
+          await fetchClassDetails(fullClass.id as string, fullClass.role);
           setShowRequestsModal(true);
         }
       },
