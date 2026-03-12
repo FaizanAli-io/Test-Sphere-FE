@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import api from "@/hooks/useApi";
-import { useInvigilateStudents } from "./hooks";
+import { useInvigilateStudents, useProctoringSocket } from "./hooks";
 import type { InvigilatingStudent } from "./hooks";
 import { StudentGrid, StudentLivestreamModal } from "./components";
 import dynamic from "next/dynamic";
@@ -24,6 +24,7 @@ export default function Invigilate() {
   const [selectedStudent, setSelectedStudent] = useState<InvigilatingStudent | null>(null);
   const [teacherId, setTeacherId] = useState<string>("");
   const [testTitle, setTestTitle] = useState<string>("");
+  const { getStudentProctoring } = useProctoringSocket(teacherId, testId, !!teacherId);
 
   useEffect(() => {
     let ignore = false;
@@ -158,6 +159,7 @@ export default function Invigilate() {
           students={students}
           onStudentClick={handleStudentClick}
           onViewLogs={handleViewLogs}
+          getStudentProctoring={getStudentProctoring}
         />
 
         {/* Livestream Modal */}
@@ -166,6 +168,7 @@ export default function Invigilate() {
           teacherId={teacherId}
           testId={testId}
           onClose={handleCloseModal}
+          proctoring={selectedStudent ? getStudentProctoring(selectedStudent.id) : undefined}
         />
 
         {/* Proctoring Logs Modal */}

@@ -10,6 +10,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.32",
     "firebase": "^12.3.0",
     "imagekitio-react": "^4.3.0",
     "lucide-react": "^0.544.0",

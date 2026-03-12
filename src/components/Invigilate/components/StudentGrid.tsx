@@ -1,17 +1,20 @@
 import React from "react";
 import { StudentCard } from "./StudentCard";
 import type { InvigilatingStudent } from "../hooks";
+import type { ProctoringData } from "../hooks";
 
 interface StudentGridProps {
   students: InvigilatingStudent[];
   onStudentClick: (student: InvigilatingStudent) => void;
   onViewLogs?: (student: InvigilatingStudent) => void;
+  getStudentProctoring?: (studentId: string | number) => ProctoringData | undefined;
 }
 
 export const StudentGrid: React.FC<StudentGridProps> = ({
   students,
   onStudentClick,
   onViewLogs,
+  getStudentProctoring,
 }) => {
   // Safety check: ensure students is an array
   const studentList = Array.isArray(students) ? students : [];
@@ -27,13 +30,14 @@ export const StudentGrid: React.FC<StudentGridProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {studentList.map((student) => (
         <StudentCard
           key={student.id}
           student={student}
           onClick={() => onStudentClick(student)}
           onViewLogs={onViewLogs}
+          proctoring={getStudentProctoring?.(student.id)}
         />
       ))}
     </div>

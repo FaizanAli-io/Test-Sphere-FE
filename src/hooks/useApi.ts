@@ -130,6 +130,22 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   const res = await fetchPromise;
   if (options?.stream) return res;
 
+  // If any authenticated request returns 401, the token has expired.
+  // Clear local credentials and send the user back to the login page.
+  if (
+    res.status === 401 &&
+    options?.auth &&
+    typeof window !== "undefined" &&
+    window.location.pathname !== "/"
+  ) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userEmail");
+    window.location.replace("/");
+    // Return the response anyway so callers don't blow up, but navigation is in progress
+    return res;
+  }
+
   try {
     const cloned = res.clone();
     const contentType = cloned.headers.get("content-type");

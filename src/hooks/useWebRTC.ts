@@ -605,6 +605,7 @@ export const useWebRTC = ({
     ...state,
     localStream: localStreamRef.current,
     remoteStream: remoteStreamRef.current,
+    socket: socketRef.current,
     startStreaming,
     stopStreaming,
     requestStream,

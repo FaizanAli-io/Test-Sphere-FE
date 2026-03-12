@@ -1,16 +1,33 @@
 import React, { useEffect, useRef, useState } from "react";
-import { X, Camera, Mic, Loader2 } from "lucide-react";
+import { X, Camera, Mic, Loader2, Activity, AlertTriangle, Eye, EyeOff } from "lucide-react";
 
 import { debugLogger } from "@/utils/logger";
 import { useWebRTC } from "@/hooks/useWebRTC";
 import type { InvigilatingStudent } from "../hooks";
+import type { ProctoringData } from "../hooks";
 import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
+
+function getScoreColor(score: number): string {
+  const hue = (1 - Math.min(Math.max(score, 0), 1)) * 120;
+  return `hsl(${hue}, 85%, 50%)`;
+}
+
+function getScoreLabel(score: number): string {
+  if (score <= 0.3) return "Safe";
+  if (score <= 0.6) return "Warning";
+  return "High Risk";
+}
+
+function formatFlag(flag: string): string {
+  return flag.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 interface StudentLivestreamModalProps {
   student: InvigilatingStudent | null;
   teacherId: string;
   testId: string;
   onClose: () => void;
+  proctoring?: ProctoringData;
 }
 
 export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
@@ -18,6 +35,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
   teacherId,
   testId,
   onClose,
+  proctoring,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [selectedStreamType, setSelectedStreamType] = useState<"webcam" | "screen">("webcam");
@@ -336,8 +354,104 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
           </div>
         </div>
 
-        {/* Footer Info */}
+        {/* Footer Info + Proctoring Metrics */}
         <div className="bg-gray-800 px-6 py-4 border-t border-gray-700">
+          {/* Proctoring Metrics */}
+          {proctoring && (
+            <div className="mb-4 pb-4 border-b border-gray-700">
+              <div className="flex items-center gap-2 mb-3">
+                <Activity size={16} className="text-yellow-400" />
+                <span className="text-white font-semibold text-sm">AI Proctoring</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {/* Risk Score */}
+                <div className="bg-gray-900 rounded-lg p-3">
+                  <div className="text-gray-400 text-xs mb-1">Risk Score</div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="text-xl font-bold"
+                      style={{ color: getScoreColor(proctoring.score) }}
+                    >
+                      {Math.round(proctoring.score * 100)}%
+                    </span>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                      style={{
+                        backgroundColor: `${getScoreColor(proctoring.score)}20`,
+                        color: getScoreColor(proctoring.score),
+                      }}
+                    >
+                      {getScoreLabel(proctoring.score)}
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-1.5 mt-2">
+                    <div
+                      className="h-1.5 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(proctoring.score * 100, 100)}%`,
+                        backgroundColor: getScoreColor(proctoring.score),
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Face Detection */}
+                <div className="bg-gray-900 rounded-lg p-3">
+                  <div className="text-gray-400 text-xs mb-1">Face</div>
+                  <div className="flex items-center gap-2">
+                    {proctoring.faceDetected ? (
+                      <Eye size={18} className="text-green-400" />
+                    ) : (
+                      <EyeOff size={18} className="text-red-400" />
+                    )}
+                    <span
+                      className={`font-semibold text-sm ${proctoring.faceDetected ? "text-green-400" : "text-red-400"}`}
+                    >
+                      {proctoring.faceDetected ? "Detected" : "Not Detected"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Head Pose */}
+                <div className="bg-gray-900 rounded-lg p-3">
+                  <div className="text-gray-400 text-xs mb-1">Head Pose</div>
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <span className="text-gray-500 text-[10px]">Pitch</span>
+                      <div className="text-white font-mono text-sm">
+                        {proctoring.headPose.pitch}°
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-gray-500 text-[10px]">Yaw</span>
+                      <div className="text-white font-mono text-sm">{proctoring.headPose.yaw}°</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Active Flags */}
+                <div className="bg-gray-900 rounded-lg p-3">
+                  <div className="text-gray-400 text-xs mb-1">Flags</div>
+                  {proctoring.flags.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {proctoring.flags.map((flag) => (
+                        <span
+                          key={flag}
+                          className="flex items-center gap-1 bg-red-500/20 text-red-400 text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                        >
+                          <AlertTriangle size={10} />
+                          {formatFlag(flag)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-green-400 text-sm font-medium">None</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center justify-between text-sm">
             <div className="text-gray-400">
               <span className="font-medium text-white">Email:</span> {student.email}

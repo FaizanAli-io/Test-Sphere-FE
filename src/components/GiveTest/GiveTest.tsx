@@ -445,6 +445,8 @@ export default function GiveTest() {
           violationCount={violationCount}
           countdownSeconds={countdownSeconds}
           onDismiss={dismissWarning}
+          maxViolationCount={testConfig.maxViolationCount}
+          maxViolationDuration={testConfig.maxViolationDuration}
         />
       )}
 

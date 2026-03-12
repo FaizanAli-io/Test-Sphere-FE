@@ -193,6 +193,69 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
               </div>
             </div>
 
+            {/* Exam Configuration Summary */}
+            <div className="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-6 mb-8">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-2xl">⚙️</span>
+                Exam Configuration
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Webcam */}
+                <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-indigo-100">
+                  <span className="text-2xl mt-0.5">{testConfig.webcamRequired ? "📷" : "🚫"}</span>
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">Webcam Monitoring</p>
+                    <p className="text-gray-600 text-sm">
+                      {testConfig.webcamRequired
+                        ? "Required — camera and microphone must be enabled."
+                        : "Not required for this test."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Multi-screen */}
+                <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-indigo-100">
+                  <span className="text-2xl mt-0.5">
+                    {testConfig.multipleScreens ? "🖥️" : "🚫"}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">Multiple Monitors</p>
+                    <p className="text-gray-600 text-sm">
+                      {testConfig.multipleScreens
+                        ? "Allowed for this test."
+                        : "Not permitted — use a single screen only."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Violation auto-submit */}
+                <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-indigo-100">
+                  <span className="text-2xl mt-0.5">⚠️</span>
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">Fullscreen Violations</p>
+                    <p className="text-gray-600 text-sm">
+                      {testConfig.maxViolationCount > 0
+                        ? `Auto-submits after ${testConfig.maxViolationCount} exit${testConfig.maxViolationCount !== 1 ? "s" : ""}.`
+                        : "Recorded, but will not auto-submit."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Timer auto-submit */}
+                <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-indigo-100">
+                  <span className="text-2xl mt-0.5">⏱️</span>
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm">Out-of-Fullscreen Timer</p>
+                    <p className="text-gray-600 text-sm">
+                      {testConfig.maxViolationDuration > 0
+                        ? `Auto-submits after ${testConfig.maxViolationDuration}s outside fullscreen.`
+                        : "No time limit for fullscreen exits."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-yellow-50 border-2 border-yellow-200 rounded-2xl p-6 mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <span className="text-2xl">📋</span>
@@ -236,32 +299,72 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
-                    You must share your <span className="font-semibold">entire screen</span> when
-                    prompted. Window or tab sharing is not allowed.
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-red-600 font-bold mt-1">•</span>
-                  <span>
                     The test will automatically enter{" "}
                     <span className="font-semibold">fullscreen mode</span> once you start. Exiting
                     fullscreen will be recorded as a violation.
                   </span>
                 </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-red-600 font-bold mt-1">•</span>
-                  <span>
-                    Repeated fullscreen violations may result in automatic test submission and your
-                    teacher will be notified.
-                  </span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <span className="text-red-600 font-bold mt-1">•</span>
-                  <span>
-                    You must allow <span className="font-semibold">camera and microphone</span>{" "}
-                    access before starting the test.
-                  </span>
-                </li>
+                {testConfig.maxViolationCount > 0 ? (
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-600 font-bold mt-1">•</span>
+                    <span>
+                      Exiting fullscreen more than{" "}
+                      <span className="font-semibold">
+                        {testConfig.maxViolationCount} time
+                        {testConfig.maxViolationCount !== 1 ? "s" : ""}
+                      </span>{" "}
+                      will trigger automatic test submission.
+                    </span>
+                  </li>
+                ) : (
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-600 font-bold mt-1">•</span>
+                    <span>
+                      Fullscreen violations are recorded and your teacher will be notified, but will{" "}
+                      <span className="font-semibold">not</span> automatically submit the test.
+                    </span>
+                  </li>
+                )}
+                {testConfig.maxViolationDuration > 0 && (
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-600 font-bold mt-1">•</span>
+                    <span>
+                      If you remain outside fullscreen for more than{" "}
+                      <span className="font-semibold">
+                        {testConfig.maxViolationDuration} second
+                        {testConfig.maxViolationDuration !== 1 ? "s" : ""}
+                      </span>{" "}
+                      at a time, the test will be automatically submitted.
+                    </span>
+                  </li>
+                )}
+                {testConfig.webcamRequired && (
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-600 font-bold mt-1">•</span>
+                    <span>
+                      You must allow <span className="font-semibold">camera and microphone</span>{" "}
+                      access. Your webcam feed will be monitored throughout the test.
+                    </span>
+                  </li>
+                )}
+                {testConfig.webcamRequired && (
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-600 font-bold mt-1">•</span>
+                    <span>
+                      You must share your <span className="font-semibold">entire screen</span> when
+                      prompted. Window or tab sharing is not allowed.
+                    </span>
+                  </li>
+                )}
+                {!testConfig.multipleScreens && (
+                  <li className="flex items-start gap-3">
+                    <span className="text-red-600 font-bold mt-1">•</span>
+                    <span>
+                      Use of <span className="font-semibold">multiple monitors</span> is not
+                      permitted and will be flagged.
+                    </span>
+                  </li>
+                )}
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
