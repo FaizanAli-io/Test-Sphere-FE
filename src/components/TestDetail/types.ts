@@ -12,8 +12,6 @@ export interface TestConfig {
   maxViolationDuration: number;
 }
 
-export type TestMode = "STATIC" | "POOL";
-
 export interface Question {
   id: number;
   testId: number;
@@ -31,6 +29,7 @@ export interface QuestionPool {
   testId: number;
   title: string;
   config: Record<string, number>;
+  active: boolean;
   createdAt: string;
   updatedAt: string;
 }

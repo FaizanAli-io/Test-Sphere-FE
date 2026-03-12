@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useMemo } from "react";
 import { useNotification } from "../hooks/useNotification";
 import NotificationBar from "../components/NotificationBar";
 
@@ -43,8 +43,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     };
   }, [clearAllTimeouts]);
 
+  // Memoize so consumers don't re-render just because the notifications array changed
+  const contextValue = useMemo(
+    () => ({ showSuccess, showError, showWarning, showInfo }),
+    [showSuccess, showError, showWarning, showInfo],
+  );
+
   return (
-    <NotificationContext.Provider value={{ showSuccess, showError, showWarning, showInfo }}>
+    <NotificationContext.Provider value={contextValue}>
       {children}
       <NotificationBar notifications={notifications} onRemove={removeNotification} />
     </NotificationContext.Provider>

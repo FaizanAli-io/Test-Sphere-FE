@@ -37,6 +37,7 @@ interface PoolTypeBreakdown {
 interface PoolCompositionItem {
   poolId: number | null;
   poolTitle: string;
+  active?: boolean;
   totalQuestions: number;
   selectedQuestions: number;
   totalMarks: number;
@@ -73,9 +74,26 @@ interface QuestionDifficulty {
 interface AnalyticsData {
   questionComposition: QuestionComposition;
   poolComposition: PoolCompositionItem[];
+  activeOverall: ActivePoolOverall;
   performanceMetrics: PerformanceMetrics;
   scoreDistribution: ScoreBucket[];
   questionDifficulty: QuestionDifficulty[];
+}
+
+interface ActivePoolOverallType {
+  type: string;
+  count: number;
+  totalMarks: number;
+  selectionCount: number;
+  avgMarks: number;
+  expectedMarks: number;
+}
+
+interface ActivePoolOverall {
+  totalQuestions: number;
+  totalSelectedQuestions: number;
+  totalExpectedMarks: number;
+  types: ActivePoolOverallType[];
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -251,6 +269,7 @@ function DonutChartWithLegend({
 
 function PoolCompositionCard({ pool }: { pool: PoolCompositionItem }) {
   const isGeneral = pool.poolId === null;
+  const isInactive = pool.active === false;
 
   const pieDataTotal = pool.types
     .filter((t) => t.count > 0)
@@ -280,16 +299,23 @@ function PoolCompositionCard({ pool }: { pool: PoolCompositionItem }) {
     }));
 
   return (
-    <div className="bg-gray-50 rounded-2xl border border-gray-100 p-6 hover:border-gray-200 transition-colors">
+    <div
+      className={`bg-gray-50 rounded-2xl border border-gray-100 p-6 transition-colors ${isInactive ? "opacity-50 grayscale" : "hover:border-gray-200"}`}
+    >
       {/* Pool header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-bold ${isGeneral ? "bg-gray-200 text-gray-600" : "bg-indigo-100 text-indigo-700"}`}
+            className={`px-3 py-1 rounded-full text-xs font-bold ${isGeneral ? "bg-gray-200 text-gray-600" : isInactive ? "bg-gray-300 text-gray-500" : "bg-indigo-100 text-indigo-700"}`}
           >
             {isGeneral ? "General" : "Pool"}
           </span>
           <h4 className="text-sm font-bold text-gray-900">{pool.poolTitle}</h4>
+          {isInactive && (
+            <span className="px-2 py-0.5 bg-gray-200 text-gray-500 text-xs font-bold rounded-full">
+              Inactive
+            </span>
+          )}
         </div>
         <div className="text-right">
           <p className="text-lg font-black text-gray-900">{pool.expectedMarks}</p>
@@ -396,6 +422,103 @@ function PoolCompositionCard({ pool }: { pool: PoolCompositionItem }) {
   );
 }
 
+interface ActivePoolRowProps {
+  title: string;
+  centerValue: number;
+  centerLabel: string;
+  total: number;
+  tooltipSuffix: string;
+  donutSide: "left" | "right";
+  data: { type: string; name: string; value: number; color: string }[];
+}
+
+function ActivePoolRow({
+  title,
+  centerValue,
+  centerLabel,
+  total,
+  tooltipSuffix,
+  donutSide,
+  data,
+}: ActivePoolRowProps) {
+  const pieDataWithPct = data.map((entry) => ({
+    ...entry,
+    pct: total > 0 ? Math.round((entry.value / total) * 100) : 0,
+  }));
+
+  const donut = (
+    <div className="relative shrink-0">
+      <ResponsiveContainer width={220} height={220}>
+        <PieChart>
+          <Pie
+            data={pieDataWithPct}
+            cx="50%"
+            cy="50%"
+            innerRadius={68}
+            outerRadius={100}
+            paddingAngle={3}
+            dataKey="value"
+            isAnimationActive
+          >
+            {pieDataWithPct.map((entry) => (
+              <Cell key={entry.type} fill={entry.color} />
+            ))}
+          </Pie>
+          <Tooltip
+            formatter={(value, name) => [`${value} ${tooltipSuffix}`, String(name)]}
+            contentStyle={{ borderRadius: "10px", border: "1px solid #e5e7eb", fontSize: 13 }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <span className="text-2xl font-black text-gray-900 leading-none">{centerValue}</span>
+        <span className="text-xs text-gray-400 mt-0.5">{centerLabel}</span>
+      </div>
+    </div>
+  );
+
+  const legend = (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 w-full">
+      {pieDataWithPct.map((entry) => (
+        <div
+          key={entry.type}
+          className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100"
+        >
+          <div
+            className="w-3 h-10 rounded-full shrink-0"
+            style={{ backgroundColor: entry.color }}
+          />
+          <div>
+            <p className="text-sm font-semibold text-gray-800">{entry.name}</p>
+            <p className="text-xs text-gray-500">
+              {entry.value} {tooltipSuffix} · {entry.pct}%
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div>
+      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">{title}</p>
+      <div className="flex flex-col lg:flex-row items-center gap-8">
+        {donutSide === "left" ? (
+          <>
+            {donut}
+            {legend}
+          </>
+        ) : (
+          <>
+            {legend}
+            {donut}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 type AnalyticsSubtab = "composition" | "students";
@@ -470,6 +593,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
   const {
     questionComposition,
     poolComposition,
+    activeOverall,
     performanceMetrics: pm,
     scoreDistribution,
     questionDifficulty,
@@ -557,80 +681,96 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
           ════════════════════════════════════════════════════════════════════════ */}
       {subtab === "composition" && (
         <>
-          {/* Overall composition donut */}
-          <div className="bg-white rounded-3xl shadow-xl p-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Overall Composition</h3>
-            <p className="text-sm text-gray-500 mb-6">
-              Breakdown of question types across {questionComposition.total} question
-              {questionComposition.total !== 1 ? "s" : ""}
-            </p>
-
-            {questionComposition.total === 0 ? (
-              <div className="text-center py-10 text-gray-400">
-                <span className="text-4xl block mb-2">📋</span>
-                No questions added yet
-              </div>
-            ) : (
-              <div className="flex flex-col lg:flex-row items-center gap-8">
-                {/* Donut chart */}
-                <div className="relative shrink-0">
-                  <ResponsiveContainer width={220} height={220}>
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={68}
-                        outerRadius={100}
-                        paddingAngle={3}
-                        dataKey="value"
-                        isAnimationActive
-                      >
-                        {pieData.map((entry) => (
-                          <Cell key={entry.type} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value, name) => [`${value ?? 0} questions`, String(name)]}
-                        contentStyle={{
-                          borderRadius: "10px",
-                          border: "1px solid #e5e7eb",
-                          fontSize: 13,
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-2xl font-black text-gray-900 leading-none">
-                      {questionComposition.total}
-                    </span>
-                    <span className="text-xs text-gray-400 mt-0.5">questions</span>
+          {/* Active Pool Overall — Composition Charts */}
+          {activeOverall && activeOverall.types.length > 0 && (
+            <div className="bg-white rounded-3xl shadow-xl p-8">
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="text-lg font-bold text-gray-900">Overall Active Pool Composition</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-indigo-600">
+                      {activeOverall.totalQuestions}
+                    </p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1">
+                      Total Questions
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-indigo-600">
+                      {activeOverall.totalSelectedQuestions}
+                    </p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1">
+                      Selected
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-black text-indigo-600">
+                      {activeOverall.totalExpectedMarks}
+                    </p>
+                    <p className="text-[10px] text-gray-400 uppercase tracking-wide mt-1">
+                      Exp. Marks
+                    </p>
                   </div>
                 </div>
-
-                {/* Legend */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 w-full">
-                  {pieData.map((entry) => (
-                    <div
-                      key={entry.type}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100"
-                    >
-                      <div
-                        className="w-3 h-10 rounded-full shrink-0"
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-gray-800">{entry.name}</p>
-                        <p className="text-xs text-gray-500">
-                          {entry.value} question{entry.value !== 1 ? "s" : ""} · {entry.pct}%
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
-            )}
-          </div>
+              <p className="text-sm text-gray-500 mb-8">
+                Aggregated composition across all active question pools
+              </p>
+
+              <div className="space-y-10">
+                <ActivePoolRow
+                  title="Total Questions by Type"
+                  centerValue={activeOverall.totalQuestions}
+                  centerLabel="questions"
+                  total={activeOverall.totalQuestions}
+                  tooltipSuffix="questions"
+                  donutSide="left"
+                  data={activeOverall.types
+                    .filter((t) => t.count > 0)
+                    .map((t) => ({
+                      type: t.type,
+                      name: TYPE_LABELS[t.type] ?? t.type,
+                      value: t.count,
+                      color: TYPE_COLORS[t.type] ?? "#6b7280",
+                    }))}
+                />
+
+                <ActivePoolRow
+                  title="Selected Questions by Type"
+                  centerValue={activeOverall.totalSelectedQuestions}
+                  centerLabel="selected"
+                  total={activeOverall.totalSelectedQuestions}
+                  tooltipSuffix="questions"
+                  donutSide="right"
+                  data={activeOverall.types
+                    .filter((t) => t.selectionCount > 0)
+                    .map((t) => ({
+                      type: t.type,
+                      name: TYPE_LABELS[t.type] ?? t.type,
+                      value: t.selectionCount,
+                      color: TYPE_COLORS[t.type] ?? "#6b7280",
+                    }))}
+                />
+
+                <ActivePoolRow
+                  title="Expected Marks by Type"
+                  centerValue={activeOverall.totalExpectedMarks}
+                  centerLabel="marks"
+                  total={activeOverall.totalExpectedMarks}
+                  tooltipSuffix="marks"
+                  donutSide="left"
+                  data={activeOverall.types
+                    .filter((t) => t.expectedMarks > 0)
+                    .map((t) => ({
+                      type: t.type,
+                      name: TYPE_LABELS[t.type] ?? t.type,
+                      value: t.expectedMarks,
+                      color: TYPE_COLORS[t.type] ?? "#6b7280",
+                    }))}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Pool-wise composition */}
           {poolComposition.length > 0 && (

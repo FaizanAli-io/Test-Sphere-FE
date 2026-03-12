@@ -9,9 +9,11 @@ interface PoolsSectionProps {
   onCreate: () => void;
   onEdit: (pool: QuestionPool) => void;
   onDelete: (id: number) => void;
+  onToggleActive: (pool: QuestionPool) => void;
   onAddQuestions: (pool: QuestionPool) => void;
   questions: Question[];
   teacherRole?: TeacherRole;
+  isTeacher?: boolean;
 }
 
 export default function PoolsSection({
@@ -20,9 +22,11 @@ export default function PoolsSection({
   onCreate,
   onEdit,
   onDelete,
+  onToggleActive,
   onAddQuestions,
   questions,
   teacherRole = "VIEWER",
+  isTeacher = false,
 }: PoolsSectionProps) {
   const assignedCount = (poolId: number) =>
     questions.filter((q) => q.questionPoolId === poolId).length;
@@ -75,10 +79,19 @@ export default function PoolsSection({
           {pools.map((pool) => (
             <div
               key={pool.id}
-              className="border-2 border-gray-200 rounded-2xl p-6 flex items-center justify-between"
+              className={`border-2 rounded-2xl p-6 flex items-center justify-between transition-all ${
+                pool.active !== false ? "border-gray-200" : "border-gray-200 opacity-50 grayscale"
+              }`}
             >
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{pool.title}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold text-gray-900">{pool.title}</h3>
+                  {pool.active === false && (
+                    <span className="px-2 py-0.5 bg-gray-200 text-gray-500 text-xs font-bold rounded-full">
+                      Inactive
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-gray-600">
                   {Object.entries(pool.config)
                     .map(([k, v]) => `${k}: ${v}`)
@@ -89,7 +102,7 @@ export default function PoolsSection({
                 </p>
               </div>
               {canEditPools && (
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <button
                     onClick={() => onAddQuestions(pool)}
                     className="px-4 py-2 bg-green-100 text-green-700 font-medium rounded-lg hover:bg-green-200 transition-all"
@@ -110,6 +123,21 @@ export default function PoolsSection({
                     Delete
                   </button>
                 </div>
+              )}
+              {isTeacher && (
+                <button
+                  onClick={() => onToggleActive(pool)}
+                  className={`px-4 py-2 font-semibold rounded-lg transition-all ${
+                    pool.active !== false
+                      ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                      : "bg-gray-300 text-gray-600 hover:bg-gray-400"
+                  }`}
+                  title={
+                    pool.active !== false ? "Click to deactivate pool" : "Click to activate pool"
+                  }
+                >
+                  {pool.active !== false ? "✓ Active" : "✕ Inactive"}
+                </button>
               )}
             </div>
           ))}

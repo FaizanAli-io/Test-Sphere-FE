@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import api from "../../../hooks/useApi";
 import { Test, TestConfig, NotificationFunctions, ConfirmationFunction } from "../types";
 
@@ -10,6 +10,15 @@ export const useTestDetail = (
   const [testData, setTestData] = useState<Test | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const notifRef = useRef(notifications);
+  const confirmRef = useRef(confirm);
+  useEffect(() => {
+    notifRef.current = notifications;
+  }, [notifications]);
+  useEffect(() => {
+    confirmRef.current = confirm;
+  }, [confirm]);
 
   const fetchTestDetails = useCallback(async () => {
     if (!testId) return;
@@ -32,11 +41,11 @@ export const useTestDetail = (
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to fetch test details";
       setError(errorMessage);
-      notifications?.showError?.(errorMessage);
+      notifRef.current?.showError?.(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [testId, notifications]);
+  }, [testId]);
 
   const updateTest = useCallback(
     async (updates: Partial<Test>) => {
@@ -56,15 +65,15 @@ export const useTestDetail = (
 
         const updatedTest = await response.json();
         setTestData(updatedTest);
-        notifications?.showSuccess?.("Test updated successfully");
+        notifRef.current?.showSuccess?.("Test updated successfully");
         return true;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to update test";
-        notifications?.showError?.(errorMessage);
+        notifRef.current?.showError?.(errorMessage);
         return false;
       }
     },
-    [testId, notifications],
+    [testId],
   );
 
   const updateConfig = useCallback(
@@ -85,22 +94,22 @@ export const useTestDetail = (
 
         const updatedTest = await response.json();
         setTestData(updatedTest);
-        notifications?.showSuccess?.("Test configuration updated successfully");
+        notifRef.current?.showSuccess?.("Test configuration updated successfully");
         return true;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update test configuration";
-        notifications?.showError?.(errorMessage);
+        notifRef.current?.showError?.(errorMessage);
         return false;
       }
     },
-    [testId, notifications],
+    [testId],
   );
 
   const deleteTest = useCallback(async () => {
-    if (!testId || !confirm) return false;
+    if (!testId || !confirmRef.current) return false;
 
-    const confirmed = await confirm({
+    const confirmed = await confirmRef.current({
       title: "Delete Test",
       message: "Are you sure you want to delete this test? This action cannot be undone.",
       confirmText: "Delete",
@@ -120,14 +129,14 @@ export const useTestDetail = (
         throw new Error(errorData.message || "Failed to delete test");
       }
 
-      notifications?.showSuccess?.("Test deleted successfully");
+      notifRef.current?.showSuccess?.("Test deleted successfully");
       return true;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete test";
-      notifications?.showError?.(errorMessage);
+      notifRef.current?.showError?.(errorMessage);
       return false;
     }
-  }, [testId, notifications, confirm]);
+  }, [testId]);
 
   // Auto-fetch test details when testId changes
   useEffect(() => {

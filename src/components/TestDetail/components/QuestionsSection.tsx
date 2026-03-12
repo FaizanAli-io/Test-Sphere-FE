@@ -17,6 +17,7 @@ interface QuestionsSectionProps {
   onAddPool?: () => void;
   onEditPool?: (pool: QuestionPool) => void;
   onDeletePool?: (poolId: number) => void;
+  onToggleActive?: (pool: QuestionPool) => void;
   onAssignQuestionsToPool?: (pool: QuestionPool) => void;
   isTeacher?: boolean;
   teacherRole?: TeacherRole;
@@ -80,6 +81,7 @@ export default function QuestionsSection({
   onAddPool,
   onEditPool,
   onDeletePool,
+  onToggleActive,
   onAssignQuestionsToPool,
   isTeacher,
   teacherRole = "VIEWER",
@@ -309,6 +311,38 @@ export default function QuestionsSection({
                                       🗑️ Delete
                                     </button>
                                   )}
+                                </div>
+                              )}
+
+                              {isTeacher && poolId !== null && onToggleActive && poolData && (
+                                <div
+                                  className="flex items-center gap-2"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <span className="text-xs font-medium text-gray-500 select-none">
+                                    {poolData.active !== false ? "Active" : "Inactive"}
+                                  </span>
+                                  <button
+                                    role="switch"
+                                    aria-checked={poolData.active !== false}
+                                    onClick={() => onToggleActive(poolData)}
+                                    className={`relative inline-flex w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 flex-shrink-0 ${
+                                      poolData.active !== false ? "bg-indigo-500" : "bg-gray-300"
+                                    }`}
+                                    title={
+                                      poolData.active !== false
+                                        ? "Deactivate pool"
+                                        : "Activate pool"
+                                    }
+                                  >
+                                    <span
+                                      className={`absolute top-[2px] w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                                        poolData.active !== false
+                                          ? "translate-x-[22px]"
+                                          : "translate-x-[2px]"
+                                      }`}
+                                    />
+                                  </button>
                                 </div>
                               )}
 

@@ -9,8 +9,6 @@ interface HeaderSectionProps {
   onEdit: () => void;
   onConfigure: () => void;
   onDelete: () => void;
-  mode?: "STATIC" | "POOL";
-  onModeChange?: (mode: "STATIC" | "POOL") => void;
   teacherRole?: TeacherRole;
 }
 
@@ -47,8 +45,6 @@ export default function HeaderSection({
   onEdit,
   onConfigure,
   onDelete,
-  mode,
-  onModeChange,
   teacherRole = "VIEWER",
 }: HeaderSectionProps) {
   const handleInvigilate = () => {
@@ -104,64 +100,49 @@ export default function HeaderSection({
             )}
           </div>
         </div>
-        <div className="flex flex-col gap-4 w-fit shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="inline-flex rounded-xl bg-gray-100 p-1">
-              <button
-                onClick={() => onModeChange?.("STATIC")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  ("STATIC" as string) === mode ? "bg-white shadow" : "text-gray-600"
-                }`}
-              >
-                Static
-              </button>
-              <button
-                onClick={() => onModeChange?.("POOL")}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  ("POOL" as string) === mode ? "bg-white shadow" : "text-gray-600"
-                }`}
-              >
-                Pool
-              </button>
-            </div>
-            <button
-              onClick={onBack}
-              className="px-6 py-3 bg-gray-100 text-gray-900 font-bold rounded-xl hover:bg-gray-200 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
-            >
-              ← Back to Class
-            </button>
-          </div>
-
+        <div className="flex flex-col gap-3 w-fit shrink-0">
+          <button
+            onClick={onBack}
+            className="w-full px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white font-bold rounded-xl hover:from-gray-700 hover:to-gray-800 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+          >
+            ← Back to Class
+          </button>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={handleInvigilate}
-              className="px-6 py-3 bg-purple-500 text-white font-bold rounded-xl hover:bg-purple-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-violet-600 text-white font-bold rounded-xl hover:from-purple-600 hover:to-violet-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
             >
               📹 Invigilate
             </button>
-            {canEditTest && (
+            {canEditTest ? (
               <button
                 onClick={onConfigure}
-                className="px-6 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+                className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
               >
                 ⚙️ Configure
               </button>
+            ) : (
+              <div />
             )}
-            {canEditTest && (
+            {canEditTest ? (
               <button
                 onClick={onEdit}
-                className="px-6 py-3 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
               >
                 ✏️ Edit Test
               </button>
+            ) : (
+              <div />
             )}
-            {canDeleteTest && (
+            {canDeleteTest ? (
               <button
                 onClick={onDelete}
-                className="px-6 py-3 bg-red-500 text-white font-bold rounded-xl hover:bg-red-600 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
+                className="px-6 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white font-bold rounded-xl hover:from-red-600 hover:to-rose-700 transition-all shadow-lg hover:shadow-xl whitespace-nowrap"
               >
                 🗑️ Delete Test
               </button>
+            ) : (
+              <div />
             )}
           </div>
         </div>

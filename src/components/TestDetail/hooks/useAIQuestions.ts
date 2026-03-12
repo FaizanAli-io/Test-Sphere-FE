@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 import api from "@/hooks/useApi";
 import { Question, NotificationFunctions } from "../types";
@@ -19,6 +19,19 @@ export const useAIQuestions = (
   const [pendingApprovalQuestions, setPendingApprovalQuestions] = useState<Question[]>([]);
   const [approvedQuestionIds, setApprovedQuestionIds] = useState<Set<number>>(new Set());
   const [targetPoolId, setTargetPoolId] = useState<number | undefined>(undefined);
+
+  const notifRef = useRef(notifications);
+  const closeModalRef = useRef(closeModal);
+  const onQuestionsCreatedRef = useRef(onQuestionsCreated);
+  useEffect(() => {
+    notifRef.current = notifications;
+  }, [notifications]);
+  useEffect(() => {
+    closeModalRef.current = closeModal;
+  }, [closeModal]);
+  useEffect(() => {
+    onQuestionsCreatedRef.current = onQuestionsCreated;
+  }, [onQuestionsCreated]);
 
   const normalizeAIQuestion = useCallback(
     (q: Record<string, unknown>): Question | null => {
@@ -101,7 +114,7 @@ export const useAIQuestions = (
   const generateAIQuestions = useCallback(
     async (prompt: string, poolId?: number) => {
       if (!prompt.trim()) {
-        notifications?.showError?.("Please enter a prompt for AI question generation");
+        notifRef.current?.showError?.("Please enter a prompt for AI question generation");
         return false;
       }
 
@@ -135,36 +148,36 @@ export const useAIQuestions = (
             setPendingApprovalQuestions(normalized);
             setTargetPoolId(poolId);
             setShowApprovalModal(true);
-            closeModal?.();
-            notifications?.showSuccess?.(
+            closeModalRef.current?.();
+            notifRef.current?.showSuccess?.(
               `Generated ${normalized.length} questions for your review`,
             );
           }
         } else {
-          notifications?.showWarning?.("No questions were generated from the prompt");
+          notifRef.current?.showWarning?.("No questions were generated from the prompt");
         }
 
         return true;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to generate AI questions";
-        notifications?.showError?.(errorMessage);
+        notifRef.current?.showError?.(errorMessage);
         return false;
       } finally {
         setAiGenerating(false);
       }
     },
-    [notifications, closeModal, normalizeAIQuestion],
+    [normalizeAIQuestion],
   );
 
   const uploadPDFForQuestions = useCallback(
     async (file: File, poolId?: number) => {
       if (!file) {
-        notifications?.showError?.("No file selected. Please choose a PDF file.");
+        notifRef.current?.showError?.("No file selected. Please choose a PDF file.");
         return false;
       }
 
       if (!file.type || !file.type.includes("pdf")) {
-        notifications?.showError?.("Invalid file type. Please select a PDF file.");
+        notifRef.current?.showError?.("Invalid file type. Please select a PDF file.");
         return false;
       }
 
@@ -206,23 +219,23 @@ export const useAIQuestions = (
           setPendingApprovalQuestions(normalized);
           setTargetPoolId(poolId);
           setShowApprovalModal(true);
-          closeModal?.();
-          notifications?.showSuccess?.(`Extracted ${normalized.length} questions from PDF`);
+          closeModalRef.current?.();
+          notifRef.current?.showSuccess?.(`Extracted ${normalized.length} questions from PDF`);
         } else {
-          notifications?.showWarning?.("No questions could be extracted from the PDF");
+          notifRef.current?.showWarning?.("No questions could be extracted from the PDF");
         }
 
         return true;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Failed to process PDF";
         console.error("PDF Upload Error:", err);
-        notifications?.showError?.(errorMessage);
+        notifRef.current?.showError?.(errorMessage);
         return false;
       } finally {
         setAiPdfUploading(false);
       }
     },
-    [notifications, closeModal, normalizeAIQuestion],
+    [normalizeAIQuestion],
   );
 
   const approveQuestions = useCallback(
@@ -281,27 +294,27 @@ export const useAIQuestions = (
           );
         }
 
-        notifications?.showSuccess?.(
+        notifRef.current?.showSuccess?.(
           `${questions.length} questions approved and created successfully`,
         );
 
-        onQuestionsCreated?.();
+        onQuestionsCreatedRef.current?.();
 
         setPendingApprovalQuestions([]);
         setApprovedQuestionIds(new Set());
         setShowApprovalModal(false);
-        closeModal?.();
+        closeModalRef.current?.();
 
         return true;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to create approved questions";
-        notifications?.showError?.(errorMessage);
+        notifRef.current?.showError?.(errorMessage);
         return false;
       }
     },
 
-    [testId, notifications, onQuestionsCreated, closeModal],
+    [testId],
   );
 
   const resetAIState = useCallback(() => {

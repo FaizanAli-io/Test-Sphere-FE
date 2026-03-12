@@ -29,7 +29,6 @@ import {
   HeaderSection,
   QuestionsSection,
   SubmissionsSection,
-  PoolsSection,
   AnalyticsSection,
 } from "./components";
 import { Question, Test, QuestionUpdatePayload, TestConfig, QuestionPool } from "./types";
@@ -64,11 +63,10 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
   const testIdOrNull = redirecting ? undefined : testId;
 
-  const [mode, setMode] = React.useState<"STATIC" | "POOL">("STATIC");
   const [activeTab, setActiveTab] = React.useState<"overview" | "analytics">("overview");
 
   const testDetailHook = useTestDetail(testIdOrNull, notifications, confirmation.confirm);
-  const questionsHook = useQuestions(testIdOrNull, notifications, confirmation.confirm, mode);
+  const questionsHook = useQuestions(testIdOrNull, notifications, confirmation.confirm);
   const submissionsHook = useSubmissions(testIdOrNull, "teacher", notifications);
   const {
     pools,
@@ -76,6 +74,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     createPool,
     updatePool,
     deletePool,
+    togglePoolActive,
     addQuestionsToPool,
     removeQuestionsFromPool,
   } = useQuestionPools(testIdOrNull, notifications, confirmation.confirm);
@@ -97,7 +96,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
   const role =
     typeof window !== "undefined" ? localStorage.getItem("role") || "teacher" : "teacher";
-  const isTeacher = role === "teacher";
+  const isTeacher = role?.toLowerCase() === "teacher";
   const [teacherRole, setTeacherRole] = useState<TeacherRole>("VIEWER");
 
   // Fetch teacher role for this class
@@ -133,12 +132,12 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     fetchTeacherRole();
   }, [test?.classId]);
 
-  // If in pool mode, warn teacher if selected response is shorter than requested counts
+  // Warn teacher if selected response is shorter than requested counts
   const requestedCount = pools.reduce(
     (acc, p) => acc + Object.values(p.config).reduce((a, b) => a + b, 0),
     0,
   );
-  const poolWarning = mode === "POOL" && isTeacher && questions.length < requestedCount;
+  const poolWarning = isTeacher && questions.length < requestedCount;
 
   const handleEditTest = () => {
     setShowEditTestModal(true);
@@ -338,8 +337,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           onEdit={handleEditTest}
           onConfigure={handleConfigure}
           onDelete={handleDeleteTest}
-          mode={mode}
-          onModeChange={(m) => setMode(m)}
           teacherRole={teacherRole}
         />
 
@@ -376,7 +373,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               onAddQuestion={handleAddQuestion}
               onEditQuestion={handleEditQuestion}
               onDeleteQuestion={handleDeleteQuestion}
-              isPoolMode={mode === "POOL"}
+              isPoolMode={true}
               poolInfo={
                 poolWarning
                   ? {
@@ -394,6 +391,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
                 setShowCreatePoolModal(true);
               }}
               onDeletePool={(id) => deletePool(id)}
+              onToggleActive={(pool) => togglePoolActive(pool)}
               onAssignQuestionsToPool={(pool) => {
                 setTargetPoolForAddQuestions(pool);
                 setShowAddQuestionsToPoolModal(true);
@@ -401,28 +399,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               isTeacher={isTeacher}
               teacherRole={teacherRole}
             />
-
-            {/* Pools Section (Teacher only) */}
-            {isTeacher && (
-              <PoolsSection
-                pools={pools}
-                loading={loadingPools}
-                onCreate={() => {
-                  setShowCreatePoolModal(true);
-                }}
-                onEdit={(pool) => {
-                  setEditingPool(pool);
-                  setShowCreatePoolModal(true);
-                }}
-                onDelete={(id) => deletePool(id)}
-                onAddQuestions={(pool) => {
-                  setTargetPoolForAddQuestions(pool);
-                  setShowAddQuestionsToPoolModal(true);
-                }}
-                questions={questions}
-                teacherRole={teacherRole}
-              />
-            )}
 
             {/* Submissions Section */}
             <SubmissionsSection
@@ -504,6 +480,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
             testId: 0,
             title: "",
             config: {},
+            active: true,
             createdAt: "",
             updatedAt: "",
           }
