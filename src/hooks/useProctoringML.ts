@@ -307,7 +307,7 @@ export function useProctoringML({
     const result = landmarkerRef.current.detectForVideo(videoEl, now);
     const faceDetected = result.faceLandmarks && result.faceLandmarks.length > 0;
 
-    let flags: string[] = [];
+    const flags: string[] = [];
     let gazeDir: ProctoringFlags["gazeDirection"] = "center";
     let gazeDelta = { x: 0, y: 0 };
     let headPose = { pitch: 0, yaw: 0 };

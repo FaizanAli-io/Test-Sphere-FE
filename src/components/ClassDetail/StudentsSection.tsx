@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
 import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface Student {

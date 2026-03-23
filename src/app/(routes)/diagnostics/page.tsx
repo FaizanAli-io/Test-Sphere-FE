@@ -31,25 +31,6 @@ export default function ProctorTestPage() {
   const lastStateUpdate = useRef(0);
   const latestFrame = useRef<ProctoringFrameData | null>(null);
 
-  const onFrame = useCallback((data: ProctoringFrameData) => {
-    latestFrame.current = data;
-
-    // Draw landmarks on canvas every frame (no React state involved)
-    drawOverlay(data);
-
-    const now = performance.now();
-    if (now - lastStateUpdate.current < 100) return;
-    lastStateUpdate.current = now;
-
-    setFrameData(data);
-    setHistory((prev) => {
-      const entry = { time: Date.now(), score: data.score };
-      const cutoff = Date.now() - 30_000; // keep 30s
-      const next = [...prev, entry].filter((e) => e.time > cutoff);
-      return next;
-    });
-  }, []);
-
   // Draw face mesh + gaze + pose arrows on canvas
   const drawOverlay = useCallback((data: ProctoringFrameData) => {
     const canvas = canvasRef.current;
@@ -145,6 +126,28 @@ export default function ProctorTestPage() {
       ctx.fillText(line, 10, y);
     });
   }, []);
+
+  const onFrame = useCallback(
+    (data: ProctoringFrameData) => {
+      latestFrame.current = data;
+
+      // Draw landmarks on canvas every frame (no React state involved)
+      drawOverlay(data);
+
+      const now = performance.now();
+      if (now - lastStateUpdate.current < 100) return;
+      lastStateUpdate.current = now;
+
+      setFrameData(data);
+      setHistory((prev) => {
+        const entry = { time: Date.now(), score: data.score };
+        const cutoff = Date.now() - 30_000; // keep 30s
+        const next = [...prev, entry].filter((e) => e.time > cutoff);
+        return next;
+      });
+    },
+    [drawOverlay],
+  );
 
   // Start webcam
   useEffect(() => {

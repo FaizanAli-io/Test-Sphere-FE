@@ -314,7 +314,7 @@ export const useAIQuestions = (
       }
     },
 
-    [testId],
+    [testId, targetPoolId],
   );
 
   const resetAIState = useCallback(() => {

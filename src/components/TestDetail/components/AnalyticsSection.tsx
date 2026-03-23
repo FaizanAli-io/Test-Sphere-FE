@@ -591,7 +591,6 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
   if (!data) return null;
 
   const {
-    questionComposition,
     poolComposition,
     activeOverall,
     performanceMetrics: pm,
@@ -601,19 +600,6 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
 
   const gradeColor = GRADE_COLOR[pm.averageGrade] ?? "#6b7280";
   const hasSubmissions = pm.totalSubmissions > 0;
-
-  // Pie data for overall composition donut
-  const pieData = (Object.entries(questionComposition) as [string, number][])
-    .filter(([k]) => k !== "total")
-    .filter(([, v]) => v > 0)
-    .map(([type, count]) => ({
-      type,
-      name: TYPE_LABELS[type] ?? type,
-      value: count,
-      color: TYPE_COLORS[type] ?? "#6b7280",
-      pct:
-        questionComposition.total > 0 ? Math.round((count / questionComposition.total) * 100) : 0,
-    }));
 
   // Group difficulty rows by pool for display
   type DiffGroup = { key: string; label: string; isPool: boolean; rows: QuestionDifficulty[] };

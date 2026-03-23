@@ -139,7 +139,7 @@ export default function GoogleSignIn({
         localStorage.setItem("role", data.user.role);
         if (data.user.email) {
           localStorage.setItem("userEmail", data.user.email);
-        } else {
+        } else if (user.email) {
           localStorage.setItem("userEmail", user.email);
         }
 

@@ -7,6 +7,7 @@ import api from "../../hooks/useApi"; // adjusted path (folder moved)
 import CreateTestModal from "../CreateTestModal"; // sibling folder
 import ConfirmationModal from "../ConfirmationModal"; // sibling component
 import { useConfirmation } from "../../hooks/useConfirmation"; // adjusted path
+import type { TeacherRole } from "@/utils/rolePermissions";
 
 import ClassHeader from "./ClassHeader";
 import StudentsSection from "./StudentsSection";
@@ -121,12 +122,13 @@ export default function ClassDetail(): ReactElement {
         console.log("Teachers array:", data.teachers);
         console.log("Teachers details:");
 
-        data.teachers.forEach((t: any, idx: number) => {
+        data.teachers.forEach((t: { role: string; teacher?: { email?: string } }, idx: number) => {
           console.log(`  [${idx}] Role: ${t.role}, Teacher Email: ${t.teacher?.email}`);
         });
 
         const currentTeacherData = data.teachers.find(
-          (t: any) => t.teacher?.email === currentUserEmail,
+          (t: { role: string; teacher?: { email?: string } }) =>
+            t.teacher?.email === currentUserEmail,
         );
 
         const isOwner = currentTeacherData?.role === "OWNER";
@@ -169,12 +171,18 @@ export default function ClassDetail(): ReactElement {
       const testsData = await testsRes.json();
 
       // Assume questions are included in the testsData response or handle accordingly
-      const testsWithCounts = Array.isArray(testsData)
-        ? testsData.map((test: any) => ({
-            ...test,
+      const testsWithCounts: Test[] = Array.isArray(testsData)
+        ? testsData.map((test: { questions?: unknown[]; [key: string]: unknown }) => ({
+            id: test.id as number,
+            title: test.title as string,
+            description: test.description as string,
+            duration: test.duration as number,
+            startAt: test.startAt as string,
+            endAt: test.endAt as string,
+            status: test.status as Test["status"],
             questionCount: Array.isArray(test.questions)
               ? test.questions.length
-              : test.questionCount || 0,
+              : (test.questionCount as number) || 0,
           }))
         : [];
 

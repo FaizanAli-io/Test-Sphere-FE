@@ -50,16 +50,40 @@ function formatFlag(flag: string): string {
 
 function GazeIcon({ flags }: { flags: string[] }) {
   if (flags.includes("no_face"))
-    return <UserX size={13} className="text-red-500" title="No face" />;
+    return (
+      <div title="No face">
+        <UserX size={13} className="text-red-500" />
+      </div>
+    );
   if (flags.includes("gaze_left"))
-    return <ArrowLeft size={13} className="text-orange-500" title="Gaze left" />;
+    return (
+      <div title="Gaze left">
+        <ArrowLeft size={13} className="text-orange-500" />
+      </div>
+    );
   if (flags.includes("gaze_right"))
-    return <ArrowRight size={13} className="text-orange-500" title="Gaze right" />;
+    return (
+      <div title="Gaze right">
+        <ArrowRight size={13} className="text-orange-500" />
+      </div>
+    );
   if (flags.includes("gaze_up"))
-    return <ArrowUp size={13} className="text-orange-500" title="Gaze up" />;
+    return (
+      <div title="Gaze up">
+        <ArrowUp size={13} className="text-orange-500" />
+      </div>
+    );
   if (flags.includes("gaze_down"))
-    return <ArrowDown size={13} className="text-orange-500" title="Gaze down" />;
-  return <Crosshair size={13} className="text-green-500" title="Gaze center" />;
+    return (
+      <div title="Gaze down">
+        <ArrowDown size={13} className="text-orange-500" />
+      </div>
+    );
+  return (
+    <div title="Gaze center">
+      <Crosshair size={13} className="text-green-500" />
+    </div>
+  );
 }
 
 export const StudentCard: React.FC<StudentCardProps> = ({

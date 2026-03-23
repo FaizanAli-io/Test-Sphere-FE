@@ -119,7 +119,6 @@ export default function AddQuestionsToPoolModal({
               .filter((q) => !showUnassignedOnly || !q.questionPoolId)
               .map((question) => {
                 const isSelected = selectedQuestionIds.has(question.id);
-                const currentPool = pools?.find((p) => p.id === question.questionPoolId);
 
                 return (
                   <div

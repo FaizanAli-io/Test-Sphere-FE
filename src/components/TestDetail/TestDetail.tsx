@@ -70,7 +70,6 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   const submissionsHook = useSubmissions(testIdOrNull, "teacher", notifications);
   const {
     pools,
-    loadingPools,
     createPool,
     updatePool,
     deletePool,
@@ -116,7 +115,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
           if (Array.isArray(data.teachers)) {
             const currentTeacherData = data.teachers.find(
-              (t: any) => t.teacher?.email === currentUserEmail,
+              (t: { teacher?: { email?: string } }) => t.teacher?.email === currentUserEmail,
             );
 
             if (currentTeacherData?.role) {

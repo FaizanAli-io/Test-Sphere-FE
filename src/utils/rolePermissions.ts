@@ -32,7 +32,7 @@ export const canManageMembers = (role?: TeacherRole): boolean => {
 /**
  * Check if teacher can view resources (always true for any teacher role)
  */
-export const canView = (role?: TeacherRole): boolean => {
+export const canView = (): boolean => {
   return true;
 };
 
@@ -43,5 +43,5 @@ export const getPermissions = (role?: TeacherRole) => ({
   canEdit: canEdit(role),
   canDelete: canDelete(role),
   canManageMembers: canManageMembers(role),
-  canView: canView(role),
+  canView: canView(),
 });

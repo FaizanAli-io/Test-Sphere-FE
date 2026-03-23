@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import api from "../../hooks/useApi";
-import { canManageMembers } from "@/utils/rolePermissions";
 import type { TeacherRole } from "@/utils/rolePermissions";
 
 interface ClassTeacher {
@@ -192,9 +192,11 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
             >
               <div className="flex items-start justify-between mb-4">
                 {item.teacher.profileImage ? (
-                  <img
+                  <Image
                     src={item.teacher.profileImage}
                     alt={item.teacher.name}
+                    width={48}
+                    height={48}
                     className="w-12 h-12 rounded-full object-cover border-2 border-indigo-200"
                   />
                 ) : (
