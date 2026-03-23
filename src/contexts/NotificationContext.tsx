@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { createContext, useContext, useEffect, useMemo } from "react";
-import { useNotification } from "../hooks/useNotification";
-import NotificationBar from "../components/NotificationBar";
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
+import { useNotification } from '../hooks/useNotification';
+import NotificationBar from '../components/NotificationBar';
 
 interface NotificationContextType {
   showSuccess: (message: string) => void;
@@ -16,7 +16,7 @@ const NotificationContext = createContext<NotificationContextType | null>(null);
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
   if (!context) {
-    throw new Error("useNotifications must be used within a NotificationProvider");
+    throw new Error('useNotifications must be used within a NotificationProvider');
   }
   return context;
 };

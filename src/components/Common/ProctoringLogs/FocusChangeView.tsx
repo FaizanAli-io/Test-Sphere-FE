@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
-import { AlertCircle, Clock, TrendingUp } from "lucide-react";
+import React, { useMemo } from 'react';
+import { AlertCircle, Clock, TrendingUp } from 'lucide-react';
 
-import { ProctoringLog, FocusChangeMeta } from "./types";
+import { ProctoringLog, FocusChangeMeta } from './types';
 
 interface FocusChangeViewProps {
   logs: ProctoringLog[];
@@ -13,7 +13,7 @@ interface FocusChangeEvent extends FocusChangeMeta {
 
 export const FocusChangeView: React.FC<FocusChangeViewProps> = ({ logs }) => {
   const focusEvents = useMemo(() => {
-    const focusLogs = logs.filter((log) => log.logType === "FOCUS_CHANGE");
+    const focusLogs = logs.filter((log) => log.logType === 'FOCUS_CHANGE');
 
     const events: FocusChangeEvent[] = focusLogs.flatMap((log) =>
       log.meta.map((meta) => ({
@@ -55,17 +55,17 @@ export const FocusChangeView: React.FC<FocusChangeViewProps> = ({ logs }) => {
   };
 
   const getSeverityColor = (duration: number) => {
-    if (duration < 3000) return "bg-green-100 border-green-300 text-green-800";
-    if (duration < 10000) return "bg-yellow-100 border-yellow-300 text-yellow-800";
-    if (duration < 30000) return "bg-orange-100 border-orange-300 text-orange-800";
-    return "bg-red-100 border-red-300 text-red-800";
+    if (duration < 3000) return 'bg-green-100 border-green-300 text-green-800';
+    if (duration < 10000) return 'bg-yellow-100 border-yellow-300 text-yellow-800';
+    if (duration < 30000) return 'bg-orange-100 border-orange-300 text-orange-800';
+    return 'bg-red-100 border-red-300 text-red-800';
   };
 
   const getSeverityBadge = (duration: number) => {
-    if (duration < 3000) return { label: "Minor", color: "bg-green-500" };
-    if (duration < 10000) return { label: "Moderate", color: "bg-yellow-500" };
-    if (duration < 30000) return { label: "Significant", color: "bg-orange-500" };
-    return { label: "Major", color: "bg-red-500" };
+    if (duration < 3000) return { label: 'Minor', color: 'bg-green-500' };
+    if (duration < 10000) return { label: 'Moderate', color: 'bg-yellow-500' };
+    if (duration < 30000) return { label: 'Significant', color: 'bg-orange-500' };
+    return { label: 'Major', color: 'bg-red-500' };
   };
 
   if (focusEvents.length === 0) {
@@ -146,7 +146,7 @@ export const FocusChangeView: React.FC<FocusChangeViewProps> = ({ logs }) => {
                       <div className="flex items-center gap-2">
                         <AlertCircle size={16} className="text-gray-500" />
                         <span className="text-sm text-gray-700">
-                          Student was away for{" "}
+                          Student was away for{' '}
                           <span className="font-bold">{formatDuration(event.duration)}</span>
                         </span>
                       </div>

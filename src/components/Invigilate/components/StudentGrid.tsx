@@ -1,7 +1,7 @@
-import React from "react";
-import { StudentCard } from "./StudentCard";
-import type { InvigilatingStudent } from "../hooks";
-import type { ProctoringData } from "../hooks";
+import React from 'react';
+import { StudentCard } from './StudentCard';
+import type { InvigilatingStudent } from '../hooks';
+import type { ProctoringData } from '../hooks';
 
 interface StudentGridProps {
   students: InvigilatingStudent[];

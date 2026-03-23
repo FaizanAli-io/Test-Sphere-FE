@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import Image from "next/image";
-import api from "../../hooks/useApi";
-import type { TeacherRole } from "@/utils/rolePermissions";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
+import api from '../../hooks/useApi';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 interface ClassTeacher {
   teacherId: number;
@@ -27,14 +27,14 @@ interface TeachersSectionProps {
 
 const getRoleBadgeStyles = (role: string) => {
   switch (role) {
-    case "OWNER":
-      return "bg-purple-100 text-purple-800 border border-purple-300";
-    case "EDITOR":
-      return "bg-blue-100 text-blue-800 border border-blue-300";
-    case "VIEWER":
-      return "bg-gray-100 text-gray-800 border border-gray-300";
+    case 'OWNER':
+      return 'bg-purple-100 text-purple-800 border border-purple-300';
+    case 'EDITOR':
+      return 'bg-blue-100 text-blue-800 border border-blue-300';
+    case 'VIEWER':
+      return 'bg-gray-100 text-gray-800 border border-gray-300';
     default:
-      return "bg-gray-100 text-gray-800 border border-gray-300";
+      return 'bg-gray-100 text-gray-800 border border-gray-300';
   }
 };
 
@@ -47,7 +47,7 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
   const [teachers, setTeachers] = useState<ClassTeacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingTeacherId, setEditingTeacherId] = useState<number | null>(null);
-  const [editingRole, setEditingRole] = useState<"EDITOR" | "VIEWER">("EDITOR");
+  const [editingRole, setEditingRole] = useState<'EDITOR' | 'VIEWER'>('EDITOR');
   const [showEditModal, setShowEditModal] = useState(false);
   const [deletingTeacherId, setDeletingTeacherId] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -64,19 +64,19 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
 
     try {
       const response = await api(`/classes/${classId}`, {
-        method: "GET",
+        method: 'GET',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch teachers");
+        throw new Error(errorData.message || 'Failed to fetch teachers');
       }
 
       const data = await response.json();
       setTeachers(Array.isArray(data.teachers) ? data.teachers : []);
     } catch (err) {
-      console.error("Failed to fetch teachers:", err);
+      console.error('Failed to fetch teachers:', err);
       setTeachers([]);
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
 
   const handleEditRole = (teacher: ClassTeacher) => {
     setEditingTeacherId(teacher.teacherId);
-    setEditingRole(teacher.role as "EDITOR" | "VIEWER");
+    setEditingRole(teacher.role as 'EDITOR' | 'VIEWER');
     setShowEditModal(true);
   };
 
@@ -96,22 +96,22 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
     setActionLoading(true);
     try {
       const response = await api(`/classes/${classId}/teachers/${editingTeacherId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         auth: true,
         body: JSON.stringify({ role: editingRole }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update teacher role");
+        throw new Error(errorData.message || 'Failed to update teacher role');
       }
 
       setShowEditModal(false);
       setEditingTeacherId(null);
       await fetchTeachers();
     } catch (err) {
-      console.error("Failed to update teacher role:", err);
-      alert(err instanceof Error ? err.message : "Failed to update teacher role");
+      console.error('Failed to update teacher role:', err);
+      alert(err instanceof Error ? err.message : 'Failed to update teacher role');
     } finally {
       setActionLoading(false);
     }
@@ -128,21 +128,21 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
     setActionLoading(true);
     try {
       const response = await api(`/classes/${classId}/teachers/${deletingTeacherId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to remove teacher");
+        throw new Error(errorData.message || 'Failed to remove teacher');
       }
 
       setShowDeleteConfirm(false);
       setDeletingTeacherId(null);
       await fetchTeachers();
     } catch (err) {
-      console.error("Failed to remove teacher:", err);
-      alert(err instanceof Error ? err.message : "Failed to remove teacher");
+      console.error('Failed to remove teacher:', err);
+      alert(err instanceof Error ? err.message : 'Failed to remove teacher');
     } finally {
       setActionLoading(false);
     }
@@ -221,17 +221,17 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
                 <div className="flex flex-col gap-2 pt-4 border-t border-gray-200">
                   <button
                     onClick={() => handleEditRole(item)}
-                    disabled={actionLoading || item.role === "OWNER"}
+                    disabled={actionLoading || item.role === 'OWNER'}
                     className="w-full px-3 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    title={item.role === "OWNER" ? "Cannot edit owner" : ""}
+                    title={item.role === 'OWNER' ? 'Cannot edit owner' : ''}
                   >
                     Edit Role
                   </button>
                   <button
                     onClick={() => handleDeleteTeacher(item.teacherId)}
-                    disabled={actionLoading || item.role === "OWNER"}
+                    disabled={actionLoading || item.role === 'OWNER'}
                     className="w-full px-3 py-2 bg-red-100 text-red-700 font-semibold rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    title={item.role === "OWNER" ? "Cannot remove owner" : ""}
+                    title={item.role === 'OWNER' ? 'Cannot remove owner' : ''}
                   >
                     Remove
                   </button>
@@ -252,7 +252,7 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
               <label className="block text-sm font-bold text-gray-700 mb-3">New Role</label>
               <select
                 value={editingRole}
-                onChange={(e) => setEditingRole(e.target.value as "EDITOR" | "VIEWER")}
+                onChange={(e) => setEditingRole(e.target.value as 'EDITOR' | 'VIEWER')}
                 disabled={actionLoading}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-600 font-semibold text-gray-900 disabled:bg-gray-100"
               >
@@ -274,7 +274,7 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
                 disabled={actionLoading}
                 className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {actionLoading ? "Updating..." : "Update"}
+                {actionLoading ? 'Updating...' : 'Update'}
               </button>
             </div>
           </div>
@@ -287,10 +287,10 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border-2 border-red-200">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Remove Teacher?</h2>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to remove{" "}
+              Are you sure you want to remove{' '}
               <strong>
                 {teachers.find((t) => t.teacherId === deletingTeacherId)?.teacher.name}
-              </strong>{" "}
+              </strong>{' '}
               from this class? This action cannot be undone.
             </p>
 
@@ -307,7 +307,7 @@ const TeachersSection: React.FC<TeachersSectionProps> = ({
                 disabled={actionLoading}
                 className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold rounded-lg hover:from-red-700 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {actionLoading ? "Removing..." : "Remove"}
+                {actionLoading ? 'Removing...' : 'Remove'}
               </button>
             </div>
           </div>

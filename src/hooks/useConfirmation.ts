@@ -1,18 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback } from 'react';
 
 interface ConfirmationOptions {
   title: string;
   message: string;
   confirmText?: string;
   cancelText?: string;
-  type?: "danger" | "warning" | "info";
+  type?: 'danger' | 'warning' | 'info';
 }
 
 export const useConfirmation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<ConfirmationOptions>({
-    title: "",
-    message: "",
+    title: '',
+    message: '',
   });
   const [resolveConfirm, setResolveConfirm] = useState<((value: boolean) => void) | null>(null);
 

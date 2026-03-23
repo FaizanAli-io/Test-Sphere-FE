@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import Image from "next/image";
+import React, { useState } from 'react';
+import Image from 'next/image';
 import {
   Camera,
   Mic,
@@ -15,10 +15,10 @@ import {
   ArrowDown,
   Crosshair,
   UserX,
-} from "lucide-react";
+} from 'lucide-react';
 
-import type { InvigilatingStudent } from "../hooks";
-import type { ProctoringData } from "../hooks";
+import type { InvigilatingStudent } from '../hooks';
+import type { ProctoringData } from '../hooks';
 
 interface StudentCardProps {
   student: InvigilatingStudent;
@@ -39,41 +39,41 @@ function getScoreBg(score: number): string {
 }
 
 function getScoreLabel(score: number): string {
-  if (score <= 0.3) return "Safe";
-  if (score <= 0.6) return "Warning";
-  return "High Risk";
+  if (score <= 0.3) return 'Safe';
+  if (score <= 0.6) return 'Warning';
+  return 'High Risk';
 }
 
 function formatFlag(flag: string): string {
-  return flag.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return flag.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function GazeIcon({ flags }: { flags: string[] }) {
-  if (flags.includes("no_face"))
+  if (flags.includes('no_face'))
     return (
       <div title="No face">
         <UserX size={13} className="text-red-500" />
       </div>
     );
-  if (flags.includes("gaze_left"))
+  if (flags.includes('gaze_left'))
     return (
       <div title="Gaze left">
         <ArrowLeft size={13} className="text-orange-500" />
       </div>
     );
-  if (flags.includes("gaze_right"))
+  if (flags.includes('gaze_right'))
     return (
       <div title="Gaze right">
         <ArrowRight size={13} className="text-orange-500" />
       </div>
     );
-  if (flags.includes("gaze_up"))
+  if (flags.includes('gaze_up'))
     return (
       <div title="Gaze up">
         <ArrowUp size={13} className="text-orange-500" />
       </div>
     );
-  if (flags.includes("gaze_down"))
+  if (flags.includes('gaze_down'))
     return (
       <div title="Gaze down">
         <ArrowDown size={13} className="text-orange-500" />
@@ -96,9 +96,9 @@ export const StudentCard: React.FC<StudentCardProps> = ({
 
   const getInitials = (name: string) => {
     return name
-      .split(" ")
+      .split(' ')
       .map((n) => n[0])
-      .join("")
+      .join('')
       .toUpperCase()
       .slice(0, 2);
   };
@@ -128,8 +128,8 @@ export const StudentCard: React.FC<StudentCardProps> = ({
       className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all overflow-hidden hover:scale-[1.02] group relative"
       style={{
         borderWidth: 2,
-        borderStyle: "solid",
-        borderColor: borderColor ?? "#e5e7eb",
+        borderStyle: 'solid',
+        borderColor: borderColor ?? '#e5e7eb',
       }}
     >
       {/* Risk Score Bar */}
@@ -191,8 +191,8 @@ export const StudentCard: React.FC<StudentCardProps> = ({
                 className="rounded-full object-cover shadow-md"
                 style={{
                   borderWidth: 4,
-                  borderStyle: "solid",
-                  borderColor: borderColor ?? "#e0e7ff",
+                  borderStyle: 'solid',
+                  borderColor: borderColor ?? '#e0e7ff',
                 }}
               />
             </div>
@@ -201,8 +201,8 @@ export const StudentCard: React.FC<StudentCardProps> = ({
               className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold shadow-md"
               style={{
                 borderWidth: 4,
-                borderStyle: "solid",
-                borderColor: borderColor ?? "#e0e7ff",
+                borderStyle: 'solid',
+                borderColor: borderColor ?? '#e0e7ff',
               }}
             >
               {getInitials(student.name)}
@@ -221,17 +221,17 @@ export const StudentCard: React.FC<StudentCardProps> = ({
           <div className="flex items-center gap-3">
             <div
               className={`flex items-center gap-1 ${
-                student.cameraEnabled ? "text-green-600" : "text-gray-400"
+                student.cameraEnabled ? 'text-green-600' : 'text-gray-400'
               }`}
-              title={student.cameraEnabled ? "Camera on" : "Camera off"}
+              title={student.cameraEnabled ? 'Camera on' : 'Camera off'}
             >
               {student.cameraEnabled ? <Camera size={16} /> : <CameraOff size={16} />}
             </div>
             <div
               className={`flex items-center gap-1 ${
-                student.microphoneEnabled ? "text-green-600" : "text-gray-400"
+                student.microphoneEnabled ? 'text-green-600' : 'text-gray-400'
               }`}
-              title={student.microphoneEnabled ? "Mic on" : "Mic off"}
+              title={student.microphoneEnabled ? 'Mic on' : 'Mic off'}
             >
               {student.microphoneEnabled ? <Mic size={16} /> : <MicOff size={16} />}
             </div>
@@ -243,13 +243,29 @@ export const StudentCard: React.FC<StudentCardProps> = ({
               <span
                 className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                   proctoring.faceDetected
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-600"
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-600'
                 }`}
-                title={proctoring.faceDetected ? "Face detected" : "Face not detected"}
+                title={proctoring.faceDetected ? 'Face detected' : 'Face not detected'}
               >
-                {proctoring.faceDetected ? "FACE ✓" : "NO FACE"}
+                {proctoring.faceDetected ? 'FACE ✓' : 'NO FACE'}
               </span>
+              {(proctoring.extraPeopleCount ?? 0) > 0 && (
+                <span
+                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700"
+                  title="Extra person detected"
+                >
+                  +PERSON
+                </span>
+              )}
+              {(proctoring.suspiciousObjects?.length ?? 0) > 0 && (
+                <span
+                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-red-100 text-red-700"
+                  title="Suspicious object detected"
+                >
+                  OBJECT
+                </span>
+              )}
               <GazeIcon flags={proctoring.flags} />
             </div>
           )}
@@ -332,8 +348,8 @@ export const StudentCard: React.FC<StudentCardProps> = ({
             {/* Face Detection */}
             <div className="flex justify-between text-gray-300">
               <span className="text-gray-400">Face</span>
-              <span className={proctoring.faceDetected ? "text-green-400" : "text-red-400"}>
-                {proctoring.faceDetected ? "Detected" : "Not Detected"}
+              <span className={proctoring.faceDetected ? 'text-green-400' : 'text-red-400'}>
+                {proctoring.faceDetected ? 'Detected' : 'Not Detected'}
               </span>
             </div>
 
@@ -357,6 +373,19 @@ export const StudentCard: React.FC<StudentCardProps> = ({
               <span className="text-gray-400">Gaze</span>
               <span>
                 x: {proctoring.gazeDelta.x.toFixed(2)}, y: {proctoring.gazeDelta.y.toFixed(2)}
+              </span>
+            </div>
+
+            {/* Objects */}
+            <div className="flex justify-between text-gray-300">
+              <span className="text-gray-400">Objects</span>
+              <span>
+                {(proctoring.suspiciousObjects?.length ?? 0) > 0
+                  ? `${proctoring.suspiciousObjects?.length} suspicious`
+                  : 'none'}
+                {(proctoring.extraPeopleCount ?? 0) > 0
+                  ? `, +${proctoring.extraPeopleCount} extra person`
+                  : ''}
               </span>
             </div>
 

@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from 'react';
 
-import api from "@/hooks/useApi";
-import { ClassData, Test } from "./types";
+import api from '@/hooks/useApi';
+import { ClassData, Test } from './types';
 
 export function useStudentClasses() {
   const [classes, setClasses] = useState<ClassData[]>([]);
@@ -12,30 +12,30 @@ export function useStudentClasses() {
     setLoading(true);
     setError(null);
     try {
-      const response = await api("/classes", {
-        method: "GET",
+      const response = await api('/classes', {
+        method: 'GET',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch classes");
+        throw new Error(errorData.message || 'Failed to fetch classes');
       }
 
       const data = await response.json();
       const normalized: ClassData[] = Array.isArray(data)
         ? (data
             .map((raw: unknown) => {
-              if (!raw || typeof raw !== "object") return null;
+              if (!raw || typeof raw !== 'object') return null;
               const value = raw as Record<string, unknown>;
 
               // Extract class data from nested property
               const source =
-                "class" in value ? (value.class as Record<string, unknown> | undefined) : value;
+                'class' in value ? (value.class as Record<string, unknown> | undefined) : value;
               if (!source) return null;
 
               const approved =
-                typeof (value.approved ?? source.approved) === "boolean"
+                typeof (value.approved ?? source.approved) === 'boolean'
                   ? (value.approved ?? source.approved)
                   : true;
 
@@ -47,22 +47,22 @@ export function useStudentClasses() {
                 teacherId: Number(value.teacherId ?? source.teacherId),
                 role: value.role as string | undefined,
                 assignedAt: value.assignedAt as string | undefined,
-                teacher: source.teacher as ClassData["teacher"],
+                teacher: source.teacher as ClassData['teacher'],
                 studentCount: Array.isArray(source.students)
                   ? source.students.length
-                  : typeof source.studentCount === "number"
+                  : typeof source.studentCount === 'number'
                     ? source.studentCount
                     : 0,
                 testCount: Array.isArray(source.tests)
                   ? source.tests.length
-                  : typeof source.testCount === "number"
+                  : typeof source.testCount === 'number'
                     ? source.testCount
                     : 0,
                 createdAt: source.createdAt as string | undefined,
                 updatedAt: source.updatedAt as string | undefined,
                 approved,
                 disabled: approved === false,
-                statusLabel: approved === false ? "Pending Approval" : undefined,
+                statusLabel: approved === false ? 'Pending Approval' : undefined,
               } as ClassData;
             })
             .filter(Boolean) as ClassData[])
@@ -70,7 +70,7 @@ export function useStudentClasses() {
 
       setClasses(normalized.filter((c) => Number.isFinite(c.id)));
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred");
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -78,13 +78,13 @@ export function useStudentClasses() {
 
   const joinClass = useCallback(async (classCode: string) => {
     const response = await api(`/classes/${classCode}/join`, {
-      method: "POST",
+      method: 'POST',
       auth: true,
     });
 
     if (!response.ok) {
       const joinErr = await response.json();
-      throw new Error(joinErr.message || "Failed to join class");
+      throw new Error(joinErr.message || 'Failed to join class');
     }
 
     await response.json(); // response body ignored intentionally
@@ -93,13 +93,13 @@ export function useStudentClasses() {
 
   const leaveClass = useCallback(async (id: number) => {
     const response = await api(`/classes/${id}/leave`, {
-      method: "POST",
+      method: 'POST',
       auth: true,
     });
 
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.message || "Failed to leave class");
+      throw new Error(data.message || 'Failed to leave class');
     }
 
     setClasses((prev) => prev.filter((cls) => cls.id !== id));
@@ -131,13 +131,13 @@ export function useClassDetails() {
     setError(null);
     try {
       const response = await api(`/classes/${id}`, {
-        method: "GET",
+        method: 'GET',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch class details");
+        throw new Error(errorData.message || 'Failed to fetch class details');
       }
 
       const data = await response.json();
@@ -150,12 +150,12 @@ export function useClassDetails() {
         teacher: data.teacher ?? undefined,
         studentCount: Array.isArray(data.students)
           ? data.students.length
-          : typeof data.studentCount === "number"
+          : typeof data.studentCount === 'number'
             ? data.studentCount
             : 0,
         testCount: Array.isArray(data.tests)
           ? data.tests.length
-          : typeof data.testCount === "number"
+          : typeof data.testCount === 'number'
             ? data.testCount
             : 0,
         createdAt: data.createdAt,
@@ -163,7 +163,7 @@ export function useClassDetails() {
       setSelectedClass(normalized);
       return normalized;
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
       setError(errorMessage);
       throw err;
     } finally {
@@ -191,12 +191,12 @@ export function useTestsForClass() {
     setError(null);
     try {
       const response = await api(`/tests/class/${id}`, {
-        method: "GET",
+        method: 'GET',
         auth: true,
       });
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.message || "Failed to fetch tests for class");
+        throw new Error(data.message || 'Failed to fetch tests for class');
       }
       const data = await response.json();
       interface RawTest {
@@ -211,15 +211,15 @@ export function useTestsForClass() {
       const normalized = Array.isArray(data)
         ? (data as unknown[])
             .map((t) => {
-              if (!t || typeof t !== "object") return null;
+              if (!t || typeof t !== 'object') return null;
               const obj = t as RawTest;
               const id = Number(obj.id);
               if (!Number.isFinite(id)) return null;
               return {
                 id,
-                title: obj.title ?? "",
+                title: obj.title ?? '',
                 description: obj.description,
-                duration: typeof obj.duration === "number" ? obj.duration : undefined,
+                duration: typeof obj.duration === 'number' ? obj.duration : undefined,
                 startAt: obj.startAt,
                 endAt: obj.endAt,
                 status: obj.status,
@@ -230,7 +230,7 @@ export function useTestsForClass() {
       setTests(normalized);
       return normalized;
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
       setError(errorMessage);
       setTests([]);
       throw err;
@@ -264,7 +264,7 @@ export function useAllTests() {
       for (const classItem of classes) {
         try {
           const response = await api(`/tests/class/${classItem.id}`, {
-            method: "GET",
+            method: 'GET',
             auth: true,
           });
 
@@ -275,14 +275,14 @@ export function useAllTests() {
                   .map(
                     (test: Record<string, unknown>): Test => ({
                       id: Number(test.id),
-                      title: typeof test.title === "string" ? test.title : "Untitled Test",
-                      description: typeof test.description === "string" ? test.description : "",
+                      title: typeof test.title === 'string' ? test.title : 'Untitled Test',
+                      description: typeof test.description === 'string' ? test.description : '',
                       classId: classItem.id,
                       className: classItem.name,
                       duration: Number(test.duration) || 0,
-                      startAt: typeof test.startAt === "string" ? test.startAt : undefined,
-                      endAt: typeof test.endAt === "string" ? test.endAt : undefined,
-                      status: typeof test.status === "string" ? test.status : "DRAFT",
+                      startAt: typeof test.startAt === 'string' ? test.startAt : undefined,
+                      endAt: typeof test.endAt === 'string' ? test.endAt : undefined,
+                      status: typeof test.status === 'string' ? test.status : 'DRAFT',
                     }),
                   )
                   .filter((test: Test) => Number.isFinite(test.id))
@@ -298,7 +298,7 @@ export function useAllTests() {
 
       setAllTests(allTestsFromClasses);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
       setAllTestsError(errorMessage);
     } finally {
       setAllTestsLoading(false);
@@ -340,7 +340,7 @@ export function useNotifications() {
         setCopiedCode(id);
         setTimeout(() => setCopiedCode(null), 2000);
       } catch {
-        showError("Failed to copy code");
+        showError('Failed to copy code');
       }
     },
     [showError],

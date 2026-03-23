@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface JoinClassModalProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ export default function JoinClassModal({
   error,
 }: JoinClassModalProps) {
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !joining) {
+    if (e.key === 'Enter' && !joining) {
       onJoinClass();
     }
   };
@@ -59,7 +59,7 @@ export default function JoinClassModal({
             disabled={joining}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            {joining ? "Joining..." : "Join"}
+            {joining ? 'Joining...' : 'Join'}
           </button>
         </div>
       </div>

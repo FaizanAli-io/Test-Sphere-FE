@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState } from 'react';
 
-import api from "@/hooks/useApi";
+import api from '@/hooks/useApi';
 import {
   FocusChangeEvent,
   MouseClickEvent,
@@ -10,9 +10,9 @@ import {
   FocusChangeMetaPayload,
   MouseClickMetaPayload,
   KeystrokeMetaPayload,
-} from "../types/systemEvents";
-import { debugLogger } from "@/utils/logger";
-import { storeOfflineLog } from "@/utils/offlineStorage";
+} from '../types/systemEvents';
+import { debugLogger } from '@/utils/logger';
+import { storeOfflineLog } from '@/utils/offlineStorage';
 
 const systemEventUploadInterval = 10;
 
@@ -99,7 +99,7 @@ export const useSystemEventMonitoring = ({
 
     // If offline, store all events in IndexedDB
     if (!isOnline) {
-      debugLogger("🔌 Offline: Storing system events in IndexedDB");
+      debugLogger('🔌 Offline: Storing system events in IndexedDB');
       try {
         const promises = [];
 
@@ -109,9 +109,9 @@ export const useSystemEventMonitoring = ({
             loggedAt: event.loggedAt,
           }));
           promises.push(
-            storeOfflineLog(submissionId, "FOCUS_CHANGE", {
+            storeOfflineLog(submissionId, 'FOCUS_CHANGE', {
               submissionId,
-              logType: "FOCUS_CHANGE",
+              logType: 'FOCUS_CHANGE',
               meta,
             }),
           );
@@ -124,9 +124,9 @@ export const useSystemEventMonitoring = ({
             loggedAt: event.loggedAt,
           }));
           promises.push(
-            storeOfflineLog(submissionId, "MOUSECLICK", {
+            storeOfflineLog(submissionId, 'MOUSECLICK', {
               submissionId,
-              logType: "MOUSECLICK",
+              logType: 'MOUSECLICK',
               meta,
             }),
           );
@@ -138,9 +138,9 @@ export const useSystemEventMonitoring = ({
             loggedAt: event.loggedAt,
           }));
           promises.push(
-            storeOfflineLog(submissionId, "KEYSTROKE", {
+            storeOfflineLog(submissionId, 'KEYSTROKE', {
               submissionId,
-              logType: "KEYSTROKE",
+              logType: 'KEYSTROKE',
               meta,
             }),
           );
@@ -149,7 +149,7 @@ export const useSystemEventMonitoring = ({
         await Promise.all(promises);
         debugLogger(`📦 Stored ${promises.length} system event batch(es) offline`);
       } catch (error) {
-        console.error("❌ Failed to store system events offline:", error);
+        console.error('❌ Failed to store system events offline:', error);
       }
       return;
     }
@@ -164,7 +164,7 @@ export const useSystemEventMonitoring = ({
           loggedAt: event.loggedAt,
         }));
         logsToUpload.push({
-          logType: "FOCUS_CHANGE",
+          logType: 'FOCUS_CHANGE',
           submissionId,
           meta,
         });
@@ -177,7 +177,7 @@ export const useSystemEventMonitoring = ({
           loggedAt: event.loggedAt,
         }));
         logsToUpload.push({
-          logType: "MOUSECLICK",
+          logType: 'MOUSECLICK',
           submissionId,
           meta,
         });
@@ -189,7 +189,7 @@ export const useSystemEventMonitoring = ({
           loggedAt: event.loggedAt,
         }));
         logsToUpload.push({
-          logType: "KEYSTROKE",
+          logType: 'KEYSTROKE',
           submissionId,
           meta,
         });
@@ -197,19 +197,19 @@ export const useSystemEventMonitoring = ({
 
       if (logsToUpload.length > 0) {
         debugLogger(`📤 Uploading ${logsToUpload.length} log type(s) in batch`);
-        const response = await api("/proctoring-logs/batch", {
+        const response = await api('/proctoring-logs/batch', {
           auth: true,
-          method: "POST",
+          method: 'POST',
           body: JSON.stringify({ logs: logsToUpload }),
         });
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({ message: response.statusText }));
-          console.error("❌ System events upload failed:", errorData);
+          console.error('❌ System events upload failed:', errorData);
           throw new Error(`Failed to upload system events: ${JSON.stringify(errorData)}`);
         }
 
-        debugLogger("✅ System events uploaded successfully");
+        debugLogger('✅ System events uploaded successfully');
 
         // Update stats on successful upload
         statsRef.current.focusChanges.uploaded += focusChanges.length;
@@ -218,7 +218,7 @@ export const useSystemEventMonitoring = ({
         setStats({ ...statsRef.current });
       }
     } catch (error) {
-      console.error("❌ Failed to upload system events:", error);
+      console.error('❌ Failed to upload system events:', error);
       // On error, store offline as fallback
       try {
         const promises = [];
@@ -229,9 +229,9 @@ export const useSystemEventMonitoring = ({
             loggedAt: event.loggedAt,
           }));
           promises.push(
-            storeOfflineLog(submissionId, "FOCUS_CHANGE", {
+            storeOfflineLog(submissionId, 'FOCUS_CHANGE', {
               submissionId,
-              logType: "FOCUS_CHANGE",
+              logType: 'FOCUS_CHANGE',
               meta,
             }),
           );
@@ -244,9 +244,9 @@ export const useSystemEventMonitoring = ({
             loggedAt: event.loggedAt,
           }));
           promises.push(
-            storeOfflineLog(submissionId, "MOUSECLICK", {
+            storeOfflineLog(submissionId, 'MOUSECLICK', {
               submissionId,
-              logType: "MOUSECLICK",
+              logType: 'MOUSECLICK',
               meta,
             }),
           );
@@ -258,18 +258,18 @@ export const useSystemEventMonitoring = ({
             loggedAt: event.loggedAt,
           }));
           promises.push(
-            storeOfflineLog(submissionId, "KEYSTROKE", {
+            storeOfflineLog(submissionId, 'KEYSTROKE', {
               submissionId,
-              logType: "KEYSTROKE",
+              logType: 'KEYSTROKE',
               meta,
             }),
           );
         }
 
         await Promise.all(promises);
-        debugLogger("💾 Stored failed uploads offline as fallback");
+        debugLogger('💾 Stored failed uploads offline as fallback');
       } catch (fallbackError) {
-        console.error("❌ Failed to store offline as fallback:", fallbackError);
+        console.error('❌ Failed to store offline as fallback:', fallbackError);
       }
     }
   }, [submissionId, isOnline]);
@@ -283,13 +283,13 @@ export const useSystemEventMonitoring = ({
     if (document.hidden) {
       // User switched away from the test tab
       lastFocusLostTimeRef.current = Date.now();
-      debugLogger("👁️ User lost focus at:", new Date().toISOString());
+      debugLogger('👁️ User lost focus at:', new Date().toISOString());
     } else {
       // User returned to the test tab
       if (lastFocusLostTimeRef.current !== null) {
         const duration = Date.now() - lastFocusLostTimeRef.current;
         const event: FocusChangeEvent = {
-          type: "FOCUS_CHANGE",
+          type: 'FOCUS_CHANGE',
           duration,
           loggedAt: new Date().toISOString(),
         };
@@ -310,7 +310,7 @@ export const useSystemEventMonitoring = ({
 
     if (lastFocusLostTimeRef.current === null) {
       lastFocusLostTimeRef.current = Date.now();
-      debugLogger("👁️ Window lost focus at:", new Date().toISOString());
+      debugLogger('👁️ Window lost focus at:', new Date().toISOString());
     }
   }, [isTestActive]);
 
@@ -323,7 +323,7 @@ export const useSystemEventMonitoring = ({
     if (lastFocusLostTimeRef.current !== null) {
       const duration = Date.now() - lastFocusLostTimeRef.current;
       const event: FocusChangeEvent = {
-        type: "FOCUS_CHANGE",
+        type: 'FOCUS_CHANGE',
         duration,
         loggedAt: new Date().toISOString(),
       };
@@ -342,9 +342,9 @@ export const useSystemEventMonitoring = ({
     (e: MouseEvent) => {
       if (!isTestActive) return;
 
-      const buttonType = e.button === 2 ? "RIGHT" : "LEFT";
+      const buttonType = e.button === 2 ? 'RIGHT' : 'LEFT';
       const event: MouseClickEvent = {
-        type: "MOUSECLICK",
+        type: 'MOUSECLICK',
         buttonType,
         position: [e.clientX, e.clientY],
         loggedAt: new Date().toISOString(),
@@ -365,8 +365,8 @@ export const useSystemEventMonitoring = ({
       if (!isTestActive) return;
 
       const event: MouseClickEvent = {
-        type: "MOUSECLICK",
-        buttonType: "RIGHT",
+        type: 'MOUSECLICK',
+        buttonType: 'RIGHT',
         position: [e.clientX, e.clientY],
         loggedAt: new Date().toISOString(),
       };
@@ -386,7 +386,7 @@ export const useSystemEventMonitoring = ({
       if (!isTestActive) return;
 
       const event: KeystrokeEvent = {
-        type: "KEYSTROKE",
+        type: 'KEYSTROKE',
         key: e.key,
         loggedAt: new Date().toISOString(),
       };
@@ -404,26 +404,26 @@ export const useSystemEventMonitoring = ({
   useEffect(() => {
     if (!isTestActive || !submissionId) return;
 
-    debugLogger("🎯 Starting system event monitoring");
+    debugLogger('🎯 Starting system event monitoring');
 
     // Attach event listeners
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleBlur);
-    window.addEventListener("focus", handleFocus);
-    document.addEventListener("click", handleMouseClick);
-    document.addEventListener("contextmenu", handleContextMenu);
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('click', handleMouseClick);
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
 
     return () => {
       // Clean up event listeners
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleBlur);
-      window.removeEventListener("focus", handleFocus);
-      document.removeEventListener("click", handleMouseClick);
-      document.removeEventListener("contextmenu", handleContextMenu);
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('click', handleMouseClick);
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
 
-      debugLogger("🛑 Stopped system event monitoring");
+      debugLogger('🛑 Stopped system event monitoring');
     };
   }, [
     isTestActive,

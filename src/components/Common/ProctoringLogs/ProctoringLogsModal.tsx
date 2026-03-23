@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { Camera, Monitor, Eye, Mouse, Keyboard, X, RefreshCw } from "lucide-react";
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Camera, Monitor, Eye, Mouse, Keyboard, X, RefreshCw } from 'lucide-react';
 
-import api from "@/hooks/useApi";
-import { ImageLogsView } from "./ImageLogsView";
-import { KeystrokeView } from "./KeystrokeView";
-import { MouseClickView } from "./MouseClickView";
-import { FocusChangeView } from "./FocusChangeView";
-import { ProctoringLog, ProctoringLogsModalProps, FilterType, LogCounts } from "./types";
+import api from '@/hooks/useApi';
+import { ImageLogsView } from './ImageLogsView';
+import { KeystrokeView } from './KeystrokeView';
+import { MouseClickView } from './MouseClickView';
+import { FocusChangeView } from './FocusChangeView';
+import { ProctoringLog, ProctoringLogsModalProps, FilterType, LogCounts } from './types';
 
 export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
   open,
@@ -17,7 +17,7 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<FilterType>("SCREENSHOT");
+  const [activeTab, setActiveTab] = useState<FilterType>('SCREENSHOT');
 
   const fetchLogs = useCallback(
     async (isRefresh = false) => {
@@ -32,11 +32,11 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
 
       try {
         const res = await api(`/proctoring-logs/${submissionId}`, { auth: true });
-        if (!res.ok) throw new Error("Failed to fetch logs");
+        if (!res.ok) throw new Error('Failed to fetch logs');
         const data = await res.json();
         setLogs(data);
       } catch (e: unknown) {
-        setError(e instanceof Error ? e.message : "Failed to fetch logs");
+        setError(e instanceof Error ? e.message : 'Failed to fetch logs');
       } finally {
         if (isRefresh) {
           setRefreshing(false);
@@ -51,7 +51,7 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
   useEffect(() => {
     if (!open || !submissionId) return;
     setLogs(null);
-    setActiveTab("SCREENSHOT");
+    setActiveTab('SCREENSHOT');
     fetchLogs(false);
   }, [open, submissionId, fetchLogs]);
 
@@ -71,19 +71,19 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
       (acc, log) => {
         const count = log.metaLength;
         switch (log.logType) {
-          case "SCREENSHOT":
+          case 'SCREENSHOT':
             acc.screenshot += count;
             break;
-          case "WEBCAM_PHOTO":
+          case 'WEBCAM_PHOTO':
             acc.webcam += count;
             break;
-          case "FOCUS_CHANGE":
+          case 'FOCUS_CHANGE':
             acc.focusChange += count;
             break;
-          case "MOUSECLICK":
+          case 'MOUSECLICK':
             acc.mouseClick += count;
             break;
-          case "KEYSTROKE":
+          case 'KEYSTROKE':
             acc.keystroke += count;
             break;
         }
@@ -105,67 +105,67 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
 
   const tabs = [
     {
-      id: "SCREENSHOT" as FilterType,
-      label: "Screenshots",
+      id: 'SCREENSHOT' as FilterType,
+      label: 'Screenshots',
       icon: Monitor,
       count: logCounts.screenshot,
-      color: "blue",
+      color: 'blue',
     },
     {
-      id: "WEBCAM_PHOTO" as FilterType,
-      label: "Webcam",
+      id: 'WEBCAM_PHOTO' as FilterType,
+      label: 'Webcam',
       icon: Camera,
       count: logCounts.webcam,
-      color: "green",
+      color: 'green',
     },
     {
-      id: "FOCUS_CHANGE" as FilterType,
-      label: "Focus Changes",
+      id: 'FOCUS_CHANGE' as FilterType,
+      label: 'Focus Changes',
       icon: Eye,
       count: logCounts.focusChange,
-      color: "purple",
+      color: 'purple',
     },
     {
-      id: "MOUSECLICK" as FilterType,
-      label: "Mouse Clicks",
+      id: 'MOUSECLICK' as FilterType,
+      label: 'Mouse Clicks',
       icon: Mouse,
       count: logCounts.mouseClick,
-      color: "pink",
+      color: 'pink',
     },
     {
-      id: "KEYSTROKE" as FilterType,
-      label: "Keystrokes",
+      id: 'KEYSTROKE' as FilterType,
+      label: 'Keystrokes',
       icon: Keyboard,
       count: logCounts.keystroke,
-      color: "indigo",
+      color: 'indigo',
     },
   ];
 
   const getColorClasses = (color: string, isActive: boolean) => {
     const colors: Record<string, { active: string; inactive: string }> = {
       yellow: {
-        active: "bg-yellow-500 text-white shadow-md",
-        inactive: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300",
+        active: 'bg-yellow-500 text-white shadow-md',
+        inactive: 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300',
       },
       blue: {
-        active: "bg-blue-500 text-white shadow-md",
-        inactive: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300",
+        active: 'bg-blue-500 text-white shadow-md',
+        inactive: 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300',
       },
       green: {
-        active: "bg-green-500 text-white shadow-md",
-        inactive: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300",
+        active: 'bg-green-500 text-white shadow-md',
+        inactive: 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300',
       },
       purple: {
-        active: "bg-purple-500 text-white shadow-md",
-        inactive: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300",
+        active: 'bg-purple-500 text-white shadow-md',
+        inactive: 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300',
       },
       pink: {
-        active: "bg-pink-500 text-white shadow-md",
-        inactive: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300",
+        active: 'bg-pink-500 text-white shadow-md',
+        inactive: 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300',
       },
       indigo: {
-        active: "bg-indigo-500 text-white shadow-md",
-        inactive: "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300",
+        active: 'bg-indigo-500 text-white shadow-md',
+        inactive: 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300',
       },
     };
 
@@ -209,15 +209,15 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
     }
 
     switch (activeTab) {
-      case "SCREENSHOT":
+      case 'SCREENSHOT':
         return <ImageLogsView logs={logs} initialFilter="SCREENSHOT" />;
-      case "WEBCAM_PHOTO":
+      case 'WEBCAM_PHOTO':
         return <ImageLogsView logs={logs} initialFilter="WEBCAM_PHOTO" />;
-      case "FOCUS_CHANGE":
+      case 'FOCUS_CHANGE':
         return <FocusChangeView logs={logs} />;
-      case "MOUSECLICK":
+      case 'MOUSECLICK':
         return <MouseClickView logs={logs} />;
-      case "KEYSTROKE":
+      case 'KEYSTROKE':
         return <KeystrokeView logs={logs} />;
       default:
         return null;
@@ -243,7 +243,7 @@ export const ProctoringLogsModal: React.FC<ProctoringLogsModalProps> = ({
               aria-label="Refresh logs"
               title="Refresh logs"
             >
-              <RefreshCw size={20} className={refreshing ? "animate-spin" : ""} />
+              <RefreshCw size={20} className={refreshing ? 'animate-spin' : ''} />
             </button>
             <button
               onClick={onClose}

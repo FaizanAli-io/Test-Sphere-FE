@@ -1,7 +1,7 @@
-import fs from "fs";
-import path from "path";
+import fs from 'fs';
+import path from 'path';
 
-const OPENAPI_URL = "http://localhost:5000/api-json";
+const OPENAPI_URL = 'http://localhost:5000/api-json';
 const OUTPUT_DIR = process.cwd(); // assumes script is run inside "API Documentation"
 
 async function fetchOpenApi() {
@@ -16,12 +16,12 @@ function cleanOutputDir() {
   const files = fs.readdirSync(OUTPUT_DIR);
 
   for (const file of files) {
-    if (file.endsWith(".json")) {
+    if (file.endsWith('.json')) {
       fs.unlinkSync(path.join(OUTPUT_DIR, file));
     }
   }
 
-  console.log("🧹 Cleared existing JSON files");
+  console.log('🧹 Cleared existing JSON files');
 }
 
 function splitByTags(openapi) {
@@ -29,7 +29,7 @@ function splitByTags(openapi) {
 
   for (const [route, methods] of Object.entries(openapi.paths)) {
     for (const [method, operation] of Object.entries(methods)) {
-      const tags = operation.tags || ["untagged"];
+      const tags = operation.tags || ['untagged'];
 
       for (const tag of tags) {
         if (!tagBuckets[tag]) {
@@ -57,7 +57,7 @@ function writeTagFiles(openapi, tagBuckets) {
       paths,
     };
 
-    const filename = `${tag.toLowerCase().replace(/\s+/g, "-")}.json`;
+    const filename = `${tag.toLowerCase().replace(/\s+/g, '-')}.json`;
     fs.writeFileSync(path.join(OUTPUT_DIR, filename), JSON.stringify(doc, null, 2));
 
     console.log(`✅ Generated ${filename}`);
@@ -65,7 +65,7 @@ function writeTagFiles(openapi, tagBuckets) {
 }
 
 async function run() {
-  console.log("📥 Fetching OpenAPI spec...");
+  console.log('📥 Fetching OpenAPI spec...');
   const openapi = await fetchOpenApi();
 
   cleanOutputDir();
@@ -73,10 +73,10 @@ async function run() {
   const tagBuckets = splitByTags(openapi);
   writeTagFiles(openapi, tagBuckets);
 
-  console.log("🎉 API documentation successfully generated");
+  console.log('🎉 API documentation successfully generated');
 }
 
 run().catch((err) => {
-  console.error("❌ Error:", err.message);
+  console.error('❌ Error:', err.message);
   process.exit(1);
 });

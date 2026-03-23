@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Image from "next/image";
-import { LogOut, UserCircle, Loader2, GraduationCap, Mail } from "lucide-react";
-import ProfileModal from "./ProfileModal";
-import { api } from "../hooks/useApi";
-import { useNotifications } from "../contexts/NotificationContext";
+import React, { useEffect, useState, useCallback } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
+import Image from 'next/image';
+import { LogOut, UserCircle, Loader2, GraduationCap, Mail } from 'lucide-react';
+import ProfileModal from './ProfileModal';
+import { api } from '../hooks/useApi';
+import { useNotifications } from '../contexts/NotificationContext';
 
 interface UserProfile {
   id: number;
@@ -20,7 +20,7 @@ interface UserProfile {
 }
 
 // Move outside component to satisfy react-hooks/exhaustive-deps rule
-const PUBLIC_ROUTES = ["/", "/login", "/signup"];
+const PUBLIC_ROUTES = ['/', '/login', '/signup'];
 
 export default function Header() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function Header() {
   const fetchUser = useCallback(async () => {
     try {
       setLoadingUser(true);
-      const res = await api("/auth/me", { auth: true, method: "GET" });
+      const res = await api('/auth/me', { auth: true, method: 'GET' });
       if (!res.ok) {
         // Not authenticated or failed
         setUser(null);
@@ -46,7 +46,7 @@ export default function Header() {
       setUser(data);
       setIsAuth(true);
     } catch (err) {
-      console.error("Failed to fetch user:", err);
+      console.error('Failed to fetch user:', err);
       setUser(null);
       setIsAuth(false);
     } finally {
@@ -56,12 +56,12 @@ export default function Header() {
 
   useEffect(() => {
     // initial auth check
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     const hasToken = !!token;
     setIsAuth(hasToken);
 
     // Only fetch if authenticated AND not on a public route
-    if (hasToken && !PUBLIC_ROUTES.includes(pathname ?? "")) {
+    if (hasToken && !PUBLIC_ROUTES.includes(pathname ?? '')) {
       fetchUser();
     } else {
       // Ensure no user state is kept on public or unauthenticated views
@@ -70,11 +70,11 @@ export default function Header() {
     }
 
     const onAuthChange = () => {
-      const t = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const t = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
       const authed = !!t;
       setIsAuth(authed);
 
-      if (authed && !PUBLIC_ROUTES.includes(pathname ?? "")) {
+      if (authed && !PUBLIC_ROUTES.includes(pathname ?? '')) {
         fetchUser();
       } else {
         setUser(null);
@@ -89,26 +89,26 @@ export default function Header() {
       authChangeTimeout = setTimeout(onAuthChange, 100);
     };
 
-    window.addEventListener("storage", debouncedAuthChange);
-    window.addEventListener("authChange", debouncedAuthChange);
+    window.addEventListener('storage', debouncedAuthChange);
+    window.addEventListener('authChange', debouncedAuthChange);
 
     return () => {
       clearTimeout(authChangeTimeout);
-      window.removeEventListener("storage", debouncedAuthChange);
-      window.removeEventListener("authChange", debouncedAuthChange);
+      window.removeEventListener('storage', debouncedAuthChange);
+      window.removeEventListener('authChange', debouncedAuthChange);
     };
   }, [fetchUser, pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
     setUser(null);
     setIsAuth(false);
-    window.dispatchEvent(new Event("authChange"));
-    router.replace("/");
+    window.dispatchEvent(new Event('authChange'));
+    router.replace('/');
   };
 
   // Hide header on absolute public pages or when unauthenticated
-  if (PUBLIC_ROUTES.includes(pathname ?? "") || !isAuth) return null;
+  if (PUBLIC_ROUTES.includes(pathname ?? '') || !isAuth) return null;
 
   const handleProfileSaved = (updated: UserProfile) => {
     setUser(updated);
@@ -122,7 +122,7 @@ export default function Header() {
             {/* TestSphere logo (left) */}
             <div className="flex items-center">
               <button
-                onClick={() => router.push("/" + user?.role.toLowerCase())}
+                onClick={() => router.push('/' + user?.role.toLowerCase())}
                 className="flex items-center gap-3 group"
                 aria-label="Go to Dashboard"
               >
@@ -131,7 +131,7 @@ export default function Header() {
                 </div>
                 <div className="hidden sm:block">
                   <span className="text-gray-900 font-bold text-xl tracking-tight">
-                    Test{"    "}
+                    Test{'    '}
                     <span className="text-indigo-600">Sphere</span>
                   </span>
                   <span className="block text-xs text-gray-500 -mt-0.5 font-medium">
@@ -146,9 +146,23 @@ export default function Header() {
 
             {/* Buttons on the right: Contact, PrepGuru, Logout, Profile */}
             <div className="flex items-center gap-3">
+              {/* Diagnostics button */}
+              {process.env.NEXT_PUBLIC_DEBUG_MODE === 'true' && (
+                <button
+                  onClick={() => router.push('/diagnostics')}
+                  className="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm bg-gradient-to-r from-red-600 via-orange-500 to-yellow-500 text-white shadow-md hover:shadow-orange-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                  aria-label="Go to Diagnostics"
+                >
+                  <span className="bg-white bg-opacity-20 rounded-full w-5 h-5 flex items-center justify-center mr-2">
+                    <span className="text-xs font-bold text-white">D</span>
+                  </span>
+                  <span className="hidden sm:inline">Diagnostics</span>
+                </button>
+              )}
+
               {/* PrepGuru button */}
               <button
-                onClick={() => router.push("/prepguru")}
+                onClick={() => router.push('/prepguru')}
                 className="inline-flex items-center px-4 py-2 rounded-lg font-semibold text-sm bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 text-white shadow-md hover:shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 aria-label="Go to PrepGuru"
               >
@@ -162,10 +176,10 @@ export default function Header() {
               <button
                 onClick={async () => {
                   try {
-                    await navigator.clipboard.writeText("testsphereplatform@gmail.com");
-                    notifications.showSuccess("Support email copied to clipboard!");
+                    await navigator.clipboard.writeText('testsphereplatform@gmail.com');
+                    notifications.showSuccess('Support email copied to clipboard!');
                   } catch {
-                    notifications.showError("Failed to copy email");
+                    notifications.showError('Failed to copy email');
                   }
                 }}
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-gray-200 text-gray-700 shadow-md hover:shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
@@ -206,7 +220,7 @@ export default function Header() {
                     <Image
                       fill
                       src={user.profileImage}
-                      alt={user.name || "User"}
+                      alt={user.name || 'User'}
                       sizes="(max-width: 768px) 40px, 60px"
                       className="object-cover"
                       onError={(e) => {

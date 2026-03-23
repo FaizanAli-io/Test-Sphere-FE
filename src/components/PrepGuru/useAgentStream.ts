@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { api } from "../../hooks/useApi";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { api } from '../../hooks/useApi';
 
 interface StreamChunkChoiceDelta {
   content?: string;
@@ -21,11 +21,11 @@ export interface UseAgentStreamState {
   abort: () => void;
 }
 
-const STREAM_ENDPOINT = "/agent/stream";
+const STREAM_ENDPOINT = '/agent/stream';
 
 export function useAgentStream(): UseAgentStreamState {
-  const [message, setMessage] = useState("");
-  const [response, setResponse] = useState("");
+  const [message, setMessage] = useState('');
+  const [response, setResponse] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
@@ -41,13 +41,13 @@ export function useAgentStream(): UseAgentStreamState {
       const msg = custom ?? message;
       if (!msg.trim() || isStreaming) return;
       setError(null);
-      setResponse("");
+      setResponse('');
       setIsStreaming(true);
       const controller = new AbortController();
       abortRef.current = controller;
       try {
         const res = await api(STREAM_ENDPOINT, {
-          method: "POST",
+          method: 'POST',
           body: JSON.stringify({ prompt: msg }),
           signal: controller.signal,
           stream: true,
@@ -58,19 +58,19 @@ export function useAgentStream(): UseAgentStreamState {
         }
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let buffer = "";
+        let buffer = '';
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
           for (const raw of lines) {
             const line = raw.trim();
-            if (!line.startsWith("data:")) continue;
+            if (!line.startsWith('data:')) continue;
             const data = line.slice(5).trim();
             if (!data) continue;
-            if (data === "[DONE]") {
+            if (data === '[DONE]') {
               abort();
               return;
             }
@@ -83,8 +83,8 @@ export function useAgentStream(): UseAgentStreamState {
         }
         abort();
       } catch (err) {
-        if ((err as Error).name === "AbortError") return;
-        setError((err as Error).message || "Unknown error");
+        if ((err as Error).name === 'AbortError') return;
+        setError((err as Error).message || 'Unknown error');
         abort();
       }
     },

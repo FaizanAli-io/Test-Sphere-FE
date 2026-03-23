@@ -1,19 +1,19 @@
-import React from "react";
+import React from 'react';
 
-import { Submission } from "./types";
+import { Submission } from './types';
 import {
   formatDate,
   getSubmissionStatus,
   getSubmissionStatusColor,
   calculateTotalPossibleMarks,
   calculateCurrentTotalMarks,
-} from "./utils";
+} from './utils';
 
 interface SubmissionsListProps {
   submissions: Submission[];
   onClose: () => void;
   onSelectSubmission: (submission: Submission) => void;
-  viewContext?: "teacher" | "student";
+  viewContext?: 'teacher' | 'student';
   loading?: boolean;
   error?: string | null;
   classFilter?: number | null;
@@ -23,12 +23,12 @@ export default function SubmissionsList({
   submissions,
   onClose,
   onSelectSubmission,
-  viewContext = "teacher",
+  viewContext = 'teacher',
   loading = false,
   error = null,
   classFilter = null,
 }: SubmissionsListProps) {
-  const isStudentView = viewContext === "student";
+  const isStudentView = viewContext === 'student';
 
   // Filter submissions by class if specified
   const filteredSubmissions = classFilter
@@ -41,15 +41,15 @@ export default function SubmissionsList({
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-2xl font-bold text-white">
-                {isStudentView ? "Your Submissions" : "Test Submissions"} (
+                {isStudentView ? 'Your Submissions' : 'Test Submissions'} (
                 {filteredSubmissions.length})
               </h3>
               <p className="text-purple-100 mt-1">
                 {isStudentView
                   ? classFilter
-                    ? "View your submissions for this class"
-                    : "Review all your test submissions and scores"
-                  : "Review and grade student submissions"}
+                    ? 'View your submissions for this class'
+                    : 'Review all your test submissions and scores'
+                  : 'Review and grade student submissions'}
               </p>
             </div>
             <button
@@ -65,7 +65,7 @@ export default function SubmissionsList({
           {loading && (
             <div className="text-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading {isStudentView ? "your" : ""} submissions...</p>
+              <p className="text-gray-600">Loading {isStudentView ? 'your' : ''} submissions...</p>
             </div>
           )}
 
@@ -116,10 +116,10 @@ export default function SubmissionsList({
                         <div>
                           <h4 className="text-lg font-bold text-gray-900 mb-1">
                             {isStudentView
-                              ? submission.test?.title || "Unknown Test"
+                              ? submission.test?.title || 'Unknown Test'
                               : submission.student?.name ||
                                 submission.user?.name ||
-                                "Unknown Student"}
+                                'Unknown Student'}
                             {!isStudentView && (submission.student?.id || submission.user?.id) && (
                               <span className="text-sm font-normal text-gray-600 ml-2">
                                 (ID: {submission.student?.id || submission.user?.id})
@@ -128,7 +128,7 @@ export default function SubmissionsList({
                           </h4>
                           <p className="text-gray-600 text-sm">
                             {isStudentView
-                              ? submission.test?.class?.name || "Unknown Class"
+                              ? submission.test?.class?.name || 'Unknown Class'
                               : `Submitted: ${formatDate(submission.submittedAt)}`}
                           </p>
                         </div>
@@ -140,7 +140,7 @@ export default function SubmissionsList({
                           >
                             {status}
                           </span>
-                          {(submission.gradedAt || submission.status === "GRADED") && (
+                          {(submission.gradedAt || submission.status === 'GRADED') && (
                             <div className="mt-2 flex items-center gap-2 justify-end">
                               <p className="text-lg font-bold text-gray-900">
                                 {currentScore}/{totalPossible} marks
@@ -148,15 +148,15 @@ export default function SubmissionsList({
                               <span
                                 className={`inline-flex px-2.5 py-1 rounded-full text-xs font-bold ${
                                   percent === null
-                                    ? "bg-gray-400 text-white"
+                                    ? 'bg-gray-400 text-white'
                                     : percent >= 80
-                                      ? "bg-green-500 text-white"
+                                      ? 'bg-green-500 text-white'
                                       : percent >= 60
-                                        ? "bg-yellow-500 text-white"
-                                        : "bg-red-500 text-white"
+                                        ? 'bg-yellow-500 text-white'
+                                        : 'bg-red-500 text-white'
                                 }`}
                               >
-                                {percent === null ? "---%" : `${percent}%`}
+                                {percent === null ? '---%' : `${percent}%`}
                               </span>
                             </div>
                           )}

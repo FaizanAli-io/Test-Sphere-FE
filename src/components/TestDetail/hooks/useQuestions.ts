@@ -1,12 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import api from "../../../hooks/useApi";
+import { useState, useCallback, useEffect, useRef } from 'react';
+import api from '../../../hooks/useApi';
 import {
   Question,
   QuestionCreatePayload,
   QuestionUpdatePayload,
   NotificationFunctions,
   ConfirmationFunction,
-} from "../types";
+} from '../types';
 
 /**
  * Hook for managing questions CRUD operations
@@ -38,10 +38,10 @@ export const useQuestions = (
 
     try {
       const url = `/tests/${testId}/questions`;
-      const { debugLogger } = await import("@/utils/logger");
-      debugLogger("Fetching questions", { testId });
+      const { debugLogger } = await import('@/utils/logger');
+      debugLogger('Fetching questions', { testId });
       const response = await api(url, {
-        method: "GET",
+        method: 'GET',
         auth: true,
       });
 
@@ -53,31 +53,31 @@ export const useQuestions = (
           errorData = { message: `HTTP ${response.status}` };
         }
 
-        const errorMsg = errorData?.message || "";
+        const errorMsg = errorData?.message || '';
 
-        if (errorMsg === "No questions found for this test.") {
+        if (errorMsg === 'No questions found for this test.') {
           setQuestions([]);
           hasFetchedRef.current = testId;
           return;
         }
 
-        throw new Error(errorMsg || "Failed to fetch questions");
+        throw new Error(errorMsg || 'Failed to fetch questions');
       }
 
       const questionsData = await response.json();
       setQuestions(Array.isArray(questionsData) ? questionsData : []);
       hasFetchedRef.current = testId;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch questions";
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch questions';
 
       // Suppress duplicate identical errors that occur in a short window (e.g., React Strict double-invoke)
       const now = Date.now();
       if (lastErrorRef.current?.message !== errorMessage || now - lastErrorRef.current.ts > 2000) {
-        console.error("Error fetching questions:", errorMessage);
+        console.error('Error fetching questions:', errorMessage);
         lastErrorRef.current = { message: errorMessage, ts: now };
       }
 
-      if (!errorMessage.includes("No questions found")) {
+      if (!errorMessage.includes('No questions found')) {
         // Also suppress duplicate notification spam
         if (
           lastErrorRef.current?.message !== errorMessage ||
@@ -108,11 +108,11 @@ export const useQuestions = (
               type: questionData.type,
               maxMarks: questionData.maxMarks || 1,
               ...(questionData.options && { options: questionData.options }),
-              ...(typeof questionData.correctAnswer === "number" && {
+              ...(typeof questionData.correctAnswer === 'number' && {
                 correctAnswer: questionData.correctAnswer,
               }),
               ...(questionData.image && { image: questionData.image }),
-              ...(typeof questionData.questionPoolId !== "undefined" && {
+              ...(typeof questionData.questionPoolId !== 'undefined' && {
                 questionPoolId: questionData.questionPoolId,
               }),
             },
@@ -120,24 +120,24 @@ export const useQuestions = (
         };
 
         const response = await api(`/tests/${testId}/questions`, {
-          method: "POST",
+          method: 'POST',
           auth: true,
           body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to create question");
+          throw new Error(errorData.message || 'Failed to create question');
         }
 
         const result = await response.json();
         const newQuestions = Array.isArray(result) ? result : [result];
         setQuestions((prev) => [...prev, ...newQuestions]);
         hasFetchedRef.current = null;
-        notifRef.current?.showSuccess?.("Question created successfully");
+        notifRef.current?.showSuccess?.('Question created successfully');
         return true;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to create question";
+        const errorMessage = err instanceof Error ? err.message : 'Failed to create question';
         notifRef.current?.showError?.(errorMessage);
         return false;
       }
@@ -148,11 +148,11 @@ export const useQuestions = (
   const updateQuestion = useCallback(async (questionId: number, updates: QuestionUpdatePayload) => {
     try {
       const response = await api(`/tests/questions/${questionId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         auth: true,
         body: JSON.stringify({
           ...updates,
-          ...(typeof updates.questionPoolId !== "undefined" && {
+          ...(typeof updates.questionPoolId !== 'undefined' && {
             questionPoolId: updates.questionPoolId,
           }),
         }),
@@ -160,15 +160,15 @@ export const useQuestions = (
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update question");
+        throw new Error(errorData.message || 'Failed to update question');
       }
 
       const updatedQuestion = await response.json();
       setQuestions((prev) => prev.map((q) => (q.id === questionId ? updatedQuestion : q)));
-      notifRef.current?.showSuccess?.("Question updated successfully");
+      notifRef.current?.showSuccess?.('Question updated successfully');
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to update question";
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update question';
       notifRef.current?.showError?.(errorMessage);
       return false;
     }
@@ -178,30 +178,30 @@ export const useQuestions = (
     if (!confirmRef.current) return false;
 
     const confirmed = await confirmRef.current({
-      title: "Delete Question",
-      message: "Are you sure you want to delete this question? This action cannot be undone.",
-      confirmText: "Delete",
-      type: "danger",
+      title: 'Delete Question',
+      message: 'Are you sure you want to delete this question? This action cannot be undone.',
+      confirmText: 'Delete',
+      type: 'danger',
     });
 
     if (!confirmed) return false;
 
     try {
       const response = await api(`/tests/questions/${questionId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete question");
+        throw new Error(errorData.message || 'Failed to delete question');
       }
 
       setQuestions((prev) => prev.filter((q) => q.id !== questionId));
-      notifRef.current?.showSuccess?.("Question deleted successfully");
+      notifRef.current?.showSuccess?.('Question deleted successfully');
       return true;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to delete question";
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete question';
       notifRef.current?.showError?.(errorMessage);
       return false;
     }
@@ -218,7 +218,7 @@ export const useQuestions = (
             type: question.type,
             maxMarks: question.maxMarks || 1,
             ...(question.options && { options: question.options }),
-            ...(typeof question.correctAnswer === "number" && {
+            ...(typeof question.correctAnswer === 'number' && {
               correctAnswer: question.correctAnswer,
             }),
             ...(question.image && { image: question.image }),
@@ -226,14 +226,14 @@ export const useQuestions = (
         };
 
         const response = await api(`/tests/${testId}/questions`, {
-          method: "POST",
+          method: 'POST',
           auth: true,
           body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to create questions");
+          throw new Error(errorData.message || 'Failed to create questions');
         }
 
         const result = await response.json();
@@ -243,7 +243,7 @@ export const useQuestions = (
         notifications?.showSuccess?.(`${newQuestions.length} questions created successfully`);
         return true;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to create questions";
+        const errorMessage = err instanceof Error ? err.message : 'Failed to create questions';
         notifications?.showError?.(errorMessage);
         return false;
       }

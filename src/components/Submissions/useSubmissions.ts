@@ -1,14 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
-import api from "../../hooks/useApi";
-import { Submission, ViewContext, GradeSubmissionPayload, NotificationFunctions } from "./types";
-import { normalizeSubmission } from "./utils";
+import { useState, useCallback, useEffect } from 'react';
+import api from '../../hooks/useApi';
+import { Submission, ViewContext, GradeSubmissionPayload, NotificationFunctions } from './types';
+import { normalizeSubmission } from './utils';
 
 /**
  * Unified hook for managing submissions in both teacher and student contexts
  */
 export const useSubmissions = (
   testId?: string,
-  viewContext: ViewContext = "teacher",
+  viewContext: ViewContext = 'teacher',
   notifications?: NotificationFunctions,
 ) => {
   const [showSubmissionsModal, setShowSubmissionsModal] = useState(false);
@@ -27,16 +27,16 @@ export const useSubmissions = (
 
     try {
       const endpoint =
-        viewContext === "teacher" ? `/submissions/test/${testId}` : "/submissions/student";
+        viewContext === 'teacher' ? `/submissions/test/${testId}` : '/submissions/student';
 
       const response = await api(endpoint, {
-        method: "GET",
+        method: 'GET',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch submissions");
+        throw new Error(errorData.message || 'Failed to fetch submissions');
       }
 
       const data = await response.json();
@@ -47,8 +47,8 @@ export const useSubmissions = (
 
       setSubmissions(normalizedSubmissions);
     } catch (err) {
-      console.error("Failed to fetch submissions:", err);
-      notifications?.showError(err instanceof Error ? err.message : "Failed to fetch submissions");
+      console.error('Failed to fetch submissions:', err);
+      notifications?.showError(err instanceof Error ? err.message : 'Failed to fetch submissions');
       setSubmissions([]);
     } finally {
       setSubmissionsLoading(false);
@@ -63,21 +63,21 @@ export const useSubmissions = (
    */
   const gradeSubmission = useCallback(
     async (submissionId: number, payload: GradeSubmissionPayload) => {
-      if (viewContext !== "teacher") {
-        notifications?.showError("Only teachers can grade submissions");
+      if (viewContext !== 'teacher') {
+        notifications?.showError('Only teachers can grade submissions');
         return false;
       }
 
       try {
         const response = await api(`/submissions/${submissionId}/grade`, {
-          method: "POST",
+          method: 'POST',
           auth: true,
           body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to grade submission");
+          throw new Error(errorData.message || 'Failed to grade submission');
         }
 
         const result = await response.json();
@@ -96,7 +96,7 @@ export const useSubmissions = (
         notifications?.showSuccess(`Graded ${payload.answers.length} answer(s) successfully`);
         return true;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to grade submission";
+        const errorMessage = err instanceof Error ? err.message : 'Failed to grade submission';
         notifications?.showError(errorMessage);
         return false;
       }
@@ -106,19 +106,19 @@ export const useSubmissions = (
 
   const deleteSubmission = useCallback(
     async (submissionId: number) => {
-      if (viewContext !== "teacher") {
-        notifications?.showError("Only teachers can delete submissions");
+      if (viewContext !== 'teacher') {
+        notifications?.showError('Only teachers can delete submissions');
         return false;
       }
 
       try {
         const response = await api(`/submissions/${submissionId}`, {
-          method: "DELETE",
+          method: 'DELETE',
           auth: true,
         });
 
         if (!response.ok) {
-          let errorMessage = "Failed to delete submission";
+          let errorMessage = 'Failed to delete submission';
           try {
             const errorData = await response.json();
             errorMessage = errorData.message || errorMessage;
@@ -134,10 +134,10 @@ export const useSubmissions = (
           setSelectedSubmission(null);
         }
 
-        notifications?.showSuccess("Submission deleted successfully");
+        notifications?.showSuccess('Submission deleted successfully');
         return true;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to delete submission";
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete submission';
         notifications?.showError(errorMessage);
         return false;
       }
@@ -189,9 +189,9 @@ export const useSubmissions = (
   );
 
   useEffect(() => {
-    if (viewContext === "teacher" && testId) {
+    if (viewContext === 'teacher' && testId) {
       fetchSubmissions();
-    } else if (viewContext === "student") {
+    } else if (viewContext === 'student') {
       fetchSubmissions();
     }
   }, [viewContext, testId, fetchSubmissions]);

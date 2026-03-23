@@ -1,7 +1,7 @@
-import React from "react";
-import type { Test } from "../types";
-import { canEdit as checkCanEdit, canDelete as checkCanDelete } from "@/utils/rolePermissions";
-import type { TeacherRole } from "@/utils/rolePermissions";
+import React from 'react';
+import type { Test } from '../types';
+import { canEdit as checkCanEdit, canDelete as checkCanDelete } from '@/utils/rolePermissions';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 interface HeaderSectionProps {
   test: Test;
@@ -14,28 +14,28 @@ interface HeaderSectionProps {
 
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 };
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "DRAFT":
-      return "bg-gray-100 text-gray-800";
-    case "ACTIVE":
-      return "bg-green-100 text-green-800";
-    case "COMPLETED":
-      return "bg-blue-100 text-blue-800";
-    case "ARCHIVED":
-      return "bg-yellow-100 text-yellow-800";
+    case 'DRAFT':
+      return 'bg-gray-100 text-gray-800';
+    case 'ACTIVE':
+      return 'bg-green-100 text-green-800';
+    case 'COMPLETED':
+      return 'bg-blue-100 text-blue-800';
+    case 'ARCHIVED':
+      return 'bg-yellow-100 text-yellow-800';
     default:
-      return "bg-gray-100 text-gray-800";
+      return 'bg-gray-100 text-gray-800';
   }
 };
 
@@ -45,10 +45,10 @@ export default function HeaderSection({
   onEdit,
   onConfigure,
   onDelete,
-  teacherRole = "VIEWER",
+  teacherRole = 'VIEWER',
 }: HeaderSectionProps) {
   const handleInvigilate = () => {
-    window.open(`/test/${test.id}/invigilate`, "_blank");
+    window.open(`/test/${test.id}/invigilate`, '_blank');
   };
 
   const canEditTest = checkCanEdit(teacherRole);

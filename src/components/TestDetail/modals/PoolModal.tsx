@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { QuestionPool } from "../types";
+import React, { useEffect, useState } from 'react';
+import { QuestionPool } from '../types';
 
 interface PoolModalProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ interface PoolModalProps {
   ) => Promise<boolean>;
 }
 
-const QUESTION_TYPES = ["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER", "LONG_ANSWER"];
+const QUESTION_TYPES = ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER', 'LONG_ANSWER'];
 
 export default function PoolModal({
   isOpen,
@@ -21,7 +21,7 @@ export default function PoolModal({
   onCreate,
   onUpdate,
 }: PoolModalProps) {
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState('');
   const [config, setConfig] = useState<Record<string, number>>({});
   const [errors, setErrors] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -31,7 +31,7 @@ export default function PoolModal({
       setTitle(editingPool.title);
       setConfig({ ...editingPool.config });
     } else {
-      setTitle("");
+      setTitle('');
       setConfig({ MULTIPLE_CHOICE: 0, TRUE_FALSE: 0, SHORT_ANSWER: 0, LONG_ANSWER: 0 });
     }
     setErrors(null);
@@ -43,10 +43,10 @@ export default function PoolModal({
     for (const k of QUESTION_TYPES) {
       const v = config[k] ?? 0;
       if (!Number.isInteger(v) || v < 0) {
-        return "All counts must be non-negative integers";
+        return 'All counts must be non-negative integers';
       }
     }
-    if (!title.trim()) return "Title is required";
+    if (!title.trim()) return 'Title is required';
     return null;
   };
 
@@ -73,7 +73,7 @@ export default function PoolModal({
       <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden">
         <div className="px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 sticky top-0 z-10">
           <h3 className="text-2xl font-bold text-white">
-            {editingPool ? "Edit Pool" : "Create Pool"}
+            {editingPool ? 'Edit Pool' : 'Create Pool'}
           </h3>
         </div>
         <div className="p-6 space-y-4">
@@ -117,7 +117,7 @@ export default function PoolModal({
               disabled={submitting}
               className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-xl"
             >
-              {submitting ? "Saving..." : "Save"}
+              {submitting ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>

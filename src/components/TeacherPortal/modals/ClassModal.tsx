@@ -1,5 +1,5 @@
-import React from "react";
-import { Class, NewClass } from "../types";
+import React from 'react';
+import { Class, NewClass } from '../types';
 
 interface ClassModalProps {
   isOpen: boolean;
@@ -10,7 +10,7 @@ interface ClassModalProps {
   title: string;
   submitText: string;
   icon: string;
-  colorScheme: "indigo" | "yellow";
+  colorScheme: 'indigo' | 'yellow';
 }
 
 export default function ClassModal({
@@ -25,8 +25,8 @@ export default function ClassModal({
   colorScheme,
 }: ClassModalProps) {
   const [formData, setFormData] = React.useState<NewClass>({
-    name: classData?.name || "",
-    description: classData?.description || "",
+    name: classData?.name || '',
+    description: classData?.description || '',
   });
 
   React.useEffect(() => {
@@ -36,7 +36,7 @@ export default function ClassModal({
         description: classData.description,
       });
     } else {
-      setFormData({ name: "", description: "" });
+      setFormData({ name: '', description: '' });
     }
   }, [classData]);
 
@@ -44,27 +44,27 @@ export default function ClassModal({
     const success = await onSubmit(classData ? { ...classData, ...formData } : formData);
     if (success) {
       onClose();
-      setFormData({ name: "", description: "" });
+      setFormData({ name: '', description: '' });
     }
   };
 
   const handleClose = () => {
     onClose();
-    setFormData({ name: "", description: "" });
+    setFormData({ name: '', description: '' });
   };
 
   if (!isOpen) return null;
 
   const colors = {
     indigo: {
-      gradient: "from-indigo-600 to-blue-600",
-      hoverGradient: "hover:from-indigo-700 hover:to-blue-700",
-      focus: "focus:ring-indigo-500 focus:border-indigo-500",
+      gradient: 'from-indigo-600 to-blue-600',
+      hoverGradient: 'hover:from-indigo-700 hover:to-blue-700',
+      focus: 'focus:ring-indigo-500 focus:border-indigo-500',
     },
     yellow: {
-      gradient: "from-yellow-500 to-orange-500",
-      hoverGradient: "hover:from-yellow-600 hover:to-orange-600",
-      focus: "focus:ring-yellow-500 focus:border-yellow-500",
+      gradient: 'from-yellow-500 to-orange-500',
+      hoverGradient: 'hover:from-yellow-600 hover:to-orange-600',
+      focus: 'focus:ring-yellow-500 focus:border-yellow-500',
     },
   };
 
@@ -115,7 +115,7 @@ export default function ClassModal({
             disabled={loading}
             className={`flex-1 px-6 py-4 bg-gradient-to-r ${colorConfig.gradient} text-white font-bold rounded-xl ${colorConfig.hoverGradient} transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl text-lg`}
           >
-            {loading ? "Processing..." : submitText}
+            {loading ? 'Processing...' : submitText}
           </button>
         </div>
       </div>

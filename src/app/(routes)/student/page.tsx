@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import StudentPortal from "@/components/StudentPortal";
+import StudentPortal from '@/components/StudentPortal';
 
 export default function StudentPage() {
   return <StudentPortal />;

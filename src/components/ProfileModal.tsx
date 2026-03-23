@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { createPortal } from "react-dom";
-import React, { useEffect } from "react";
-import Image from "next/image";
-import { useProfileEditor } from "@/hooks/useProfileEditor";
-import ProfileImageUpload from "./ProfileImageUpload";
-import { X, Edit2, Save, CheckCircle, AlertCircle } from "lucide-react";
+import { createPortal } from 'react-dom';
+import React, { useEffect } from 'react';
+import Image from 'next/image';
+import { useProfileEditor } from '@/hooks/useProfileEditor';
+import ProfileImageUpload from './ProfileImageUpload';
+import { X, Edit2, Save, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface UserProfile {
   id: number;
@@ -54,13 +54,13 @@ export default function ProfileModal({
   // close on Escape
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === 'Escape') onClose();
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  if (typeof document === "undefined") return null;
+  if (typeof document === 'undefined') return null;
 
   return createPortal(
     <div
@@ -83,23 +83,23 @@ export default function ProfileModal({
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-xl overflow-hidden bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-md ring-2 ring-white">
-              {userProfile?.name?.charAt(0)?.toUpperCase() ?? "U"}
+              {userProfile?.name?.charAt(0)?.toUpperCase() ?? 'U'}
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-800">{userProfile?.name ?? "User"}</h3>
+              <h3 className="text-xl font-semibold text-gray-800">{userProfile?.name ?? 'User'}</h3>
               <p className="text-sm font-medium text-indigo-600 capitalize">
-                {userProfile?.role ?? "Member"}
+                {userProfile?.role ?? 'Member'}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {msg?.type === "success" && (
+            {msg?.type === 'success' && (
               <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-green-50 text-green-700 text-sm font-medium border border-green-100 shadow-sm animate-fadeIn">
                 <CheckCircle className="w-4 h-4" /> {msg.text}
               </div>
             )}
-            {msg?.type === "error" && (
+            {msg?.type === 'error' && (
               <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-red-50 text-red-700 text-sm font-medium border border-red-100 shadow-sm animate-fadeIn">
                 <AlertCircle className="w-4 h-4" /> {msg.text}
               </div>
@@ -109,10 +109,10 @@ export default function ProfileModal({
               onClick={toggleEditing}
               className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg bg-white border border-gray-200 shadow-sm hover:bg-gray-50 hover:border-indigo-200 active:bg-gray-100 transition-all"
               aria-pressed={editing}
-              title={editing ? "Cancel edit" : "Edit profile"}
+              title={editing ? 'Cancel edit' : 'Edit profile'}
             >
               <Edit2 className="w-4 h-4 text-indigo-600" />
-              <span className="text-gray-700">{editing ? "Cancel" : "Edit"}</span>
+              <span className="text-gray-700">{editing ? 'Cancel' : 'Edit'}</span>
             </button>
 
             <button
@@ -144,12 +144,12 @@ export default function ProfileModal({
                       className="object-cover"
                       onError={() => {
                         // Clear the profile image to show fallback
-                        setProfileImage("");
+                        setProfileImage('');
                       }}
                     />
                   ) : (
                     <div className="text-2xl font-bold text-white bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 w-full h-full flex items-center justify-center">
-                      {userProfile?.name?.charAt(0)?.toUpperCase() ?? "U"}
+                      {userProfile?.name?.charAt(0)?.toUpperCase() ?? 'U'}
                     </div>
                   )}
                 </div>
@@ -164,7 +164,7 @@ export default function ProfileModal({
                     CNIC
                   </p>
                   <p className="text-sm text-gray-800 font-mono bg-gray-50 px-2 py-1 rounded-md border border-gray-100 inline-block">
-                    {userProfile?.cnic || "Not set"}
+                    {userProfile?.cnic || 'Not set'}
                   </p>
                 </div>
               </div>
@@ -235,7 +235,7 @@ export default function ProfileModal({
                       ) : (
                         <Save className="w-4.5 h-4.5" />
                       )}
-                      <span>{saving ? "Saving..." : "Save changes"}</span>
+                      <span>{saving ? 'Saving...' : 'Save changes'}</span>
                     </button>
                   </div>
                 </div>
@@ -257,8 +257,8 @@ export default function ProfileModal({
                     <div
                       className={`mt-2 px-2 py-0.5 rounded text-xs ${
                         userProfile?.verified
-                          ? "bg-green-100 text-green-700"
-                          : "bg-amber-100 text-amber-700"
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-amber-100 text-amber-700'
                       } inline-flex items-center self-start`}
                     >
                       {userProfile?.verified ? (
@@ -283,11 +283,11 @@ export default function ProfileModal({
                     <p className="text-base font-medium text-gray-800">
                       {userProfile
                         ? new Date(userProfile.createdAt).toLocaleDateString(undefined, {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
                           })
-                        : "-"}
+                        : '-'}
                     </p>
                   </div>
                 </div>

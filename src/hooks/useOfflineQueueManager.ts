@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useEffect, useCallback, useRef, useState } from "react";
+import { useEffect, useCallback, useRef, useState } from 'react';
 
-import api from "@/hooks/useApi";
+import api from '@/hooks/useApi';
 import {
   getOfflineLogs,
   deleteOfflineLog,
   getPendingLogsCount,
   incrementUploadAttempts,
-} from "@/utils/offlineStorage";
-import { debugLogger } from "@/utils/logger";
-import { decryptData } from "@/utils/encryption";
-import type { OfflineLog } from "@/utils/offlineStorage";
+} from '@/utils/offlineStorage';
+import { debugLogger } from '@/utils/logger';
+import { decryptData } from '@/utils/encryption';
+import type { OfflineLog } from '@/utils/offlineStorage';
 
 const MAX_UPLOAD_ATTEMPTS = 5;
 
@@ -81,8 +81,8 @@ export const useOfflineQueueManager = ({
    */
   const getImageKitAuth = useCallback(async (): Promise<ImageKitAuthParams | null> => {
     try {
-      const res = await api("/upload/signature", {
-        method: "GET",
+      const res = await api('/upload/signature', {
+        method: 'GET',
         auth: true,
       });
       if (!res.ok) return null;
@@ -95,7 +95,7 @@ export const useOfflineQueueManager = ({
         urlEndpoint: data.urlEndpoint,
       };
     } catch (error) {
-      console.error("Failed to get ImageKit auth:", error);
+      console.error('Failed to get ImageKit auth:', error);
       return null;
     }
   }, []);
@@ -106,7 +106,7 @@ export const useOfflineQueueManager = ({
   const uploadImageToImageKit = useCallback(
     async (
       base64Data: string,
-      type: "webcam" | "screenshot",
+      type: 'webcam' | 'screenshot',
     ): Promise<ImageKitUploadResult | null> => {
       try {
         const auth = await getImageKitAuth();
@@ -118,16 +118,16 @@ export const useOfflineQueueManager = ({
 
         const formData = new FormData();
         const fileName = `${type}_${Date.now()}.jpg`;
-        formData.append("file", blob, fileName);
-        formData.append("fileName", fileName);
-        formData.append("folder", "/test-monitoring");
-        formData.append("signature", auth.signature);
-        formData.append("expire", auth.expire.toString());
-        formData.append("token", auth.token);
-        formData.append("publicKey", auth.publicKey);
+        formData.append('file', blob, fileName);
+        formData.append('fileName', fileName);
+        formData.append('folder', '/test-monitoring');
+        formData.append('signature', auth.signature);
+        formData.append('expire', auth.expire.toString());
+        formData.append('token', auth.token);
+        formData.append('publicKey', auth.publicKey);
 
-        const uploadResponse = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
-          method: "POST",
+        const uploadResponse = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
+          method: 'POST',
           body: formData,
         });
 
@@ -141,7 +141,7 @@ export const useOfflineQueueManager = ({
           url: result.url,
         };
       } catch (error) {
-        console.error("Failed to upload image to ImageKit:", error);
+        console.error('Failed to upload image to ImageKit:', error);
         return null;
       }
     },
@@ -166,7 +166,7 @@ export const useOfflineQueueManager = ({
         };
 
         // Check if this is an image log that needs ImageKit upload
-        const isImageLog = log.logType === "WEBCAM_PHOTO" || log.logType === "SCREENSHOT";
+        const isImageLog = log.logType === 'WEBCAM_PHOTO' || log.logType === 'SCREENSHOT';
 
         if (isImageLog && decryptedData.meta && Array.isArray(decryptedData.meta)) {
           // Process each image in the meta array
@@ -175,11 +175,11 @@ export const useOfflineQueueManager = ({
               async (item: { imageData?: string; takenAt?: string; [key: string]: unknown }) => {
                 if (item.imageData) {
                   // Upload to ImageKit first
-                  const imageType = log.logType === "WEBCAM_PHOTO" ? "webcam" : "screenshot";
+                  const imageType = log.logType === 'WEBCAM_PHOTO' ? 'webcam' : 'screenshot';
                   const uploadResult = await uploadImageToImageKit(item.imageData, imageType);
 
                   if (!uploadResult) {
-                    throw new Error("Failed to upload image to ImageKit");
+                    throw new Error('Failed to upload image to ImageKit');
                   }
 
                   // Replace imageData with fileId and image URL
@@ -234,11 +234,11 @@ export const useOfflineQueueManager = ({
 
         // Send all logs in one batch to backend
         const logsArray = successfulLogs.map((item) => item.data);
-        debugLogger("📋 Offline logs being uploaded in batch:", logsArray.length);
+        debugLogger('📋 Offline logs being uploaded in batch:', logsArray.length);
 
-        const response = await api("/proctoring-logs/batch", {
+        const response = await api('/proctoring-logs/batch', {
           auth: true,
-          method: "POST",
+          method: 'POST',
           body: JSON.stringify({ logs: logsArray }),
         });
 
@@ -256,15 +256,15 @@ export const useOfflineQueueManager = ({
             const logType = item.data?.logType;
             const metaCount = Array.isArray(item.data?.meta) ? item.data.meta.length : 1;
 
-            if (logType === "SCREENSHOT") {
+            if (logType === 'SCREENSHOT') {
               counts.screenshots += metaCount;
-            } else if (logType === "WEBCAM_PHOTO") {
+            } else if (logType === 'WEBCAM_PHOTO') {
               counts.webcamPhotos += metaCount;
-            } else if (logType === "FOCUS_CHANGE") {
+            } else if (logType === 'FOCUS_CHANGE') {
               counts.focusChanges += metaCount;
-            } else if (logType === "MOUSECLICK") {
+            } else if (logType === 'MOUSECLICK') {
               counts.clicks += metaCount;
-            } else if (logType === "KEYSTROKE") {
+            } else if (logType === 'KEYSTROKE') {
               counts.keystrokes += metaCount;
             }
           });
@@ -325,13 +325,13 @@ export const useOfflineQueueManager = ({
     setIsSyncing(true);
 
     try {
-      debugLogger("📤 Starting offline logs sync...");
+      debugLogger('📤 Starting offline logs sync...');
 
       // Get all pending logs
       const logs = await getOfflineLogs(submissionId);
 
       if (logs.length === 0) {
-        debugLogger("✅ No offline logs to sync");
+        debugLogger('✅ No offline logs to sync');
         setPendingCount(0);
         return;
       }
@@ -358,9 +358,9 @@ export const useOfflineQueueManager = ({
       // Update pending count
       await updatePendingCount();
 
-      debugLogger("✅ Offline logs sync completed");
+      debugLogger('✅ Offline logs sync completed');
     } catch (error) {
-      console.error("❌ Error syncing offline logs:", error);
+      console.error('❌ Error syncing offline logs:', error);
     } finally {
       syncingRef.current = false;
       setIsSyncing(false);

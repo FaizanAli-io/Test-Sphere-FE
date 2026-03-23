@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback, useRef } from "react";
-import { FullscreenElement, FullscreenDocument } from "../types/fullscreen";
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { FullscreenElement, FullscreenDocument } from '../types/fullscreen';
 
 interface UseFullscreenMonitoringProps {
   submissionId: number | null; // Not used in frontend-only implementation but kept for API consistency
@@ -13,7 +13,7 @@ interface UseFullscreenMonitoringProps {
 }
 
 interface ViolationLog {
-  type: "FULLSCREEN_EXIT";
+  type: 'FULLSCREEN_EXIT';
   timestamp: string;
   details: string;
 }
@@ -222,7 +222,7 @@ export const useFullscreenMonitoring = ({
 
     const newViolationCount = violationCount + 1;
     const violationLog: ViolationLog = {
-      type: "FULLSCREEN_EXIT",
+      type: 'FULLSCREEN_EXIT',
       timestamp: new Date().toISOString(),
       details: `User exited fullscreen mode. Violation ${newViolationCount}/${MAX_VIOLATIONS}`,
     };
@@ -312,10 +312,10 @@ export const useFullscreenMonitoring = ({
     if (!isTestActive) return;
 
     const events = [
-      "fullscreenchange",
-      "webkitfullscreenchange",
-      "mozfullscreenchange",
-      "msfullscreenchange",
+      'fullscreenchange',
+      'webkitfullscreenchange',
+      'mozfullscreenchange',
+      'msfullscreenchange',
     ];
 
     events.forEach((event) => {
@@ -326,7 +326,7 @@ export const useFullscreenMonitoring = ({
 
     // Backup monitoring strategies
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isTestActive && hasEnteredFullscreen.current) {
+      if (event.key === 'Escape' && isTestActive && hasEnteredFullscreen.current) {
         setTimeout(() => {
           const currentStatus = checkFullscreenStatus();
           if (!currentStatus) {
@@ -346,13 +346,13 @@ export const useFullscreenMonitoring = ({
       }
     }, 1000); // Check every second
 
-    document.addEventListener("keydown", handleKeyDown, { passive: true });
+    document.addEventListener('keydown', handleKeyDown, { passive: true });
 
     return () => {
       events.forEach((event) => {
         document.removeEventListener(event, handleFullscreenChange);
       });
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
       clearInterval(intervalCheck);
     };
   }, [

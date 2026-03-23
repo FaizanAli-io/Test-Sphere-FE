@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from 'react';
 
 export interface Notification {
   id: string;
-  type: "success" | "error" | "warning" | "info";
+  type: 'success' | 'error' | 'warning' | 'info';
   message: string;
 }
 
@@ -10,7 +10,7 @@ export const useNotification = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const timeoutsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  const addNotification = useCallback((type: Notification["type"], message: string) => {
+  const addNotification = useCallback((type: Notification['type'], message: string) => {
     const id = Date.now().toString();
     const newNotification: Notification = { id, type, message };
 
@@ -39,28 +39,28 @@ export const useNotification = () => {
 
   const showSuccess = useCallback(
     (message: string) => {
-      return addNotification("success", message);
+      return addNotification('success', message);
     },
     [addNotification],
   );
 
   const showError = useCallback(
     (message: string) => {
-      return addNotification("error", message);
+      return addNotification('error', message);
     },
     [addNotification],
   );
 
   const showWarning = useCallback(
     (message: string) => {
-      return addNotification("warning", message);
+      return addNotification('warning', message);
     },
     [addNotification],
   );
 
   const showInfo = useCallback(
     (message: string) => {
-      return addNotification("info", message);
+      return addNotification('info', message);
     },
     [addNotification],
   );

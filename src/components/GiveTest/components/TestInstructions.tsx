@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { Camera, Mic, Check, X } from "lucide-react";
+import React, { useState } from 'react';
+import { Camera, Mic, Check, X } from 'lucide-react';
 
-import { Test } from "../hooks/useTestExam";
-import { debugLogger } from "@/utils/logger";
+import { Test } from '../hooks/useTestExam';
+import { debugLogger } from '@/utils/logger';
 
 interface TestInstructionsProps {
   test: Test;
@@ -54,10 +54,10 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
       const videoTrack = stream.getVideoTracks()[0];
       const audioTrack = stream.getAudioTracks()[0];
 
-      if (videoTrack && videoTrack.readyState === "live") {
+      if (videoTrack && videoTrack.readyState === 'live') {
         newPerms.camera = true;
       }
-      if (audioTrack && audioTrack.readyState === "live") {
+      if (audioTrack && audioTrack.readyState === 'live') {
         newPerms.microphone = true;
       }
 
@@ -66,23 +66,23 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
 
       if (!newPerms.camera || !newPerms.microphone) {
         const missing = [];
-        if (!newPerms.camera) missing.push("Camera");
-        if (!newPerms.microphone) missing.push("Microphone");
-        errors.push(`${missing.join(" and ")} permission required to start the test.`);
+        if (!newPerms.camera) missing.push('Camera');
+        if (!newPerms.microphone) missing.push('Microphone');
+        errors.push(`${missing.join(' and ')} permission required to start the test.`);
       }
     } catch (error: unknown) {
-      console.error("Camera/Microphone permission check failed:", error);
+      console.error('Camera/Microphone permission check failed:', error);
 
       // Provide specific error messages
-      if (error instanceof Error && error.name === "NotAllowedError") {
+      if (error instanceof Error && error.name === 'NotAllowedError') {
         errors.push(
-          "Camera and microphone permissions were denied. Please allow access and try again.",
+          'Camera and microphone permissions were denied. Please allow access and try again.',
         );
-      } else if (error instanceof Error && error.name === "NotFoundError") {
-        errors.push("No camera or microphone found. Please connect devices and try again.");
+      } else if (error instanceof Error && error.name === 'NotFoundError') {
+        errors.push('No camera or microphone found. Please connect devices and try again.');
       } else {
         errors.push(
-          "Failed to access camera or microphone. Please check your devices and try again.",
+          'Failed to access camera or microphone. Please check your devices and try again.',
         );
       }
     }
@@ -92,25 +92,25 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           // Note: Browsers may ignore this, we'll validate after selection
-          displaySurface: "monitor",
+          displaySurface: 'monitor',
         } as MediaTrackConstraints & { displaySurface?: string },
         audio: false,
       });
 
       const screenTrack = screenStream.getVideoTracks()[0];
       const settings = screenTrack?.getSettings?.();
-      const surface = (settings as Record<string, unknown> | undefined)?.["displaySurface"] as
+      const surface = (settings as Record<string, unknown> | undefined)?.['displaySurface'] as
         | string
         | undefined;
       const isEntireScreen =
-        surface === "monitor" ||
-        (typeof screenTrack?.label === "string" &&
+        surface === 'monitor' ||
+        (typeof screenTrack?.label === 'string' &&
           /entire screen|screen 1|screen 2|whole screen/i.test(screenTrack.label));
 
-      if (screenTrack && screenTrack.readyState === "live" && isEntireScreen) {
+      if (screenTrack && screenTrack.readyState === 'live' && isEntireScreen) {
         newPerms.screen = true;
         debugLogger(
-          "[TestInstructions] Screen permission granted (entire screen), stream active:",
+          '[TestInstructions] Screen permission granted (entire screen), stream active:',
           screenStream.active,
         );
         // Keep the screen stream alive for later use
@@ -121,12 +121,12 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
         errors.push("Please select 'Entire screen' in the screen sharing dialog.");
       }
     } catch (error: unknown) {
-      console.error("Screen share permission check failed:", error);
+      console.error('Screen share permission check failed:', error);
 
-      if (error instanceof Error && error.name === "NotAllowedError") {
-        errors.push("Screen share permission was denied. Please allow access and try again.");
+      if (error instanceof Error && error.name === 'NotAllowedError') {
+        errors.push('Screen share permission was denied. Please allow access and try again.');
       } else {
-        errors.push("Failed to access screen share. Please try again.");
+        errors.push('Failed to access screen share. Please try again.');
       }
     }
 
@@ -143,11 +143,11 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
       (!permissionsGranted.camera || !permissionsGranted.microphone || !permissionsGranted.screen)
     ) {
       setPermissionErrors([
-        "Please grant camera, microphone, and screen share permissions before starting the test.",
+        'Please grant camera, microphone, and screen share permissions before starting the test.',
       ]);
       return;
     }
-    debugLogger("[TestInstructions] Starting test with streams:", {
+    debugLogger('[TestInstructions] Starting test with streams:', {
       webcamActive: initialStream?.active,
       screenActive: initialScreenStream?.active,
       webcamTracks: initialStream?.getTracks().length,
@@ -202,13 +202,13 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Webcam */}
                 <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-indigo-100">
-                  <span className="text-2xl mt-0.5">{testConfig.webcamRequired ? "📷" : "🚫"}</span>
+                  <span className="text-2xl mt-0.5">{testConfig.webcamRequired ? '📷' : '🚫'}</span>
                   <div>
                     <p className="font-semibold text-gray-800 text-sm">Webcam Monitoring</p>
                     <p className="text-gray-600 text-sm">
                       {testConfig.webcamRequired
-                        ? "Required — camera and microphone must be enabled."
-                        : "Not required for this test."}
+                        ? 'Required — camera and microphone must be enabled.'
+                        : 'Not required for this test.'}
                     </p>
                   </div>
                 </div>
@@ -216,14 +216,14 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 {/* Multi-screen */}
                 <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-indigo-100">
                   <span className="text-2xl mt-0.5">
-                    {testConfig.multipleScreens ? "🖥️" : "🚫"}
+                    {testConfig.multipleScreens ? '🖥️' : '🚫'}
                   </span>
                   <div>
                     <p className="font-semibold text-gray-800 text-sm">Multiple Monitors</p>
                     <p className="text-gray-600 text-sm">
                       {testConfig.multipleScreens
-                        ? "Allowed for this test."
-                        : "Not permitted — use a single screen only."}
+                        ? 'Allowed for this test.'
+                        : 'Not permitted — use a single screen only.'}
                     </p>
                   </div>
                 </div>
@@ -235,8 +235,8 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                     <p className="font-semibold text-gray-800 text-sm">Fullscreen Violations</p>
                     <p className="text-gray-600 text-sm">
                       {testConfig.maxViolationCount > 0
-                        ? `Auto-submits after ${testConfig.maxViolationCount} exit${testConfig.maxViolationCount !== 1 ? "s" : ""}.`
-                        : "Recorded, but will not auto-submit."}
+                        ? `Auto-submits after ${testConfig.maxViolationCount} exit${testConfig.maxViolationCount !== 1 ? 's' : ''}.`
+                        : 'Recorded, but will not auto-submit.'}
                     </p>
                   </div>
                 </div>
@@ -249,7 +249,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                     <p className="text-gray-600 text-sm">
                       {testConfig.maxViolationDuration > 0
                         ? `Auto-submits after ${testConfig.maxViolationDuration}s outside fullscreen.`
-                        : "No time limit for fullscreen exits."}
+                        : 'No time limit for fullscreen exits.'}
                     </p>
                   </div>
                 </div>
@@ -299,7 +299,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                 <li className="flex items-start gap-3">
                   <span className="text-red-600 font-bold mt-1">•</span>
                   <span>
-                    The test will automatically enter{" "}
+                    The test will automatically enter{' '}
                     <span className="font-semibold">fullscreen mode</span> once you start. Exiting
                     fullscreen will be recorded as a violation.
                   </span>
@@ -308,11 +308,11 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                   <li className="flex items-start gap-3">
                     <span className="text-red-600 font-bold mt-1">•</span>
                     <span>
-                      Exiting fullscreen more than{" "}
+                      Exiting fullscreen more than{' '}
                       <span className="font-semibold">
                         {testConfig.maxViolationCount} time
-                        {testConfig.maxViolationCount !== 1 ? "s" : ""}
-                      </span>{" "}
+                        {testConfig.maxViolationCount !== 1 ? 's' : ''}
+                      </span>{' '}
                       will trigger automatic test submission.
                     </span>
                   </li>
@@ -320,7 +320,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                   <li className="flex items-start gap-3">
                     <span className="text-red-600 font-bold mt-1">•</span>
                     <span>
-                      Fullscreen violations are recorded and your teacher will be notified, but will{" "}
+                      Fullscreen violations are recorded and your teacher will be notified, but will{' '}
                       <span className="font-semibold">not</span> automatically submit the test.
                     </span>
                   </li>
@@ -329,11 +329,11 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                   <li className="flex items-start gap-3">
                     <span className="text-red-600 font-bold mt-1">•</span>
                     <span>
-                      If you remain outside fullscreen for more than{" "}
+                      If you remain outside fullscreen for more than{' '}
                       <span className="font-semibold">
                         {testConfig.maxViolationDuration} second
-                        {testConfig.maxViolationDuration !== 1 ? "s" : ""}
-                      </span>{" "}
+                        {testConfig.maxViolationDuration !== 1 ? 's' : ''}
+                      </span>{' '}
                       at a time, the test will be automatically submitted.
                     </span>
                   </li>
@@ -342,7 +342,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                   <li className="flex items-start gap-3">
                     <span className="text-red-600 font-bold mt-1">•</span>
                     <span>
-                      You must allow <span className="font-semibold">camera and microphone</span>{" "}
+                      You must allow <span className="font-semibold">camera and microphone</span>{' '}
                       access. Your webcam feed will be monitored throughout the test.
                     </span>
                   </li>
@@ -451,7 +451,7 @@ export const TestInstructions: React.FC<TestInstructionsProps> = ({
                     disabled={checkingPermissions}
                     className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {checkingPermissions ? "Checking Permissions..." : "Check Permissions"}
+                    {checkingPermissions ? 'Checking Permissions...' : 'Check Permissions'}
                   </button>
                 </div>
               </div>

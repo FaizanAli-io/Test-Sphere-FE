@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import type { ReactElement } from "react";
+import React, { useState } from 'react';
+import type { ReactElement } from 'react';
 
-import CreateTestModal from "../CreateTestModal";
-import { useTeacherPortal, useClassDetails } from "./hooks";
-import { Class, KickConfirm, RequestAction, BulkRequestAction } from "./types";
-import { useNotifications } from "../../contexts/NotificationContext";
-import { ConfirmationModal, ClassModal, RequestsModal } from "./modals";
-import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../SharedPortal";
-import { canEdit, canDelete } from "@/utils/rolePermissions";
+import CreateTestModal from '../CreateTestModal';
+import { useTeacherPortal, useClassDetails } from './hooks';
+import { Class, KickConfirm, RequestAction, BulkRequestAction } from './types';
+import { useNotifications } from '../../contexts/NotificationContext';
+import { ConfirmationModal, ClassModal, RequestsModal } from './modals';
+import { BasePortal, QuickAction, ClassCardAction, BaseClass } from '../SharedPortal';
+import { canEdit, canDelete } from '@/utils/rolePermissions';
 
 export default function TeacherPortal(): ReactElement {
   const notifications = useNotifications();
@@ -102,9 +102,9 @@ export default function TeacherPortal(): ReactElement {
       await navigator.clipboard.writeText(code);
       setCopiedCode(id as string);
       setTimeout(() => setCopiedCode(null), 2000);
-      notifications.showSuccess("Class code copied to clipboard!");
+      notifications.showSuccess('Class code copied to clipboard!');
     } catch {
-      notifications.showError("Failed to copy code");
+      notifications.showError('Failed to copy code');
     }
   };
 
@@ -128,19 +128,19 @@ export default function TeacherPortal(): ReactElement {
   // Quick actions configuration
   const quickActions: QuickAction[] = [
     {
-      icon: "🏫",
-      title: "Create New Class",
-      description: "Set up a new class and generate a unique join code for your students",
-      actionText: "Get Started",
-      colorScheme: "indigo",
+      icon: '🏫',
+      title: 'Create New Class',
+      description: 'Set up a new class and generate a unique join code for your students',
+      actionText: 'Get Started',
+      colorScheme: 'indigo',
       onClick: () => setShowCreateModal(true),
     },
     {
-      icon: "📝",
-      title: "Create a Test",
-      description: "Design comprehensive assessments and schedule them for your classes",
-      actionText: "Get Started",
-      colorScheme: "orange",
+      icon: '📝',
+      title: 'Create a Test',
+      description: 'Design comprehensive assessments and schedule them for your classes',
+      actionText: 'Get Started',
+      colorScheme: 'orange',
       onClick: () => setShowCreateTestModal(true),
     },
   ];
@@ -148,20 +148,20 @@ export default function TeacherPortal(): ReactElement {
   // Class card actions configuration - filter based on teacher role
   const classCardActions: ClassCardAction[] = [
     {
-      label: "Edit",
+      label: 'Edit',
       onClick: (classData) => {
         setEditClass(classData as Class);
         setShowEditModal(true);
       },
-      colorScheme: "green",
+      colorScheme: 'green',
       isVisible: (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
-        const role = fullClass?.role as "OWNER" | "EDITOR" | "VIEWER" | undefined;
+        const role = fullClass?.role as 'OWNER' | 'EDITOR' | 'VIEWER' | undefined;
         return canEdit(role);
       },
     },
     {
-      label: "Requests",
+      label: 'Requests',
       onClick: async (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
         if (fullClass) {
@@ -169,7 +169,7 @@ export default function TeacherPortal(): ReactElement {
           setShowRequestsModal(true);
         }
       },
-      colorScheme: "blue",
+      colorScheme: 'blue',
       badge: (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
         const pendingCount = fullClass?.students?.filter((s) => !s.approved).length ?? 0;
@@ -177,20 +177,20 @@ export default function TeacherPortal(): ReactElement {
       },
       isVisible: (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
-        const role = fullClass?.role as "OWNER" | "EDITOR" | "VIEWER" | undefined;
+        const role = fullClass?.role as 'OWNER' | 'EDITOR' | 'VIEWER' | undefined;
         return canEdit(role);
       },
     },
     {
-      label: "Delete",
+      label: 'Delete',
       onClick: (classData) => {
         setDeleteConfirm(classData.id as string);
         setShowDeleteConfirm(true);
       },
-      colorScheme: "red",
+      colorScheme: 'red',
       isVisible: (classData) => {
         const fullClass = classes.find((cls) => cls.id === classData.id);
-        const role = fullClass?.role as "OWNER" | "EDITOR" | "VIEWER" | undefined;
+        const role = fullClass?.role as 'OWNER' | 'EDITOR' | 'VIEWER' | undefined;
         return canDelete(role);
       },
     },

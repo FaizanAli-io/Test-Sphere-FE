@@ -1,5 +1,5 @@
-import React from "react";
-import { formatDate, calculateTimeTaken } from "../utils";
+import React from 'react';
+import { formatDate, calculateTimeTaken } from '../utils';
 
 interface TimelineSubmission {
   startedAt?: string;

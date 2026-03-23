@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import api from "@/hooks/useApi";
-import { useNotifications } from "@/contexts/NotificationContext";
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import api from '@/hooks/useApi';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export interface Question {
   id: number;
   text: string;
-  type: "TRUE_FALSE" | "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "LONG_ANSWER";
+  type: 'TRUE_FALSE' | 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'LONG_ANSWER';
   options?: string[];
   maxMarks: number;
   image?: string;
@@ -60,7 +60,7 @@ export const useTestExam = (testId: number | null) => {
 
   // Common error message for missing testId
   const MISSING_TEST_ID_ERROR =
-    "Missing test id. Open this page as /give-test/[id] or /give-test?testId=123";
+    'Missing test id. Open this page as /give-test/[id] or /give-test?testId=123';
 
   const fetchTestDetails = useCallback(async () => {
     if (!testId) {
@@ -75,25 +75,25 @@ export const useTestExam = (testId: number | null) => {
     try {
       // Fetch test and questions in parallel for better performance
       const [testRes, questionsRes] = await Promise.all([
-        api(`/tests/${testId}`, { method: "GET", auth: true }),
-        api(`/tests/${testId}/questions`, { method: "GET", auth: true }),
+        api(`/tests/${testId}`, { method: 'GET', auth: true }),
+        api(`/tests/${testId}/questions`, { method: 'GET', auth: true }),
       ]);
 
       if (!testRes.ok) {
         const errorData = await testRes.json();
-        throw new Error(errorData.message || "Failed to fetch test");
+        throw new Error(errorData.message || 'Failed to fetch test');
       }
 
       if (!questionsRes.ok) {
         const errorData = await questionsRes.json();
-        throw new Error(errorData.message || "Failed to fetch questions");
+        throw new Error(errorData.message || 'Failed to fetch questions');
       }
 
       const [testData, questionsData] = await Promise.all([testRes.json(), questionsRes.json()]);
 
       setTest({ ...testData, questions: shuffleArray(questionsData) });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load test");
+      setError(err instanceof Error ? err.message : 'Failed to load test');
     } finally {
       setLoading(false);
     }
@@ -108,15 +108,15 @@ export const useTestExam = (testId: number | null) => {
     setLoading(true);
 
     try {
-      const res = await api("/submissions/start", {
-        method: "POST",
+      const res = await api('/submissions/start', {
+        method: 'POST',
         auth: true,
         body: JSON.stringify({ testId }),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to start test");
+        throw new Error(errorData.message || 'Failed to start test');
       }
 
       const submissionData = await res.json();
@@ -126,7 +126,7 @@ export const useTestExam = (testId: number | null) => {
       setTestStarted(true);
       setTimeRemaining(test ? test.duration * 60 : 30 * 60);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to start test";
+      const errorMessage = err instanceof Error ? err.message : 'Failed to start test';
       notifications.showError(errorMessage);
       setError(errorMessage);
     } finally {
@@ -148,21 +148,21 @@ export const useTestExam = (testId: number | null) => {
           questionId: q.id,
         })) || [];
 
-      const res = await api("/submissions/submit", {
-        method: "POST",
+      const res = await api('/submissions/submit', {
+        method: 'POST',
         auth: true,
         body: JSON.stringify({ answers: answersArray }),
       });
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to submit test");
+        throw new Error(errorData.message || 'Failed to submit test');
       }
 
-      notifications.showSuccess("Test submitted successfully!");
-      router.push("/student");
+      notifications.showSuccess('Test submitted successfully!');
+      router.push('/student');
     } catch (err) {
-      notifications.showError(err instanceof Error ? err.message : "Error submitting test");
+      notifications.showError(err instanceof Error ? err.message : 'Error submitting test');
     } finally {
       setSubmitting(false);
     }
@@ -193,9 +193,9 @@ export const useTestExam = (testId: number | null) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs
+    return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs
       .toString()
-      .padStart(2, "0")}`;
+      .padStart(2, '0')}`;
   };
 
   // Memoized calculations to avoid redundant computations

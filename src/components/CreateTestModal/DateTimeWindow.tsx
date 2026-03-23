@@ -1,14 +1,14 @@
-"use client";
-import React from "react";
+'use client';
+import React from 'react';
 
 interface DateTimeWindowProps {
   startAt: string;
   endAt: string;
   duration: number;
   dateError: string | null;
-  onChange: <K extends "startAt" | "endAt" | "duration">(
+  onChange: <K extends 'startAt' | 'endAt' | 'duration'>(
     key: K,
-    value: K extends "duration" ? number : string | number,
+    value: K extends 'duration' ? number : string | number,
   ) => void;
 }
 
@@ -19,10 +19,10 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
   dateError,
   onChange,
 }) => {
-  const startDatePart = startAt ? startAt.split("T")[0] : "";
-  const startTimePart = startAt ? startAt.split("T")[1] : "";
-  const endDatePart = endAt ? endAt.split("T")[0] : "";
-  const endTimePart = endAt ? endAt.split("T")[1] : "";
+  const startDatePart = startAt ? startAt.split('T')[0] : '';
+  const startTimePart = startAt ? startAt.split('T')[1] : '';
+  const endDatePart = endAt ? endAt.split('T')[0] : '';
+  const endTimePart = endAt ? endAt.split('T')[1] : '';
 
   return (
     <div className="space-y-4">
@@ -48,13 +48,13 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
               type="date"
               value={startDatePart}
               onChange={(e) => {
-                const time = startTimePart || "09:00";
-                onChange("startAt", e.target.value ? `${e.target.value}T${time}` : "");
+                const time = startTimePart || '09:00';
+                onChange('startAt', e.target.value ? `${e.target.value}T${time}` : '');
               }}
               className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
                 dateError
-                  ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                  : "border-green-300 focus:ring-green-500 focus:border-green-500 bg-white"
+                  ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50'
+                  : 'border-green-300 focus:ring-green-500 focus:border-green-500 bg-white'
               }`}
             />
           </div>
@@ -67,13 +67,13 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
               value={startTimePart}
               onChange={(e) => {
                 if (startDatePart) {
-                  onChange("startAt", `${startDatePart}T${e.target.value}`);
+                  onChange('startAt', `${startDatePart}T${e.target.value}`);
                 }
               }}
               className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
                 dateError
-                  ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                  : "border-green-300 focus:ring-green-500 focus:border-green-500 bg-white"
+                  ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50'
+                  : 'border-green-300 focus:ring-green-500 focus:border-green-500 bg-white'
               }`}
             />
           </div>
@@ -95,13 +95,13 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
               type="date"
               value={endDatePart}
               onChange={(e) => {
-                const time = endTimePart || "10:00";
-                onChange("endAt", e.target.value ? `${e.target.value}T${time}` : "");
+                const time = endTimePart || '10:00';
+                onChange('endAt', e.target.value ? `${e.target.value}T${time}` : '');
               }}
               className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
                 dateError
-                  ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                  : "border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                  ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50'
+                  : 'border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-white'
               }`}
             />
           </div>
@@ -114,13 +114,13 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
               value={endTimePart}
               onChange={(e) => {
                 if (endDatePart) {
-                  onChange("endAt", `${endDatePart}T${e.target.value}`);
+                  onChange('endAt', `${endDatePart}T${e.target.value}`);
                 }
               }}
               className={`w-full px-4 py-3.5 border-2 rounded-xl focus:ring-2 transition-all text-gray-900 font-semibold text-base ${
                 dateError
-                  ? "border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50"
-                  : "border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-white"
+                  ? 'border-red-300 focus:ring-red-500 focus:border-red-500 bg-red-50'
+                  : 'border-orange-300 focus:ring-orange-500 focus:border-orange-500 bg-white'
               }`}
             />
           </div>
@@ -137,8 +137,8 @@ export const DateTimeWindow: React.FC<DateTimeWindowProps> = ({
         <div className="flex items-center gap-3 p-4 bg-green-50 border-2 border-green-300 rounded-xl text-green-700 font-semibold shadow-sm">
           <span className="text-2xl">✅</span>
           <span>
-            Perfect! Test window:{" "}
-            {Math.round((new Date(endAt).getTime() - new Date(startAt).getTime()) / (1000 * 60))}{" "}
+            Perfect! Test window:{' '}
+            {Math.round((new Date(endAt).getTime() - new Date(startAt).getTime()) / (1000 * 60))}{' '}
             minutes (Duration needed: {duration} minutes)
           </span>
         </div>

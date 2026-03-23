@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
-import { Submission, SubmissionsList, SubmissionDetail } from "../../Submissions";
-import type { SubmissionStatus } from "../../Submissions/types";
+import { Submission, SubmissionsList, SubmissionDetail } from '../../Submissions';
+import type { SubmissionStatus } from '../../Submissions/types';
 
 interface SubmissionsModalProps {
   showSubmissionsModal: boolean;
@@ -10,7 +10,7 @@ interface SubmissionsModalProps {
   loadingSubmissions: boolean;
   preSelectedSubmissionId?: number;
   onUpdateSubmissionStatus?: (id: number, newStatus: SubmissionStatus) => void;
-  onUpdateSubmissionScores?: (id: number, updatedAnswers: Submission["answers"]) => void;
+  onUpdateSubmissionScores?: (id: number, updatedAnswers: Submission['answers']) => void;
   topExtraContent?: React.ReactNode;
 }
 

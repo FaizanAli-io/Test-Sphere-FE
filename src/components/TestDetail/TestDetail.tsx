@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 
-import api from "@/hooks/useApi";
-import { useSubmissions } from "../Submissions";
-import type { Submission } from "../Submissions/types";
-import type { TeacherRole } from "@/utils/rolePermissions";
+import api from '@/hooks/useApi';
+import { useSubmissions } from '../Submissions';
+import type { Submission } from '../Submissions/types';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
-import { debugLogger } from "@/utils/logger";
-import { useConfirmation } from "@/hooks/useConfirmation";
-import ConfirmationModal from "@/components/ConfirmationModal";
-import { useNotifications } from "@/contexts/NotificationContext";
+import { debugLogger } from '@/utils/logger';
+import { useConfirmation } from '@/hooks/useConfirmation';
+import ConfirmationModal from '@/components/ConfirmationModal';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 import {
   EditTestModal,
@@ -20,9 +20,9 @@ import {
   ConfigureTestModal,
   PoolModal,
   AddQuestionsToPoolModal,
-} from "./modals";
-import dynamic from "next/dynamic";
-const ProctoringLogsModal = dynamic(() => import("./modals").then((m) => m.ProctoringLogsModal), {
+} from './modals';
+import dynamic from 'next/dynamic';
+const ProctoringLogsModal = dynamic(() => import('./modals').then((m) => m.ProctoringLogsModal), {
   loading: () => null,
 });
 import {
@@ -30,9 +30,9 @@ import {
   QuestionsSection,
   SubmissionsSection,
   AnalyticsSection,
-} from "./components";
-import { Question, Test, QuestionUpdatePayload, TestConfig, QuestionPool } from "./types";
-import { useQuestions, useTestDetail, useAIQuestions, useQuestionPools } from "./hooks";
+} from './components';
+import { Question, Test, QuestionUpdatePayload, TestConfig, QuestionPool } from './types';
+import { useQuestions, useTestDetail, useAIQuestions, useQuestionPools } from './hooks';
 
 interface TestDetailProps {
   testId?: string;
@@ -63,11 +63,11 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
   const testIdOrNull = redirecting ? undefined : testId;
 
-  const [activeTab, setActiveTab] = React.useState<"overview" | "analytics">("overview");
+  const [activeTab, setActiveTab] = React.useState<'overview' | 'analytics'>('overview');
 
   const testDetailHook = useTestDetail(testIdOrNull, notifications, confirmation.confirm);
   const questionsHook = useQuestions(testIdOrNull, notifications, confirmation.confirm);
-  const submissionsHook = useSubmissions(testIdOrNull, "teacher", notifications);
+  const submissionsHook = useSubmissions(testIdOrNull, 'teacher', notifications);
   const {
     pools,
     createPool,
@@ -94,9 +94,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
     submissionsState.length > 0 ? submissionsState : submissionsHook.submissions;
 
   const role =
-    typeof window !== "undefined" ? localStorage.getItem("role") || "teacher" : "teacher";
-  const isTeacher = role?.toLowerCase() === "teacher";
-  const [teacherRole, setTeacherRole] = useState<TeacherRole>("VIEWER");
+    typeof window !== 'undefined' ? localStorage.getItem('role') || 'teacher' : 'teacher';
+  const isTeacher = role?.toLowerCase() === 'teacher';
+  const [teacherRole, setTeacherRole] = useState<TeacherRole>('VIEWER');
 
   // Fetch teacher role for this class
   useEffect(() => {
@@ -105,13 +105,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
       try {
         const response = await api(`/classes/${test.classId}`, {
-          method: "GET",
+          method: 'GET',
           auth: true,
         });
 
         if (response.ok) {
           const data = await response.json();
-          const currentUserEmail = localStorage.getItem("userEmail");
+          const currentUserEmail = localStorage.getItem('userEmail');
 
           if (Array.isArray(data.teachers)) {
             const currentTeacherData = data.teachers.find(
@@ -124,7 +124,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           }
         }
       } catch (err) {
-        console.error("Failed to fetch teacher role:", err);
+        console.error('Failed to fetch teacher role:', err);
       }
     };
 
@@ -143,12 +143,12 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   };
 
   const handleBackToClass = () => {
-    debugLogger("Navigating back to class:", test);
+    debugLogger('Navigating back to class:', test);
     const classId = test?.classId;
     if (classId) {
       router.push(`/class/${classId}`);
     } else {
-      router.push("/teacher");
+      router.push('/teacher');
     }
   };
 
@@ -175,7 +175,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
     if (result !== false) {
       setRedirecting(true);
-      router.replace("/teacher");
+      router.replace('/teacher');
     }
   };
 
@@ -205,13 +205,13 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       maxMarks: question.maxMarks,
     };
 
-    if (question.type === "MULTIPLE_CHOICE" && question.options) {
+    if (question.type === 'MULTIPLE_CHOICE' && question.options) {
       updates.options = question.options;
     }
 
     if (
-      (question.type === "MULTIPLE_CHOICE" || question.type === "TRUE_FALSE") &&
-      typeof question.correctAnswer === "number"
+      (question.type === 'MULTIPLE_CHOICE' || question.type === 'TRUE_FALSE') &&
+      typeof question.correctAnswer === 'number'
     ) {
       updates.correctAnswer = question.correctAnswer;
     }
@@ -220,7 +220,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
       updates.image = question.image;
     }
 
-    if (typeof question.questionPoolId !== "undefined") {
+    if (typeof question.questionPoolId !== 'undefined') {
       updates.questionPoolId = question.questionPoolId ?? null;
     }
 
@@ -266,12 +266,12 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
 
   const handleDeleteSubmission = async (submissionId: number) => {
     const confirmed = await confirmation.confirm({
-      title: "Delete submission?",
+      title: 'Delete submission?',
       message:
         "This will permanently remove the student's submission. This action cannot be undone.",
-      confirmText: "Delete",
-      cancelText: "Cancel",
-      type: "danger",
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      type: 'danger',
     });
 
     if (!confirmed) return;
@@ -296,7 +296,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
   useEffect(() => {
     if (!loadingTest && !test) {
       setRedirecting(true);
-      router.replace("/teacher");
+      router.replace('/teacher');
     }
   }, [loadingTest, test, router]);
 
@@ -319,7 +319,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-yellow-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">{redirecting ? "Redirecting..." : "Loading..."}</p>
+            <p className="mt-4 text-gray-600">{redirecting ? 'Redirecting...' : 'Loading...'}</p>
           </div>
         </div>
       </div>
@@ -343,8 +343,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         <div className="flex gap-1 p-1 bg-white/70 backdrop-blur-sm rounded-2xl shadow-sm mb-6 border border-white/80">
           {(
             [
-              { key: "overview", label: "Overview", icon: "📋" },
-              { key: "analytics", label: "Analytics", icon: "📊" },
+              { key: 'overview', label: 'Overview', icon: '📋' },
+              { key: 'analytics', label: 'Analytics', icon: '📊' },
             ] as const
           ).map((tab) => (
             <button
@@ -352,8 +352,8 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               onClick={() => setActiveTab(tab.key)}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold transition-all ${
                 activeTab === tab.key
-                  ? "bg-white shadow text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? 'bg-white shadow text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <span>{tab.icon}</span>
@@ -363,7 +363,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         </div>
 
         {/* Overview Tab */}
-        {activeTab === "overview" && (
+        {activeTab === 'overview' && (
           <>
             {/* Questions Section */}
             <QuestionsSection
@@ -376,9 +376,9 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
               poolInfo={
                 poolWarning
                   ? {
-                      type: "warning",
+                      type: 'warning',
                       message:
-                        "Pool requested more questions than available; selected list is shorter.",
+                        'Pool requested more questions than available; selected list is shorter.',
                     }
                   : undefined
               }
@@ -412,7 +412,7 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
         )}
 
         {/* Analytics Tab */}
-        {activeTab === "analytics" && <AnalyticsSection testId={testId} />}
+        {activeTab === 'analytics' && <AnalyticsSection testId={testId} />}
       </div>
 
       {/* Modals */}
@@ -477,11 +477,11 @@ export default function TestDetail({ testId: propTestId }: TestDetailProps) {
           targetPoolForAddQuestions || {
             id: 0,
             testId: 0,
-            title: "",
+            title: '',
             config: {},
             active: true,
-            createdAt: "",
-            updatedAt: "",
+            createdAt: '',
+            updatedAt: '',
           }
         }
         allQuestions={questions}

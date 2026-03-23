@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Camera, CameraOff, Loader2, Video } from "lucide-react";
+import React, { useEffect, useState, useRef } from 'react';
+import { Camera, CameraOff, Loader2, Video } from 'lucide-react';
 
-import { debugLogger } from "@/utils/logger";
-import { useWebRTC } from "@/hooks/useWebRTC";
-import { useProctoringML } from "@/hooks/useProctoringML";
-import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
+import { debugLogger } from '@/utils/logger';
+import { useWebRTC } from '@/hooks/useWebRTC';
+import { useProctoringML } from '@/hooks/useProctoringML';
+import { useConnectionMonitor } from '@/hooks/useConnectionMonitor';
 
 interface StreamingIndicatorProps {
   userId: string;
@@ -21,7 +21,7 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
   initialStream,
   initialScreenStream,
 }) => {
-  const showDebug = typeof process !== "undefined" && process.env.NEXT_PUBLIC_DEBUG_MODE === "true";
+  const showDebug = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
   const [isMinimized, setIsMinimized] = useState(false);
   const [mlVideoReady, setMlVideoReady] = useState(false);
   const wasOfflineRef = useRef(false);
@@ -29,7 +29,7 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
 
   const { isConnected, isStreaming, error, socket, stopStreaming, reconnect } = useWebRTC({
     userId,
-    role: "student",
+    role: 'student',
     testId,
     enabled,
     initialStream,
@@ -69,10 +69,10 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
     if (!isOnline) {
       // Connection lost
       wasOfflineRef.current = true;
-      debugLogger("[StreamingIndicator] Connection lost");
+      debugLogger('[StreamingIndicator] Connection lost');
     } else if (wasOfflineRef.current && isOnline) {
       // Connection restored
-      debugLogger("[StreamingIndicator] Connection restored, triggering WebRTC reconnection");
+      debugLogger('[StreamingIndicator] Connection restored, triggering WebRTC reconnection');
       wasOfflineRef.current = false;
 
       // Trigger WebRTC reconnection
@@ -104,7 +104,7 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
         muted
         width={640}
         height={480}
-        style={{ position: "fixed", top: -9999, left: -9999, pointerEvents: "none" }}
+        style={{ position: 'fixed', top: -9999, left: -9999, pointerEvents: 'none' }}
       />
 
       {!showDebug ? null : (
@@ -181,10 +181,10 @@ export const StreamingIndicator: React.FC<StreamingIndicatorProps> = ({
               onClick={() => setIsMinimized(false)}
               className={`px-4 py-2 rounded-full shadow-lg flex items-center gap-2 ${
                 isStreaming
-                  ? "bg-green-500 hover:bg-green-600"
+                  ? 'bg-green-500 hover:bg-green-600'
                   : error
-                    ? "bg-red-500 hover:bg-red-600"
-                    : "bg-yellow-500 hover:bg-yellow-600"
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-yellow-500 hover:bg-yellow-600'
               } text-white transition-colors`}
             >
               {isStreaming ? (

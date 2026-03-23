@@ -1,11 +1,11 @@
-import React from "react";
-import { ClassData } from "../types";
-import { Test } from "../types";
+import React from 'react';
+import { ClassData } from '../types';
+import { Test } from '../types';
 import {
   Submission,
   calculateCurrentTotalMarks,
   calculateTotalPossibleMarks,
-} from "../../Submissions";
+} from '../../Submissions';
 
 interface ClassDetailsModalProps {
   isOpen: boolean;
@@ -35,12 +35,12 @@ export default function ClassDetailsModal({
   const classSubmissions = submissions.filter((sub) => sub.test?.class?.id === selectedClass.id);
 
   // Calculate statistics
-  const activeTests = classTests.filter((t) => t.status?.toUpperCase() === "ACTIVE").length;
+  const activeTests = classTests.filter((t) => t.status?.toUpperCase() === 'ACTIVE').length;
   const completedSubmissions = classSubmissions.filter(
-    (s) => s.status === "GRADED" || s.gradedAt,
+    (s) => s.status === 'GRADED' || s.gradedAt,
   ).length;
   const pendingSubmissions = classSubmissions.filter(
-    (s) => s.status === "SUBMITTED" && !s.gradedAt,
+    (s) => s.status === 'SUBMITTED' && !s.gradedAt,
   ).length;
 
   // Calculate average score
@@ -55,11 +55,11 @@ export default function ClassDetailsModal({
       : 0;
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
     });
   };
 
@@ -128,8 +128,8 @@ export default function ClassDetailsModal({
               <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-4 border-2 border-orange-200">
                 <div className="text-3xl mb-2">⭐</div>
                 <div className="text-2xl font-bold text-gray-900">
-                  {averageScore > 0 ? averageScore.toFixed(1) : "—"}
-                  {averageScore > 0 && "%"}
+                  {averageScore > 0 ? averageScore.toFixed(1) : '—'}
+                  {averageScore > 0 && '%'}
                 </div>
                 <div className="text-sm text-gray-600 font-medium">Avg Score</div>
               </div>
@@ -144,7 +144,7 @@ export default function ClassDetailsModal({
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
                   <span className="text-gray-600 font-medium">Teacher</span>
                   <span className="text-gray-900 font-semibold">
-                    {selectedClass.teacher?.name || "N/A"}
+                    {selectedClass.teacher?.name || 'N/A'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between py-2 border-b border-gray-100">
@@ -187,9 +187,9 @@ export default function ClassDetailsModal({
                         {test.status && (
                           <span
                             className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${
-                              test.status.toUpperCase() === "ACTIVE"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-gray-100 text-gray-800"
+                              test.status.toUpperCase() === 'ACTIVE'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
                             }`}
                           >
                             {test.status}

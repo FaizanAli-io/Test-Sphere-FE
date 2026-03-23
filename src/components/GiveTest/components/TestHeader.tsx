@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface CaptureStats {
   screenshots: { total: number; uploaded: number };
@@ -46,7 +46,7 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
   captureStats,
   systemEventStats,
 }) => {
-  const showDebug = typeof process !== "undefined" && process.env.NEXT_PUBLIC_DEBUG_MODE === "true";
+  const showDebug = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_DEBUG_MODE === 'true';
   const showStatus = !isOnline || hasPendingLogs;
   return (
     <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-lg border-b-2 border-gray-200">
@@ -120,7 +120,7 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
                     <div className="text-center">
                       <div className="font-semibold text-gray-600 mb-1">Violations</div>
                       <div
-                        className={`font-bold ${violationCount === 0 ? "text-green-600" : "text-red-600"}`}
+                        className={`font-bold ${violationCount === 0 ? 'text-green-600' : 'text-red-600'}`}
                       >
                         {violationCount}
                       </div>
@@ -133,20 +133,20 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
                   <div className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-gray-300">
                     <div
                       className={`w-2 h-2 rounded-full ${
-                        isCapturing ? "bg-red-500 animate-pulse" : "bg-green-500"
+                        isCapturing ? 'bg-red-500 animate-pulse' : 'bg-green-500'
                       }`}
                     />
                     <span className="text-xs font-medium text-gray-600">
-                      {isCapturing ? "Capturing..." : "Monitoring Active"}
+                      {isCapturing ? 'Capturing...' : 'Monitoring Active'}
                     </span>
                   </div>
                 )}
               </div>
             )}
             {/* Two-column layout: Left = Submit + Connection, Right = Time Remaining */}
-            <div className={`flex ${showStatus ? "items-start" : "items-center"} gap-6`}>
+            <div className={`flex ${showStatus ? 'items-start' : 'items-center'} gap-6`}>
               {/* Left column */}
-              <div className={`flex flex-col gap-2 ${showStatus ? "" : "justify-center"}`}>
+              <div className={`flex flex-col gap-2 ${showStatus ? '' : 'justify-center'}`}>
                 <button
                   onClick={onSubmitTest}
                   disabled={submitting}
@@ -160,7 +160,7 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
                       <span className="text-xs font-medium text-orange-700">
-                        {!isOnline ? "Connection Lost" : "Syncing..."}
+                        {!isOnline ? 'Connection Lost' : 'Syncing...'}
                       </span>
                     </div>
                   </div>
@@ -172,7 +172,7 @@ export const TestHeader: React.FC<TestHeaderProps> = ({
                 <p className="text-xs font-bold text-gray-600 mb-1">Time Remaining</p>
                 <p
                   className={`text-2xl font-bold ${
-                    timeRemaining < 300 ? "text-red-600" : "text-gray-900"
+                    timeRemaining < 300 ? 'text-red-600' : 'text-gray-900'
                   }`}
                 >
                   {formatTime(timeRemaining)}

@@ -1,5 +1,5 @@
-export { default as HeaderSection } from "./HeaderSection";
-export { default as QuestionsSection } from "./QuestionsSection";
-export { default as SubmissionsSection } from "./SubmissionsSection";
-export { default as PoolsSection } from "./PoolsSection";
-export { default as AnalyticsSection } from "./AnalyticsSection";
+export { default as HeaderSection } from './HeaderSection';
+export { default as QuestionsSection } from './QuestionsSection';
+export { default as SubmissionsSection } from './SubmissionsSection';
+export { default as PoolsSection } from './PoolsSection';
+export { default as AnalyticsSection } from './AnalyticsSection';

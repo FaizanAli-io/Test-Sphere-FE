@@ -1,6 +1,6 @@
-import { useEffect, useRef, useCallback, useState } from "react";
-import { io, Socket } from "socket.io-client";
-import { API_BASE_URL } from "@/hooks/useApi";
+import { useEffect, useRef, useCallback, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
+import { API_BASE_URL } from '@/hooks/useApi';
 
 export interface ProctoringData {
   studentId: string;
@@ -9,6 +9,18 @@ export interface ProctoringData {
   gazeDelta: { x: number; y: number };
   headPose: { pitch: number; yaw: number };
   faceDetected: boolean;
+  detectedObjects?: {
+    label: string;
+    score: number;
+    bbox?: { x: number; y: number; width: number; height: number };
+  }[];
+  suspiciousObjects?: {
+    label: string;
+    score: number;
+    bbox?: { x: number; y: number; width: number; height: number };
+  }[];
+  personCount?: number;
+  extraPeopleCount?: number;
   timestamp: number;
 }
 
@@ -35,18 +47,18 @@ export function useProctoringSocket(teacherId: string, testId: string, enabled: 
 
     socketRef.current = socket;
 
-    socket.on("connect", () => {
+    socket.on('connect', () => {
       // Register as teacher
-      socket.emit("register", {
+      socket.emit('register', {
         userId: teacherId,
-        role: "teacher",
+        role: 'teacher',
         testId: parseInt(testId),
       });
       // Request initial snapshot
-      socket.emit("get-proctoring-snapshot", { testId: parseInt(testId) });
+      socket.emit('get-proctoring-snapshot', { testId: parseInt(testId) });
     });
 
-    socket.on("proctoring_data", (data: ProctoringData) => {
+    socket.on('proctoring_data', (data: ProctoringData) => {
       setProctoringMap((prev) => {
         const next = new Map(prev);
         next.set(data.studentId, data);
@@ -54,7 +66,7 @@ export function useProctoringSocket(teacherId: string, testId: string, enabled: 
       });
     });
 
-    socket.on("proctoring_snapshot", (data: { students: ProctoringData[] }) => {
+    socket.on('proctoring_snapshot', (data: { students: ProctoringData[] }) => {
       setProctoringMap((prev) => {
         const next = new Map(prev);
         for (const s of data.students) {

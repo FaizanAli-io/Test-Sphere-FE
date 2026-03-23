@@ -1,7 +1,7 @@
-import React from "react";
-import { QuestionPool, Question } from "../types";
-import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
-import type { TeacherRole } from "@/utils/rolePermissions";
+import React from 'react';
+import { QuestionPool, Question } from '../types';
+import { canEdit as checkCanEdit } from '@/utils/rolePermissions';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 interface PoolsSectionProps {
   pools: QuestionPool[];
@@ -25,7 +25,7 @@ export default function PoolsSection({
   onToggleActive,
   onAddQuestions,
   questions,
-  teacherRole = "VIEWER",
+  teacherRole = 'VIEWER',
   isTeacher = false,
 }: PoolsSectionProps) {
   const assignedCount = (poolId: number) =>
@@ -80,7 +80,7 @@ export default function PoolsSection({
             <div
               key={pool.id}
               className={`border-2 rounded-2xl p-6 flex items-center justify-between transition-all ${
-                pool.active !== false ? "border-gray-200" : "border-gray-200 opacity-50 grayscale"
+                pool.active !== false ? 'border-gray-200' : 'border-gray-200 opacity-50 grayscale'
               }`}
             >
               <div>
@@ -95,7 +95,7 @@ export default function PoolsSection({
                 <p className="text-sm text-gray-600">
                   {Object.entries(pool.config)
                     .map(([k, v]) => `${k}: ${v}`)
-                    .join(" • ")}
+                    .join(' • ')}
                 </p>
                 <p className="text-sm text-gray-500 mt-2">
                   Assigned Questions: {assignedCount(pool.id)}
@@ -129,14 +129,14 @@ export default function PoolsSection({
                   onClick={() => onToggleActive(pool)}
                   className={`px-4 py-2 font-semibold rounded-lg transition-all ${
                     pool.active !== false
-                      ? "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
-                      : "bg-gray-300 text-gray-600 hover:bg-gray-400"
+                      ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                      : 'bg-gray-300 text-gray-600 hover:bg-gray-400'
                   }`}
                   title={
-                    pool.active !== false ? "Click to deactivate pool" : "Click to activate pool"
+                    pool.active !== false ? 'Click to deactivate pool' : 'Click to activate pool'
                   }
                 >
-                  {pool.active !== false ? "✓ Active" : "✕ Inactive"}
+                  {pool.active !== false ? '✓ Active' : '✕ Inactive'}
                 </button>
               )}
             </div>

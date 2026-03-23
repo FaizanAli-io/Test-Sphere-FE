@@ -1,19 +1,19 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { io, Socket } from 'socket.io-client';
 
-import { API_BASE_URL } from "./useApi";
-import { debugLogger } from "@/utils/logger";
+import { API_BASE_URL } from './useApi';
+import { debugLogger } from '@/utils/logger';
 
 interface UseWebRTCProps {
   userId: string;
-  role: "student" | "teacher";
+  role: 'student' | 'teacher';
   testId: string;
   enabled: boolean;
   initialStream?: MediaStream;
   initialScreenStream?: MediaStream;
 }
 
-type StreamType = "webcam" | "screen";
+type StreamType = 'webcam' | 'screen';
 
 interface WebRTCState {
   isConnected: boolean;
@@ -24,7 +24,7 @@ interface WebRTCState {
 }
 
 const ICE_SERVERS = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }],
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }],
 };
 
 export const useWebRTC = ({
@@ -69,32 +69,32 @@ export const useWebRTC = ({
 
     socketRef.current = socket;
 
-    socket.on("connect", () => {
-      debugLogger("[WebRTC] Socket connected:", socket.id);
-      socket.emit("register", { userId, role, testId: parseInt(testId) });
+    socket.on('connect', () => {
+      debugLogger('[WebRTC] Socket connected:', socket.id);
+      socket.emit('register', { userId, role, testId: parseInt(testId) });
     });
 
-    socket.on("registered", (data: { success: boolean; socketId: string }) => {
-      debugLogger("[WebRTC] Registered successfully:", data);
+    socket.on('registered', (data: { success: boolean; socketId: string }) => {
+      debugLogger('[WebRTC] Registered successfully:', data);
       setState((prev) => ({ ...prev, isConnected: true, error: null }));
     });
 
     // Debug: Log all events
     socket.onAny((eventName, ...args) => {
-      debugLogger("[WebRTC] 📨 Socket event received:", eventName, args);
+      debugLogger('[WebRTC] 📨 Socket event received:', eventName, args);
     });
 
-    socket.on("disconnect", (reason: string) => {
-      debugLogger("[WebRTC] Socket disconnected, reason:", reason);
+    socket.on('disconnect', (reason: string) => {
+      debugLogger('[WebRTC] Socket disconnected, reason:', reason);
       setState((prev) => ({ ...prev, isConnected: false }));
 
       // Close peer connection on disconnect
       if (peerConnectionRef.current) {
-        debugLogger("[WebRTC] Closing peer connection due to socket disconnect");
+        debugLogger('[WebRTC] Closing peer connection due to socket disconnect');
         try {
           peerConnectionRef.current.close();
         } catch (e) {
-          console.error("[WebRTC] Error closing peer connection:", e);
+          console.error('[WebRTC] Error closing peer connection:', e);
         }
         peerConnectionRef.current = null;
       }
@@ -103,68 +103,68 @@ export const useWebRTC = ({
       pendingIceCandidatesRef.current = [];
     });
 
-    socket.io.on("reconnect", (attempt: number) => {
-      debugLogger("[WebRTC] Socket reconnected after", attempt, "attempts");
+    socket.io.on('reconnect', (attempt: number) => {
+      debugLogger('[WebRTC] Socket reconnected after', attempt, 'attempts');
       setState((prev) => ({ ...prev, error: null }));
       // Re-register after reconnection
-      socket.emit("register", { userId, role, testId: parseInt(testId) });
+      socket.emit('register', { userId, role, testId: parseInt(testId) });
 
       // If we were streaming before, the teacher will need to request the stream again
       // So we just wait for a new stream-request event
     });
 
-    socket.io.on("reconnect_attempt", (attempt: number) => {
-      debugLogger("[WebRTC] Reconnection attempt", attempt);
+    socket.io.on('reconnect_attempt', (attempt: number) => {
+      debugLogger('[WebRTC] Reconnection attempt', attempt);
     });
 
-    socket.io.on("reconnect_error", (error: Error) => {
-      console.error("[WebRTC] Reconnection error:", error);
+    socket.io.on('reconnect_error', (error: Error) => {
+      console.error('[WebRTC] Reconnection error:', error);
     });
 
-    socket.io.on("reconnect_failed", () => {
-      console.error("[WebRTC] Reconnection failed after all attempts");
+    socket.io.on('reconnect_failed', () => {
+      console.error('[WebRTC] Reconnection failed after all attempts');
       setState((prev) => ({
         ...prev,
-        error: "Failed to reconnect to streaming server",
+        error: 'Failed to reconnect to streaming server',
       }));
     });
 
-    socket.on("connect_error", (error: Error) => {
-      console.error("[WebRTC] Socket connection error:", error);
+    socket.on('connect_error', (error: Error) => {
+      console.error('[WebRTC] Socket connection error:', error);
       // Don't set error state immediately, let reconnection handle it
     });
 
-    socket.on("error", (payload: unknown) => {
-      console.error("[WebRTC] Socket error event:", payload);
+    socket.on('error', (payload: unknown) => {
+      console.error('[WebRTC] Socket error event:', payload);
     });
 
     // Set up signal handlers in the same effect to ensure they're registered
-    debugLogger("[WebRTC] Setting up signal handlers");
+    debugLogger('[WebRTC] Setting up signal handlers');
 
     const handleSignal = async (message: {
       type: string;
       data: RTCSessionDescriptionInit | RTCIceCandidateInit;
       from: string;
     }) => {
-      debugLogger("[WebRTC] ✅ Received signal:", message.type, "from:", message.from);
+      debugLogger('[WebRTC] ✅ Received signal:', message.type, 'from:', message.from);
 
       const pc = peerConnectionRef.current || createPeerConnection();
       peerIdRef.current = message.from;
 
       try {
-        if (message.type === "offer") {
-          debugLogger("[WebRTC] Processing offer, current state:", pc.signalingState);
+        if (message.type === 'offer') {
+          debugLogger('[WebRTC] Processing offer, current state:', pc.signalingState);
           await pc.setRemoteDescription(
             new RTCSessionDescription(message.data as RTCSessionDescriptionInit),
           );
-          debugLogger("[WebRTC] Remote description set, creating answer...");
+          debugLogger('[WebRTC] Remote description set, creating answer...');
 
           // Process any pending ICE candidates after setting remote description
           if (pendingIceCandidatesRef.current.length > 0) {
             debugLogger(
-              "[WebRTC] Adding",
+              '[WebRTC] Adding',
               pendingIceCandidatesRef.current.length,
-              "pending ICE candidates",
+              'pending ICE candidates',
             );
             for (const candidate of pendingIceCandidatesRef.current) {
               await pc.addIceCandidate(new RTCIceCandidate(candidate));
@@ -174,19 +174,19 @@ export const useWebRTC = ({
 
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          debugLogger("[WebRTC] Answer created, emitting to:", message.from);
+          debugLogger('[WebRTC] Answer created, emitting to:', message.from);
 
-          socket.emit("signal", {
-            type: "answer",
+          socket.emit('signal', {
+            type: 'answer',
             data: answer,
             from: userId,
             to: message.from,
             testId: parseInt(testId),
             role,
           });
-          debugLogger("[WebRTC] Answer emitted successfully");
-        } else if (message.type === "answer") {
-          debugLogger("[WebRTC] Processing answer");
+          debugLogger('[WebRTC] Answer emitted successfully');
+        } else if (message.type === 'answer') {
+          debugLogger('[WebRTC] Processing answer');
           await pc.setRemoteDescription(
             new RTCSessionDescription(message.data as RTCSessionDescriptionInit),
           );
@@ -194,27 +194,27 @@ export const useWebRTC = ({
           // Process any pending ICE candidates after setting remote description
           if (pendingIceCandidatesRef.current.length > 0) {
             debugLogger(
-              "[WebRTC] Adding",
+              '[WebRTC] Adding',
               pendingIceCandidatesRef.current.length,
-              "pending ICE candidates",
+              'pending ICE candidates',
             );
             for (const candidate of pendingIceCandidatesRef.current) {
               await pc.addIceCandidate(new RTCIceCandidate(candidate));
             }
             pendingIceCandidatesRef.current = [];
           }
-        } else if (message.type === "ice-candidate") {
+        } else if (message.type === 'ice-candidate') {
           if (pc.remoteDescription) {
-            debugLogger("[WebRTC] Adding ICE candidate");
+            debugLogger('[WebRTC] Adding ICE candidate');
             await pc.addIceCandidate(new RTCIceCandidate(message.data as RTCIceCandidateInit));
           } else {
-            debugLogger("[WebRTC] Queueing ICE candidate (no remote description yet)");
+            debugLogger('[WebRTC] Queueing ICE candidate (no remote description yet)');
             pendingIceCandidatesRef.current.push(message.data as RTCIceCandidateInit);
           }
         }
       } catch (error) {
-        console.error("Error handling signal:", error);
-        setState((prev) => ({ ...prev, error: "Signaling error" }));
+        console.error('Error handling signal:', error);
+        setState((prev) => ({ ...prev, error: 'Signaling error' }));
       }
     };
 
@@ -224,53 +224,53 @@ export const useWebRTC = ({
       streamType?: StreamType;
     }) => {
       debugLogger(
-        "[WebRTC] Stream requested by teacher:",
+        '[WebRTC] Stream requested by teacher:',
         data.teacherId,
-        "Type:",
-        data.streamType || "webcam",
+        'Type:',
+        data.streamType || 'webcam',
       );
 
       try {
         // Clear any existing peer connection if it's in a bad state
         if (peerConnectionRef.current) {
           const state = peerConnectionRef.current.connectionState;
-          if (state === "failed" || state === "closed") {
-            debugLogger("[WebRTC] Cleaning up old peer connection before new stream request");
+          if (state === 'failed' || state === 'closed') {
+            debugLogger('[WebRTC] Cleaning up old peer connection before new stream request');
             peerConnectionRef.current = null;
           }
         }
 
         peerIdRef.current = data.teacherId;
-        debugLogger("[WebRTC] Starting streaming...");
-        await startStreaming(data.streamType || "webcam");
+        debugLogger('[WebRTC] Starting streaming...');
+        await startStreaming(data.streamType || 'webcam');
 
         const pc = peerConnectionRef.current;
         if (!pc) {
-          console.error("[WebRTC] No peer connection after startStreaming");
+          console.error('[WebRTC] No peer connection after startStreaming');
           return;
         }
 
-        debugLogger("[WebRTC] Creating offer...");
+        debugLogger('[WebRTC] Creating offer...');
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        debugLogger("[WebRTC] Offer created, emitting to teacher:", data.teacherId);
+        debugLogger('[WebRTC] Offer created, emitting to teacher:', data.teacherId);
 
-        socket.emit("signal", {
-          type: "offer",
+        socket.emit('signal', {
+          type: 'offer',
           data: offer,
           from: userId,
           to: data.teacherId,
           testId: data.testId,
           role,
         });
-        debugLogger("[WebRTC] Offer emitted successfully");
+        debugLogger('[WebRTC] Offer emitted successfully');
       } catch (error) {
-        console.error("[WebRTC] Error handling stream request:", error);
+        console.error('[WebRTC] Error handling stream request:', error);
       }
     };
 
     const handleStreamStopped = () => {
-      debugLogger("[WebRTC] Stream stopped by peer");
+      debugLogger('[WebRTC] Stream stopped by peer');
       if (peerConnectionRef.current) {
         try {
           peerConnectionRef.current.close();
@@ -281,14 +281,14 @@ export const useWebRTC = ({
       setState((prev) => ({ ...prev, isStreaming: false }));
     };
 
-    socket.on("signal", handleSignal);
-    socket.on("stream-request", handleStreamRequest);
-    socket.on("stream-stopped", handleStreamStopped);
+    socket.on('signal', handleSignal);
+    socket.on('stream-request', handleStreamRequest);
+    socket.on('stream-stopped', handleStreamStopped);
 
     return () => {
-      socket.off("signal", handleSignal);
-      socket.off("stream-request", handleStreamRequest);
-      socket.off("stream-stopped", handleStreamStopped);
+      socket.off('signal', handleSignal);
+      socket.off('stream-request', handleStreamRequest);
+      socket.off('stream-stopped', handleStreamStopped);
       socket.disconnect();
       socketRef.current = null;
     };
@@ -301,24 +301,24 @@ export const useWebRTC = ({
     if (peerConnectionRef.current) {
       const state = peerConnectionRef.current.connectionState;
       // If it's closed or failed, clean it up and create a new one
-      if (state === "closed" || state === "failed") {
-        debugLogger("[WebRTC] Existing peer connection is closed/failed, creating new one");
+      if (state === 'closed' || state === 'failed') {
+        debugLogger('[WebRTC] Existing peer connection is closed/failed, creating new one');
         peerConnectionRef.current = null;
       } else {
-        debugLogger("[WebRTC] Reusing existing peer connection with state:", state);
+        debugLogger('[WebRTC] Reusing existing peer connection with state:', state);
         return peerConnectionRef.current;
       }
     }
 
-    debugLogger("[WebRTC] Creating new peer connection");
+    debugLogger('[WebRTC] Creating new peer connection');
     const pc = new RTCPeerConnection(ICE_SERVERS);
     peerConnectionRef.current = pc;
 
     pc.onicecandidate = (event) => {
       if (event.candidate && socketRef.current && peerIdRef.current) {
         try {
-          socketRef.current.emit("signal", {
-            type: "ice-candidate",
+          socketRef.current.emit('signal', {
+            type: 'ice-candidate',
             data: event.candidate,
             from: userId,
             to: peerIdRef.current,
@@ -326,23 +326,23 @@ export const useWebRTC = ({
             role,
           });
         } catch (e) {
-          console.error("Failed to emit ICE candidate", e);
+          console.error('Failed to emit ICE candidate', e);
         }
       }
     };
 
     pc.onconnectionstatechange = () => {
-      debugLogger("[WebRTC] Connection state:", pc.connectionState);
+      debugLogger('[WebRTC] Connection state:', pc.connectionState);
       setState((prev) => ({ ...prev, connectionState: pc.connectionState }));
 
-      if (pc.connectionState === "connected") {
+      if (pc.connectionState === 'connected') {
         setState((prev) => ({ ...prev, isStreaming: true, error: null }));
-      } else if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
-        debugLogger("[WebRTC] Connection failed/disconnected, cleaning up peer connection");
+      } else if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+        debugLogger('[WebRTC] Connection failed/disconnected, cleaning up peer connection');
         setState((prev) => ({
           ...prev,
           isStreaming: false,
-          error: "Connection failed",
+          error: 'Connection failed',
         }));
 
         // Clean up the failed peer connection so a new one can be created
@@ -350,7 +350,7 @@ export const useWebRTC = ({
           try {
             pc.close();
           } catch (e) {
-            console.error("[WebRTC] Error closing failed peer connection:", e);
+            console.error('[WebRTC] Error closing failed peer connection:', e);
           }
           peerConnectionRef.current = null;
         }
@@ -358,21 +358,21 @@ export const useWebRTC = ({
     };
 
     pc.ontrack = (event) => {
-      debugLogger("[WebRTC] Received remote track", event.track.kind);
+      debugLogger('[WebRTC] Received remote track', event.track.kind);
       remoteStreamRef.current = event.streams[0];
     };
 
     // For teacher (viewer), explicitly declare intention to receive tracks.
-    if (role === "teacher") {
+    if (role === 'teacher') {
       try {
-        pc.addTransceiver("video", { direction: "recvonly" });
+        pc.addTransceiver('video', { direction: 'recvonly' });
       } catch (e) {
-        console.warn("[WebRTC] addTransceiver video failed", e);
+        console.warn('[WebRTC] addTransceiver video failed', e);
       }
       try {
-        pc.addTransceiver("audio", { direction: "recvonly" });
+        pc.addTransceiver('audio', { direction: 'recvonly' });
       } catch (e) {
-        console.warn("[WebRTC] addTransceiver audio failed", e);
+        console.warn('[WebRTC] addTransceiver audio failed', e);
       }
     }
 
@@ -381,53 +381,53 @@ export const useWebRTC = ({
 
   // Start streaming (for students) with stream type
   const startStreaming = useCallback(
-    async (type: StreamType = "webcam") => {
+    async (type: StreamType = 'webcam') => {
       try {
         setState((prev) => ({ ...prev, error: null, streamType: type }));
 
         let stream: MediaStream;
 
-        if (type === "screen") {
+        if (type === 'screen') {
           // Try to reuse initial screen stream first, otherwise request new
           if (initialScreenStream && initialScreenStream.active) {
             debugLogger(
-              "[WebRTC] Reusing existing screen stream, tracks:",
+              '[WebRTC] Reusing existing screen stream, tracks:',
               initialScreenStream.getTracks().length,
             );
             // Validate it's the entire screen when reusing
             const track = initialScreenStream.getVideoTracks()[0];
             const settings = track?.getSettings?.();
             const surface = (settings as Record<string, unknown> | undefined)?.[
-              "displaySurface"
+              'displaySurface'
             ] as string | undefined;
             const isEntireScreen =
-              surface === "monitor" ||
-              (typeof track?.label === "string" &&
+              surface === 'monitor' ||
+              (typeof track?.label === 'string' &&
                 /entire screen|screen 1|screen 2|whole screen/i.test(track.label));
             if (!isEntireScreen) {
               console.warn(
-                "[WebRTC] Provided screen stream is not entire screen; refusing to start",
+                '[WebRTC] Provided screen stream is not entire screen; refusing to start',
               );
               setState((prev) => ({
                 ...prev,
-                error: "Please share your Entire screen to start streaming.",
+                error: 'Please share your Entire screen to start streaming.',
               }));
               return;
             }
             stream = initialScreenStream;
             isUsingInitialStreamRef.current = true;
           } else {
-            debugLogger("[WebRTC] Initial screen stream not available:", {
+            debugLogger('[WebRTC] Initial screen stream not available:', {
               exists: !!initialScreenStream,
               active: initialScreenStream?.active,
               tracks: initialScreenStream?.getTracks().length,
             });
             debugLogger(
-              "[WebRTC] Requesting NEW screen share (this should not happen if permissions were checked)",
+              '[WebRTC] Requesting NEW screen share (this should not happen if permissions were checked)',
             );
             stream = await navigator.mediaDevices.getDisplayMedia({
               video: {
-                displaySurface: "monitor", // Request entire screen (may be ignored)
+                displaySurface: 'monitor', // Request entire screen (may be ignored)
               } as MediaTrackConstraints & { displaySurface?: string },
               audio: false,
             });
@@ -436,11 +436,11 @@ export const useWebRTC = ({
             const track = stream.getVideoTracks()[0];
             const settings = track?.getSettings?.();
             const surface = (settings as Record<string, unknown> | undefined)?.[
-              "displaySurface"
+              'displaySurface'
             ] as string | undefined;
             const isEntireScreen =
-              surface === "monitor" ||
-              (typeof track?.label === "string" &&
+              surface === 'monitor' ||
+              (typeof track?.label === 'string' &&
                 /entire screen|screen 1|screen 2|whole screen/i.test(track.label));
             if (!isEntireScreen) {
               stream.getTracks().forEach((t) => t.stop());
@@ -448,7 +448,7 @@ export const useWebRTC = ({
                 ...prev,
                 error: "Please select 'Entire screen' when sharing your screen.",
               }));
-              console.warn("[WebRTC] User did not select entire screen; aborting stream start");
+              console.warn('[WebRTC] User did not select entire screen; aborting stream start');
               return;
             }
             isUsingInitialStreamRef.current = false;
@@ -457,13 +457,13 @@ export const useWebRTC = ({
           // Try to reuse initial stream first, otherwise request new
           if (initialStream && initialStream.active) {
             debugLogger(
-              "[WebRTC] Reusing existing webcam stream, tracks:",
+              '[WebRTC] Reusing existing webcam stream, tracks:',
               initialStream.getTracks().length,
             );
             stream = initialStream;
             isUsingInitialStreamRef.current = true;
           } else {
-            debugLogger("[WebRTC] Requesting new webcam stream");
+            debugLogger('[WebRTC] Requesting new webcam stream');
             stream = await navigator.mediaDevices.getUserMedia({
               video: { width: 1280, height: 720 },
               audio: true,
@@ -476,9 +476,9 @@ export const useWebRTC = ({
 
         // Create peer connection and add tracks
         const pc = createPeerConnection();
-        debugLogger("[WebRTC] Adding tracks to peer connection...");
+        debugLogger('[WebRTC] Adding tracks to peer connection...');
         stream.getTracks().forEach((track) => {
-          debugLogger("[WebRTC] Adding track:", track.kind, track.label);
+          debugLogger('[WebRTC] Adding track:', track.kind, track.label);
           pc.addTrack(track, stream);
         });
 
@@ -487,10 +487,10 @@ export const useWebRTC = ({
         );
         return stream;
       } catch (error) {
-        console.error("[WebRTC] Error starting stream:", error);
+        console.error('[WebRTC] Error starting stream:', error);
         setState((prev) => ({
           ...prev,
-          error: `Failed to access ${type === "screen" ? "screen" : "camera/microphone"}`,
+          error: `Failed to access ${type === 'screen' ? 'screen' : 'camera/microphone'}`,
         }));
         throw error;
       }
@@ -505,10 +505,10 @@ export const useWebRTC = ({
       // Only stop tracks if this is NOT one of the initial streams
       // Initial streams should be preserved for reuse
       if (!isUsingInitialStreamRef.current) {
-        debugLogger("[WebRTC] Stopping locally created stream tracks");
+        debugLogger('[WebRTC] Stopping locally created stream tracks');
         localStreamRef.current.getTracks().forEach((track) => track.stop());
       } else {
-        debugLogger("[WebRTC] Preserving initial stream for reuse");
+        debugLogger('[WebRTC] Preserving initial stream for reuse');
       }
       localStreamRef.current = null;
       isUsingInitialStreamRef.current = false;
@@ -524,9 +524,9 @@ export const useWebRTC = ({
 
   // Request stream (for teachers)
   const requestStream = useCallback(
-    async (studentId: string, streamType: StreamType = "webcam") => {
+    async (studentId: string, streamType: StreamType = 'webcam') => {
       if (!socketRef.current) {
-        setState((prev) => ({ ...prev, error: "Not connected to server" }));
+        setState((prev) => ({ ...prev, error: 'Not connected to server' }));
         return null;
       }
 
@@ -535,7 +535,7 @@ export const useWebRTC = ({
 
         // Close existing peer connection if any
         if (peerConnectionRef.current) {
-          debugLogger("[WebRTC] Closing existing peer connection before new request");
+          debugLogger('[WebRTC] Closing existing peer connection before new request');
           peerConnectionRef.current.close();
           peerConnectionRef.current = null;
         }
@@ -543,10 +543,10 @@ export const useWebRTC = ({
         // Set peer id to route ICE candidates
         peerIdRef.current = studentId;
 
-        debugLogger("[WebRTC] Requesting stream from student:", studentId, "type:", streamType);
+        debugLogger('[WebRTC] Requesting stream from student:', studentId, 'type:', streamType);
 
         // Request stream from student with specified type
-        socketRef.current.emit("start-stream", {
+        socketRef.current.emit('start-stream', {
           studentId,
           teacherId: userId,
           testId: parseInt(testId),
@@ -555,8 +555,8 @@ export const useWebRTC = ({
 
         return remoteStreamRef.current;
       } catch (error) {
-        console.error("Error requesting stream:", error);
-        setState((prev) => ({ ...prev, error: "Failed to request stream" }));
+        console.error('Error requesting stream:', error);
+        setState((prev) => ({ ...prev, error: 'Failed to request stream' }));
         return null;
       }
     },
@@ -567,7 +567,7 @@ export const useWebRTC = ({
   const stopViewingStream = useCallback(
     (studentId: string) => {
       if (socketRef.current) {
-        socketRef.current.emit("stop-stream", {
+        socketRef.current.emit('stop-stream', {
           studentId,
           teacherId: userId,
           testId: parseInt(testId),
@@ -589,14 +589,14 @@ export const useWebRTC = ({
   const reconnect = useCallback(() => {
     if (socketRef.current) {
       debugLogger(
-        "[WebRTC] Manual reconnect triggered, socket connected:",
+        '[WebRTC] Manual reconnect triggered, socket connected:',
         socketRef.current.connected,
       );
       if (!socketRef.current.connected) {
-        debugLogger("[WebRTC] Attempting to reconnect socket...");
+        debugLogger('[WebRTC] Attempting to reconnect socket...');
         socketRef.current.connect();
       } else {
-        debugLogger("[WebRTC] Socket already connected");
+        debugLogger('[WebRTC] Socket already connected');
       }
     }
   }, []);

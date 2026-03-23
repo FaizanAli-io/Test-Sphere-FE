@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { ArrowLeft } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 
-import api from "@/hooks/useApi";
-import { useInvigilateStudents, useProctoringSocket } from "./hooks";
-import type { InvigilatingStudent } from "./hooks";
-import { StudentGrid, StudentLivestreamModal } from "./components";
-import dynamic from "next/dynamic";
+import api from '@/hooks/useApi';
+import { useInvigilateStudents, useProctoringSocket } from './hooks';
+import type { InvigilatingStudent } from './hooks';
+import { StudentGrid, StudentLivestreamModal } from './components';
+import dynamic from 'next/dynamic';
 
 const ProctoringLogsModal = dynamic(
-  () => import("../Common/ProctoringLogs").then((m) => m.ProctoringLogsModal),
+  () => import('../Common/ProctoringLogs').then((m) => m.ProctoringLogsModal),
   { loading: () => null },
 );
 
@@ -22,15 +22,15 @@ export default function Invigilate() {
 
   const { students, loading, error, refetch } = useInvigilateStudents(testId);
   const [selectedStudent, setSelectedStudent] = useState<InvigilatingStudent | null>(null);
-  const [teacherId, setTeacherId] = useState<string>("");
-  const [testTitle, setTestTitle] = useState<string>("");
+  const [teacherId, setTeacherId] = useState<string>('');
+  const [testTitle, setTestTitle] = useState<string>('');
   const { getStudentProctoring } = useProctoringSocket(teacherId, testId, !!teacherId);
 
   useEffect(() => {
     let ignore = false;
     const fetchMe = async () => {
       try {
-        const res = await api("/auth/me", { auth: true, method: "GET" });
+        const res = await api('/auth/me', { auth: true, method: 'GET' });
         if (!ignore && res.ok) {
           const me = await res.json();
           setTeacherId(String(me.id));
@@ -51,10 +51,10 @@ export default function Invigilate() {
     const fetchTest = async () => {
       if (!testId) return;
       try {
-        const res = await api(`/tests/${testId}`, { auth: true, method: "GET" });
+        const res = await api(`/tests/${testId}`, { auth: true, method: 'GET' });
         if (!ignore && res.ok) {
           const test = await res.json();
-          setTestTitle(test?.title ?? "N / A");
+          setTestTitle(test?.title ?? 'N / A');
         }
       } catch {
         // ignore
@@ -136,10 +136,10 @@ export default function Invigilate() {
             </button>
             <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-md">
               <div
-                className={`w-2 h-2 rounded-full ${loading ? "bg-yellow-500 animate-pulse" : "bg-green-500"}`}
+                className={`w-2 h-2 rounded-full ${loading ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}
               ></div>
               <span className="text-sm text-gray-600 font-medium">
-                {loading ? "Updating..." : "Live"}
+                {loading ? 'Updating...' : 'Live'}
               </span>
             </div>
           </div>
@@ -148,7 +148,7 @@ export default function Invigilate() {
               Test Invigilation ({testTitle})
             </h1>
             <p className="text-gray-600 text-lg">
-              {students.length} {students.length === 1 ? "student" : "students"} currently taking
+              {students.length} {students.length === 1 ? 'student' : 'students'} currently taking
               the test
             </p>
           </div>

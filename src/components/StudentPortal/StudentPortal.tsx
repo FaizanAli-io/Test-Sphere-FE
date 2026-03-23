@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo } from 'react';
 
 import {
   useAllTests,
@@ -8,12 +8,12 @@ import {
   useNotifications,
   useTestsForClass,
   useStudentClasses,
-} from "./hooks";
-import { TestsModal, JoinClassModal, ClassDetailsModal } from "./modals";
-import { ClassData } from "./types";
-import { Submission } from "../Submissions/types";
-import { useSubmissions, SubmissionDetail, SubmissionsList } from "../Submissions";
-import { BasePortal, QuickAction, ClassCardAction, BaseClass } from "../SharedPortal";
+} from './hooks';
+import { TestsModal, JoinClassModal, ClassDetailsModal } from './modals';
+import { ClassData } from './types';
+import { Submission } from '../Submissions/types';
+import { useSubmissions, SubmissionDetail, SubmissionsList } from '../Submissions';
+import { BasePortal, QuickAction, ClassCardAction, BaseClass } from '../SharedPortal';
 
 export default function StudentPortal() {
   const {
@@ -72,9 +72,9 @@ export default function StudentPortal() {
     closeSubmissionDetail,
     getSubmissionForTest: getSubmissionForTestFromHook,
     fetchSubmissions,
-  } = useSubmissions(undefined, "student", notificationsApi);
+  } = useSubmissions(undefined, 'student', notificationsApi);
 
-  const [classCode, setClassCode] = useState("");
+  const [classCode, setClassCode] = useState('');
   const [joining, setJoining] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -85,7 +85,7 @@ export default function StudentPortal() {
 
   const handleJoinClass = async () => {
     if (!classCode.trim()) {
-      showError("Please enter a class code");
+      showError('Please enter a class code');
       return;
     }
 
@@ -94,14 +94,14 @@ export default function StudentPortal() {
 
     try {
       await joinClass(classCode);
-      showSuccess("Successfully joined the class!");
-      setClassCode("");
+      showSuccess('Successfully joined the class!');
+      setClassCode('');
       setShowJoinModal(false);
       setTimeout(() => {
         fetchClasses();
       }, 2000);
     } catch (err: unknown) {
-      showError(err instanceof Error ? err.message : "An unexpected error occurred");
+      showError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
       setJoining(false);
     }
@@ -114,9 +114,9 @@ export default function StudentPortal() {
     clearError();
     try {
       await leaveClass(id);
-      showSuccess("Successfully left the class");
+      showSuccess('Successfully left the class');
     } catch (err: unknown) {
-      showError(err instanceof Error ? err.message : "An unexpected error occurred");
+      showError(err instanceof Error ? err.message : 'An unexpected error occurred');
     }
   };
 
@@ -130,7 +130,7 @@ export default function StudentPortal() {
     try {
       await fetchTestsForClass(cls.id);
     } catch (err: unknown) {
-      showError(err instanceof Error ? err.message : "An unexpected error occurred");
+      showError(err instanceof Error ? err.message : 'An unexpected error occurred');
     }
   };
 
@@ -163,7 +163,7 @@ export default function StudentPortal() {
       }
       setShowDetailsModal(true);
     } catch (err) {
-      showError(err instanceof Error ? err.message : "Failed to load class details");
+      showError(err instanceof Error ? err.message : 'Failed to load class details');
     }
   };
 
@@ -173,7 +173,7 @@ export default function StudentPortal() {
     studentCount: undefined,
     disabled: cls.approved === false,
     testCount: cls.testCount ?? cls.tests?.length ?? 0,
-    statusLabel: cls.approved === false ? "Pending Approval" : undefined,
+    statusLabel: cls.approved === false ? 'Pending Approval' : undefined,
   }));
 
   const displayError =
@@ -181,19 +181,19 @@ export default function StudentPortal() {
 
   const quickActions: QuickAction[] = [
     {
-      icon: "👥",
-      title: "Join a Class",
-      description: "Enter a class code provided by your teacher to join",
-      actionText: "Join Now",
-      colorScheme: "indigo",
+      icon: '👥',
+      title: 'Join a Class',
+      description: 'Enter a class code provided by your teacher to join',
+      actionText: 'Join Now',
+      colorScheme: 'indigo',
       onClick: () => setShowJoinModal(true),
     },
     {
-      icon: "📊",
-      title: "View Submissions",
-      description: "Review your test submissions and scores",
-      actionText: "View All",
-      colorScheme: "orange",
+      icon: '📊',
+      title: 'View Submissions',
+      description: 'Review your test submissions and scores',
+      actionText: 'View All',
+      colorScheme: 'orange',
       onClick: async () => {
         setSubmissionsForClass(null);
         setShowSubmissionsListModal(true);
@@ -204,19 +204,19 @@ export default function StudentPortal() {
 
   const classCardActions: ClassCardAction[] = [
     {
-      label: "Scores",
+      label: 'Scores',
       onClick: (classData) => openSubmissionsModal(classData as ClassData),
-      colorScheme: "green",
+      colorScheme: 'green',
     },
     {
-      label: "Tests",
+      label: 'Tests',
       onClick: (classData) => openTestsModal(classData as ClassData),
-      colorScheme: "blue",
+      colorScheme: 'blue',
     },
     {
-      label: "Leave",
+      label: 'Leave',
       onClick: (classData) => handleLeaveClass(Number(classData.id), classData.name),
-      colorScheme: "red",
+      colorScheme: 'red',
     },
   ];
 

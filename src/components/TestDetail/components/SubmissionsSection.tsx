@@ -1,9 +1,9 @@
-import React from "react";
-import { Trash2 } from "lucide-react";
-import type { Submission } from "../../Submissions/types";
-import { calculateCurrentTotalMarks } from "../../Submissions/utils";
-import { canDelete as checkCanDelete } from "@/utils/rolePermissions";
-import type { TeacherRole } from "@/utils/rolePermissions";
+import React from 'react';
+import { Trash2 } from 'lucide-react';
+import type { Submission } from '../../Submissions/types';
+import { calculateCurrentTotalMarks } from '../../Submissions/utils';
+import { canDelete as checkCanDelete } from '@/utils/rolePermissions';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 interface SubmissionsSectionProps {
   submissions: Submission[];
@@ -18,7 +18,7 @@ const calculateObjectiveMarks = (submission: Submission) => {
   if (!submission.answers) return { obtained: 0, total: 0 };
   const objectiveAnswers = submission.answers.filter(
     (answer) =>
-      answer.question?.type === "MULTIPLE_CHOICE" || answer.question?.type === "TRUE_FALSE",
+      answer.question?.type === 'MULTIPLE_CHOICE' || answer.question?.type === 'TRUE_FALSE',
   );
   const obtained = objectiveAnswers.reduce((sum, answer) => sum + (answer.obtainedMarks || 0), 0);
   const total = objectiveAnswers.reduce((sum, answer) => sum + (answer.question?.maxMarks || 0), 0);
@@ -28,7 +28,7 @@ const calculateObjectiveMarks = (submission: Submission) => {
 const calculateSubjectiveMarks = (submission: Submission) => {
   if (!submission.answers) return { obtained: 0, total: 0 };
   const subjectiveAnswers = submission.answers.filter(
-    (answer) => answer.question?.type === "SHORT_ANSWER" || answer.question?.type === "LONG_ANSWER",
+    (answer) => answer.question?.type === 'SHORT_ANSWER' || answer.question?.type === 'LONG_ANSWER',
   );
   const obtained = subjectiveAnswers.reduce((sum, answer) => sum + (answer.obtainedMarks || 0), 0);
   const total = subjectiveAnswers.reduce(
@@ -45,7 +45,7 @@ const calculatePercentage = (obtained: number, total: number) => {
 
 const countAnsweredQuestions = (submission: Submission) => {
   if (!submission.answers) return 0;
-  return submission.answers.filter((a) => a.answer != null && a.answer !== "").length;
+  return submission.answers.filter((a) => a.answer != null && a.answer !== '').length;
 };
 
 export default function SubmissionsSection({
@@ -54,7 +54,7 @@ export default function SubmissionsSection({
   onViewSubmissions,
   onViewIndividualSubmission,
   onDeleteSubmission,
-  teacherRole = "VIEWER",
+  teacherRole = 'VIEWER',
 }: SubmissionsSectionProps) {
   const canDeleteSubmissions = checkCanDelete(teacherRole);
   return (
@@ -121,7 +121,7 @@ export default function SubmissionsSection({
                 return (
                   <tr
                     key={submission.id}
-                    className={`border-b border-gray-200 hover:bg-purple-50 transition-all cursor-pointer ${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                    className={`border-b border-gray-200 hover:bg-purple-50 transition-all cursor-pointer ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}`}
                     onClick={() => onViewIndividualSubmission(submission.id)}
                   >
                     <td className="p-4 border-r border-gray-200">
@@ -132,10 +132,10 @@ export default function SubmissionsSection({
                     <td className="p-4 border-r border-gray-200">
                       <div className="flex flex-col">
                         <span className="font-semibold text-gray-900">
-                          {submission.student?.name || "Unknown Student"}
+                          {submission.student?.name || 'Unknown Student'}
                         </span>
                         <span className="text-sm text-gray-600">
-                          ID: {submission.student?.id || "N/A"}
+                          ID: {submission.student?.id || 'N/A'}
                         </span>
                       </div>
                     </td>
@@ -178,12 +178,12 @@ export default function SubmissionsSection({
                         <div
                           className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg ${
                             percentage >= 80
-                              ? "bg-green-100 text-green-800"
+                              ? 'bg-green-100 text-green-800'
                               : percentage >= 60
-                                ? "bg-yellow-100 text-yellow-800"
+                                ? 'bg-yellow-100 text-yellow-800'
                                 : percentage >= 40
-                                  ? "bg-orange-100 text-orange-800"
-                                  : "bg-red-100 text-red-800"
+                                  ? 'bg-orange-100 text-orange-800'
+                                  : 'bg-red-100 text-red-800'
                           }`}
                         >
                           {percentage}%
@@ -193,11 +193,11 @@ export default function SubmissionsSection({
                     <td className="p-4 text-center border-r border-gray-200">
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          gradingStatus === "GRADED"
-                            ? "bg-green-100 text-green-800"
-                            : gradingStatus === "SUBMITTED"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-yellow-100 text-yellow-800"
+                          gradingStatus === 'GRADED'
+                            ? 'bg-green-100 text-green-800'
+                            : gradingStatus === 'SUBMITTED'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-yellow-100 text-yellow-800'
                         }`}
                       >
                         {gradingStatus}

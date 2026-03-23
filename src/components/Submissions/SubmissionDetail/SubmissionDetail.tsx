@@ -1,16 +1,16 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import api from "@/hooks/useApi";
-import { useNotification } from "@/hooks/useNotification";
-import { SubmissionDetailProps, SubmissionStatus } from "../types";
-import { calculateCurrentTotalMarks, calculateTotalPossibleMarks } from "../utils";
+import api from '@/hooks/useApi';
+import { useNotification } from '@/hooks/useNotification';
+import { SubmissionDetailProps, SubmissionStatus } from '../types';
+import { calculateCurrentTotalMarks, calculateTotalPossibleMarks } from '../utils';
 
-import SubmissionHeader from "./SubmissionHeader";
-import ScoreSummary from "./ScoreSummary";
-import TestInfo from "./TestInfo";
-import Timeline from "./Timeline";
-import QuestionItem from "./QuestionItem";
-import GradingActions from "./GradingActions";
+import SubmissionHeader from './SubmissionHeader';
+import ScoreSummary from './ScoreSummary';
+import TestInfo from './TestInfo';
+import Timeline from './Timeline';
+import QuestionItem from './QuestionItem';
+import GradingActions from './GradingActions';
 
 export default function SubmissionDetail(props: SubmissionDetailProps) {
   const {
@@ -29,7 +29,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
   if (!isOpen || !submission) return null;
 
-  const isTeacherView = viewContext === "teacher";
+  const isTeacherView = viewContext === 'teacher';
   const totalPossible = calculateTotalPossibleMarks(submission.answers);
   const currentTotal = calculateCurrentTotalMarks(submission.answers);
 
@@ -44,7 +44,7 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
     setLoadingBulkUpdate(true);
     try {
       const answers = Object.entries(gradingScores).map(([key, obtainedMarks]) => {
-        const [, questionIndex] = key.split("-");
+        const [, questionIndex] = key.split('-');
         const questionIdx = parseInt(questionIndex);
 
         const answer = submission.answers?.[questionIdx];
@@ -57,13 +57,13 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
       const response = await api(`/submissions/${submission.id}/grade`, {
         body: JSON.stringify({ answers }),
-        method: "POST",
+        method: 'POST',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update scores");
+        throw new Error(errorData.message || 'Failed to update scores');
       }
 
       await response.json();
@@ -85,8 +85,8 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
       setGradingScores({});
     } catch (error) {
-      console.error("Failed to update scores:", error);
-      notifications.showError(error instanceof Error ? error.message : "Failed to update scores");
+      console.error('Failed to update scores:', error);
+      notifications.showError(error instanceof Error ? error.message : 'Failed to update scores');
     } finally {
       setLoadingBulkUpdate(false);
     }
@@ -97,14 +97,14 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
 
     try {
       const response = await api(`/submissions/${submission.id}/status`, {
-        method: "PATCH",
+        method: 'PATCH',
         auth: true,
         body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update status");
+        throw new Error(errorData.message || 'Failed to update status');
       }
 
       notifications.showSuccess(`Submission marked as ${newStatus.toLowerCase()} successfully`);
@@ -114,8 +114,8 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
         onUpdateStatus(submission.id, newStatus);
       }
     } catch (error) {
-      console.error("Failed to update status:", error);
-      notifications.showError(error instanceof Error ? error.message : "Failed to update status");
+      console.error('Failed to update status:', error);
+      notifications.showError(error instanceof Error ? error.message : 'Failed to update status');
     }
   };
 
@@ -194,8 +194,8 @@ export default function SubmissionDetail(props: SubmissionDetailProps) {
               onClick={onClose}
               className={`px-6 py-3 font-bold rounded-xl transition-all ${
                 isTeacherView
-                  ? "bg-purple-500 text-white hover:bg-purple-600"
-                  : "bg-green-500 text-white hover:bg-green-600"
+                  ? 'bg-purple-500 text-white hover:bg-purple-600'
+                  : 'bg-green-500 text-white hover:bg-green-600'
               }`}
             >
               Close

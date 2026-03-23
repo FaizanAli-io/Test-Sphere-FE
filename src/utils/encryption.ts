@@ -1,4 +1,4 @@
-const ENCRYPTION_ALGORITHM = "AES-GCM";
+const ENCRYPTION_ALGORITHM = 'AES-GCM';
 const KEY_LENGTH = 256;
 const IV_LENGTH = 12; // 96 bits for AES-GCM
 
@@ -8,24 +8,24 @@ const IV_LENGTH = 12; // 96 bits for AES-GCM
 async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey> {
   const encoder = new TextEncoder();
   const passwordKey = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     encoder.encode(password),
-    "PBKDF2",
+    'PBKDF2',
     false,
-    ["deriveKey"],
+    ['deriveKey'],
   );
 
   return crypto.subtle.deriveKey(
     {
-      name: "PBKDF2",
+      name: 'PBKDF2',
       salt: salt as BufferSource,
       iterations: 100000,
-      hash: "SHA-256",
+      hash: 'SHA-256',
     },
     passwordKey,
     { name: ENCRYPTION_ALGORITHM, length: KEY_LENGTH },
     false,
-    ["encrypt", "decrypt"],
+    ['encrypt', 'decrypt'],
   );
 }
 
@@ -38,12 +38,12 @@ async function getEncryptionKey(submissionId: number): Promise<{
   salt: Uint8Array;
 }> {
   // Use submission ID as part of the password for deterministic key generation
-  const password = `proctoring-${submissionId}-${process.env.NEXT_PUBLIC_ENCRYPTION_SALT || "default-salt"}`;
+  const password = `proctoring-${submissionId}-${process.env.NEXT_PUBLIC_ENCRYPTION_SALT || 'default-salt'}`;
 
   // Generate a deterministic salt based on submission ID
   const encoder = new TextEncoder();
   const saltSource = encoder.encode(`salt-${submissionId}`);
-  const saltHash = await crypto.subtle.digest("SHA-256", saltSource);
+  const saltHash = await crypto.subtle.digest('SHA-256', saltSource);
   const salt = new Uint8Array(saltHash).slice(0, 16);
 
   const key = await deriveKey(password, salt);
@@ -83,8 +83,8 @@ export async function encryptData(data: unknown, submissionId: number): Promise<
     // Convert to base64 for storage
     return btoa(String.fromCharCode(...combined));
   } catch (error) {
-    console.error("Encryption failed:", error);
-    throw new Error("Failed to encrypt data");
+    console.error('Encryption failed:', error);
+    throw new Error('Failed to encrypt data');
   }
 }
 
@@ -120,8 +120,8 @@ export async function decryptData<T = unknown>(
     const dataString = decoder.decode(decryptedData);
     return JSON.parse(dataString) as T;
   } catch (error) {
-    console.error("Decryption failed:", error);
-    throw new Error("Failed to decrypt data");
+    console.error('Decryption failed:', error);
+    throw new Error('Failed to decrypt data');
   }
 }
 

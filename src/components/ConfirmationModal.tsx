@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -8,46 +8,46 @@ interface ConfirmationModalProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  type?: "danger" | "warning" | "info";
+  type?: 'danger' | 'warning' | 'info';
 }
 
 export default function ConfirmationModal({
   isOpen,
   title,
   message,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
   onConfirm,
   onCancel,
-  type = "warning",
+  type = 'warning',
 }: ConfirmationModalProps) {
   if (!isOpen) return null;
 
   const getTypeStyles = () => {
     switch (type) {
-      case "danger":
+      case 'danger':
         return {
-          header: "bg-gradient-to-r from-red-500 to-red-600",
-          confirmButton: "bg-red-500 hover:bg-red-600",
-          icon: "⚠️",
+          header: 'bg-gradient-to-r from-red-500 to-red-600',
+          confirmButton: 'bg-red-500 hover:bg-red-600',
+          icon: '⚠️',
         };
-      case "warning":
+      case 'warning':
         return {
-          header: "bg-gradient-to-r from-yellow-500 to-orange-500",
-          confirmButton: "bg-yellow-500 hover:bg-yellow-600",
-          icon: "⚠️",
+          header: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+          confirmButton: 'bg-yellow-500 hover:bg-yellow-600',
+          icon: '⚠️',
         };
-      case "info":
+      case 'info':
         return {
-          header: "bg-gradient-to-r from-blue-500 to-indigo-500",
-          confirmButton: "bg-blue-500 hover:bg-blue-600",
-          icon: "ℹ️",
+          header: 'bg-gradient-to-r from-blue-500 to-indigo-500',
+          confirmButton: 'bg-blue-500 hover:bg-blue-600',
+          icon: 'ℹ️',
         };
       default:
         return {
-          header: "bg-gradient-to-r from-gray-500 to-gray-600",
-          confirmButton: "bg-gray-500 hover:bg-gray-600",
-          icon: "❓",
+          header: 'bg-gradient-to-r from-gray-500 to-gray-600',
+          confirmButton: 'bg-gray-500 hover:bg-gray-600',
+          icon: '❓',
         };
     }
   };

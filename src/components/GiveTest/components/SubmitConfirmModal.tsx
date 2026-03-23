@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface SubmitConfirmModalProps {
   isOpen: boolean;
@@ -36,13 +36,13 @@ export const SubmitConfirmModal: React.FC<SubmitConfirmModalProps> = ({
               Are you sure you want to submit?
             </p>
             <p className="text-gray-600 mb-4">
-              You have answered <span className="font-bold text-indigo-600">{answeredCount}</span>{" "}
+              You have answered <span className="font-bold text-indigo-600">{answeredCount}</span>{' '}
               out of <span className="font-bold">{totalQuestions}</span> questions.
             </p>
             {unansweredCount > 0 && (
               <p className="text-red-600 font-medium text-sm">
                 {unansweredCount} question
-                {unansweredCount !== 1 ? "s" : ""} unanswered!
+                {unansweredCount !== 1 ? 's' : ''} unanswered!
               </p>
             )}
           </div>
@@ -66,7 +66,7 @@ export const SubmitConfirmModal: React.FC<SubmitConfirmModalProps> = ({
               disabled={submitting}
               className="flex-1 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 text-lg"
             >
-              {submitting ? "Submitting..." : "Submit Now"}
+              {submitting ? 'Submitting...' : 'Submit Now'}
             </button>
           </div>
         </div>

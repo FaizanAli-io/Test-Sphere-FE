@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-import api from "./useApi";
-import { debugLogger } from "@/utils/logger";
+import api from './useApi';
+import { debugLogger } from '@/utils/logger';
 
 const HEALTH_CHECK_INTERVAL = 10000; // Check every 10 seconds
 const HEALTH_CHECK_TIMEOUT = 5000; // 5 second timeout for health check
@@ -42,8 +42,8 @@ export const useConnectionMonitor = (enabled: boolean = true): UseConnectionMoni
         abortControllerRef.current?.abort();
       }, HEALTH_CHECK_TIMEOUT);
 
-      const response = await api("/api/health", {
-        method: "GET",
+      const response = await api('/api/health', {
+        method: 'GET',
         signal: abortControllerRef.current.signal,
       });
 
@@ -60,7 +60,7 @@ export const useConnectionMonitor = (enabled: boolean = true): UseConnectionMoni
 
       return online;
     } catch (error) {
-      console.warn("Health check failed:", error);
+      console.warn('Health check failed:', error);
       setIsOnline(false);
       setLastChecked(new Date());
       return false;
@@ -124,22 +124,22 @@ export const useConnectionMonitor = (enabled: boolean = true): UseConnectionMoni
     if (!enabled) return;
 
     const handleOnline = () => {
-      debugLogger("Browser reports online status");
+      debugLogger('Browser reports online status');
       checkConnection();
     };
 
     const handleOffline = () => {
-      debugLogger("Browser reports offline status");
+      debugLogger('Browser reports offline status');
       setIsOnline(false);
       setLastChecked(new Date());
     };
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [enabled, checkConnection]);
 

@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react";
-import { Mouse, MapPin, BarChart3 } from "lucide-react";
+import React, { useMemo, useState } from 'react';
+import { Mouse, MapPin, BarChart3 } from 'lucide-react';
 
-import { ProctoringLog, MouseClickMeta } from "./types";
+import { ProctoringLog, MouseClickMeta } from './types';
 
 interface MouseClickViewProps {
   logs: ProctoringLog[];
@@ -11,13 +11,13 @@ interface ClickEvent extends MouseClickMeta {
   logId: number;
 }
 
-type ClickFilterType = "ALL" | "LEFT" | "RIGHT";
+type ClickFilterType = 'ALL' | 'LEFT' | 'RIGHT';
 
 export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
-  const [filterType, setFilterType] = useState<ClickFilterType>("ALL");
+  const [filterType, setFilterType] = useState<ClickFilterType>('ALL');
 
   const clickEvents = useMemo(() => {
-    const clickLogs = logs.filter((log) => log.logType === "MOUSECLICK");
+    const clickLogs = logs.filter((log) => log.logType === 'MOUSECLICK');
 
     const events: ClickEvent[] = clickLogs.flatMap((log) =>
       log.meta.map((meta) => ({
@@ -27,13 +27,13 @@ export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
     );
 
     const filtered =
-      filterType === "ALL" ? events : events.filter((event) => event.type === filterType);
+      filterType === 'ALL' ? events : events.filter((event) => event.type === filterType);
 
     return filtered.sort((a, b) => new Date(a.loggedAt).getTime() - new Date(b.loggedAt).getTime());
   }, [logs, filterType]);
 
   const stats = useMemo(() => {
-    const clickLogs = logs.filter((log) => log.logType === "MOUSECLICK");
+    const clickLogs = logs.filter((log) => log.logType === 'MOUSECLICK');
 
     const allEvents: ClickEvent[] = clickLogs.flatMap((log) =>
       log.meta.map((meta) => ({
@@ -42,8 +42,8 @@ export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
       })),
     );
 
-    const leftClicks = allEvents.filter((e) => e.type === "LEFT").length;
-    const rightClicks = allEvents.filter((e) => e.type === "RIGHT").length;
+    const leftClicks = allEvents.filter((e) => e.type === 'LEFT').length;
+    const rightClicks = allEvents.filter((e) => e.type === 'RIGHT').length;
 
     return {
       total: allEvents.length,
@@ -87,11 +87,11 @@ export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
       {/* Filter Buttons */}
       <div className="flex flex-wrap gap-3">
         <button
-          onClick={() => setFilterType("ALL")}
+          onClick={() => setFilterType('ALL')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-            filterType === "ALL"
-              ? "bg-blue-500 text-white shadow-md"
-              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+            filterType === 'ALL'
+              ? 'bg-blue-500 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
           }`}
         >
           <Mouse size={18} />
@@ -100,11 +100,11 @@ export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
         </button>
 
         <button
-          onClick={() => setFilterType("LEFT")}
+          onClick={() => setFilterType('LEFT')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-            filterType === "LEFT"
-              ? "bg-green-500 text-white shadow-md"
-              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+            filterType === 'LEFT'
+              ? 'bg-green-500 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
           }`}
         >
           <span>Left Clicks</span>
@@ -112,11 +112,11 @@ export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
         </button>
 
         <button
-          onClick={() => setFilterType("RIGHT")}
+          onClick={() => setFilterType('RIGHT')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-            filterType === "RIGHT"
-              ? "bg-purple-500 text-white shadow-md"
-              : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+            filterType === 'RIGHT'
+              ? 'bg-purple-500 text-white shadow-md'
+              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
           }`}
         >
           <span>Right Clicks</span>
@@ -150,9 +150,9 @@ export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
                   <div
                     key={`${event.logId}-${idx}`}
                     className={`absolute w-3 h-3 rounded-full transform -translate-x-1/2 -translate-y-1/2 ${
-                      event.type === "LEFT"
-                        ? "bg-green-500 border-2 border-green-700"
-                        : "bg-purple-500 border-2 border-purple-700"
+                      event.type === 'LEFT'
+                        ? 'bg-green-500 border-2 border-green-700'
+                        : 'bg-purple-500 border-2 border-purple-700'
                     } hover:scale-150 transition-transform cursor-pointer shadow-lg`}
                     style={{
                       left: `${Math.min(Math.max(xPercent, 0), 100)}%`,
@@ -203,22 +203,22 @@ export const MouseClickView: React.FC<MouseClickViewProps> = ({ logs }) => {
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        event.type === "LEFT" ? "bg-green-100" : "bg-purple-100"
+                        event.type === 'LEFT' ? 'bg-green-100' : 'bg-purple-100'
                       }`}
                     >
                       <Mouse
                         size={20}
-                        className={event.type === "LEFT" ? "text-green-600" : "text-purple-600"}
+                        className={event.type === 'LEFT' ? 'text-green-600' : 'text-purple-600'}
                       />
                     </div>
 
                     <div>
                       <p className="text-sm font-medium text-gray-800">
                         <span
-                          className={`${event.type === "LEFT" ? "text-green-600" : "text-purple-600"}`}
+                          className={`${event.type === 'LEFT' ? 'text-green-600' : 'text-purple-600'}`}
                         >
                           {event.type}
-                        </span>{" "}
+                        </span>{' '}
                         CLICK
                       </p>
                       <p className="text-xs text-gray-500">

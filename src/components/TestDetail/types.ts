@@ -1,8 +1,8 @@
 // Import shared types from Submissions
-import { QuestionType } from "../Submissions/types";
+import { QuestionType } from '../Submissions/types';
 
 // TestDetail specific types
-export type TestStatus = "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
+export type TestStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
 
 // Core entities
 export interface TestConfig {
@@ -102,6 +102,6 @@ export interface ConfirmationFunction {
     message: string;
     confirmText?: string;
     cancelText?: string;
-    type?: "danger" | "warning" | "info";
+    type?: 'danger' | 'warning' | 'info';
   }): Promise<boolean>;
 }

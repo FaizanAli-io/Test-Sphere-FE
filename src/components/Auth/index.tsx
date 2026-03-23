@@ -1,42 +1,42 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+'use client';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-import LoginForm from "./components/LoginForm";
-import SignupForm from "./components/SignupForm";
-import AuthHeader from "./components/AuthHeader";
-import AuthFooter from "./components/AuthFooter";
-import AlertMessage from "./components/AlertMessage";
-import OtpVerification from "./components/OtpVerification";
-import ResetPasswordForm from "./components/ResetPasswordForm";
-import ForgotPasswordForm from "./components/ForgotPasswordForm";
+import LoginForm from './components/LoginForm';
+import SignupForm from './components/SignupForm';
+import AuthHeader from './components/AuthHeader';
+import AuthFooter from './components/AuthFooter';
+import AlertMessage from './components/AlertMessage';
+import OtpVerification from './components/OtpVerification';
+import ResetPasswordForm from './components/ResetPasswordForm';
+import ForgotPasswordForm from './components/ForgotPasswordForm';
 
 export default function Auth() {
   const router = useRouter();
-  const [authMode, setAuthMode] = useState<"login" | "signup" | "forgot" | "reset">("login");
+  const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot' | 'reset'>('login');
   const [otpSent, setOtpSent] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const resetForm = () => {
-    setEmail("");
-    setPassword("");
+    setEmail('');
+    setPassword('');
     setOtpSent(false);
-    setError("");
-    setSuccess("");
+    setError('');
+    setSuccess('');
   };
 
-  const switchMode = (mode: "login" | "signup" | "forgot" | "reset") => {
+  const switchMode = (mode: 'login' | 'signup' | 'forgot' | 'reset') => {
     resetForm();
     setAuthMode(mode);
   };
 
   const handleBackButton = () => {
     resetForm();
-    setAuthMode("login");
+    setAuthMode('login');
   };
 
   return (
@@ -47,13 +47,13 @@ export default function Auth() {
             authMode={authMode}
             otpSent={otpSent}
             onBack={handleBackButton}
-            showBackButton={authMode === "forgot" || authMode === "reset" || otpSent}
+            showBackButton={authMode === 'forgot' || authMode === 'reset' || otpSent}
           />
 
           <div className="p-8">
             <AlertMessage error={error} success={success} />
 
-            {authMode === "login" && (
+            {authMode === 'login' && (
               <LoginForm
                 email={email}
                 password={password}
@@ -63,12 +63,12 @@ export default function Auth() {
                 setError={setError}
                 setSuccess={setSuccess}
                 setLoading={setLoading}
-                onForgotPassword={() => switchMode("forgot")}
+                onForgotPassword={() => switchMode('forgot')}
                 router={router}
               />
             )}
 
-            {authMode === "signup" && !otpSent && (
+            {authMode === 'signup' && !otpSent && (
               <SignupForm
                 email={email}
                 password={password}
@@ -83,7 +83,7 @@ export default function Auth() {
               />
             )}
 
-            {authMode === "signup" && otpSent && (
+            {authMode === 'signup' && otpSent && (
               <OtpVerification
                 email={email}
                 password={password}
@@ -97,7 +97,7 @@ export default function Auth() {
               />
             )}
 
-            {authMode === "forgot" && !otpSent && (
+            {authMode === 'forgot' && !otpSent && (
               <ForgotPasswordForm
                 email={email}
                 loading={loading}
@@ -109,7 +109,7 @@ export default function Auth() {
               />
             )}
 
-            {authMode === "forgot" && otpSent && (
+            {authMode === 'forgot' && otpSent && (
               <ResetPasswordForm
                 email={email}
                 loading={loading}
@@ -128,11 +128,11 @@ export default function Auth() {
 
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-600">
-            By continuing, you agree to our{" "}
+            By continuing, you agree to our{' '}
             <a href="#" className="text-indigo-600 hover:underline">
               Terms of Service
-            </a>{" "}
-            and{" "}
+            </a>{' '}
+            and{' '}
             <a href="#" className="text-indigo-600 hover:underline">
               Privacy Policy
             </a>

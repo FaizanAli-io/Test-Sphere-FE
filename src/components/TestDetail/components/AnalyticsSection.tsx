@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -12,8 +12,8 @@ import {
   PieChart,
   Pie,
   Cell,
-} from "recharts";
-import api from "@/hooks/useApi";
+} from 'recharts';
+import api from '@/hooks/useApi';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,27 +99,27 @@ interface ActivePoolOverall {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const TYPE_LABELS: Record<string, string> = {
-  MULTIPLE_CHOICE: "Multiple Choice",
-  TRUE_FALSE: "True / False",
-  SHORT_ANSWER: "Short Answer",
-  LONG_ANSWER: "Long Answer",
+  MULTIPLE_CHOICE: 'Multiple Choice',
+  TRUE_FALSE: 'True / False',
+  SHORT_ANSWER: 'Short Answer',
+  LONG_ANSWER: 'Long Answer',
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  MULTIPLE_CHOICE: "#6366f1",
-  TRUE_FALSE: "#f59e0b",
-  SHORT_ANSWER: "#10b981",
-  LONG_ANSWER: "#f43f5e",
+  MULTIPLE_CHOICE: '#6366f1',
+  TRUE_FALSE: '#f59e0b',
+  SHORT_ANSWER: '#10b981',
+  LONG_ANSWER: '#f43f5e',
 };
 
 const GRADE_COLOR: Record<string, string> = {
-  "A+": "#059669",
-  A: "#10b981",
-  B: "#3b82f6",
-  C: "#f59e0b",
-  D: "#f97316",
-  F: "#ef4444",
-  "N/A": "#9ca3af",
+  'A+': '#059669',
+  A: '#10b981',
+  B: '#3b82f6',
+  C: '#f59e0b',
+  D: '#f97316',
+  F: '#ef4444',
+  'N/A': '#9ca3af',
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -154,13 +154,13 @@ function KpiCard({ title, value, sub, icon, gradient, valueColor }: KpiCardProps
 function DifficultyRow({ q }: { q: QuestionDifficulty }) {
   const scorePct = q.maxMarks > 0 ? Math.round((q.avgObtained / q.maxMarks) * 100) : 0;
   const rateColor =
-    q.failureRate >= 70 ? "bg-red-500" : q.failureRate >= 40 ? "bg-orange-400" : "bg-emerald-400";
+    q.failureRate >= 70 ? 'bg-red-500' : q.failureRate >= 40 ? 'bg-orange-400' : 'bg-emerald-400';
   const badgeColor =
     q.failureRate >= 70
-      ? "bg-red-500 text-white"
+      ? 'bg-red-500 text-white'
       : q.failureRate >= 40
-        ? "bg-orange-400 text-white"
-        : "bg-emerald-400 text-white";
+        ? 'bg-orange-400 text-white'
+        : 'bg-emerald-400 text-white';
 
   return (
     <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
@@ -178,7 +178,7 @@ function DifficultyRow({ q }: { q: QuestionDifficulty }) {
             {TYPE_LABELS[q.type] ?? q.type}
           </span>
           <span>
-            {q.attempts} attempt{q.attempts !== 1 ? "s" : ""}
+            {q.attempts} attempt{q.attempts !== 1 ? 's' : ''}
           </span>
           <span>
             Avg score: {q.avgObtained}/{q.maxMarks} ({scorePct}%)
@@ -239,7 +239,7 @@ function DonutChartWithLegend({
             </Pie>
             <Tooltip
               formatter={(value, name) => [`${value} ${tooltipSuffix}`, name]}
-              contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: 12 }}
+              contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb', fontSize: 12 }}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -277,7 +277,7 @@ function PoolCompositionCard({ pool }: { pool: PoolCompositionItem }) {
       type: t.type,
       name: TYPE_LABELS[t.type] ?? t.type,
       value: t.count,
-      color: TYPE_COLORS[t.type] ?? "#6b7280",
+      color: TYPE_COLORS[t.type] ?? '#6b7280',
     }));
 
   const pieDataSelected = pool.types
@@ -286,7 +286,7 @@ function PoolCompositionCard({ pool }: { pool: PoolCompositionItem }) {
       type: t.type,
       name: TYPE_LABELS[t.type] ?? t.type,
       value: t.selectionCount,
-      color: TYPE_COLORS[t.type] ?? "#6b7280",
+      color: TYPE_COLORS[t.type] ?? '#6b7280',
     }));
 
   const pieDataMarks = pool.types
@@ -295,20 +295,20 @@ function PoolCompositionCard({ pool }: { pool: PoolCompositionItem }) {
       type: t.type,
       name: TYPE_LABELS[t.type] ?? t.type,
       value: t.expectedMarks,
-      color: TYPE_COLORS[t.type] ?? "#6b7280",
+      color: TYPE_COLORS[t.type] ?? '#6b7280',
     }));
 
   return (
     <div
-      className={`bg-gray-50 rounded-2xl border border-gray-100 p-6 transition-colors ${isInactive ? "opacity-50 grayscale" : "hover:border-gray-200"}`}
+      className={`bg-gray-50 rounded-2xl border border-gray-100 p-6 transition-colors ${isInactive ? 'opacity-50 grayscale' : 'hover:border-gray-200'}`}
     >
       {/* Pool header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-bold ${isGeneral ? "bg-gray-200 text-gray-600" : isInactive ? "bg-gray-300 text-gray-500" : "bg-indigo-100 text-indigo-700"}`}
+            className={`px-3 py-1 rounded-full text-xs font-bold ${isGeneral ? 'bg-gray-200 text-gray-600' : isInactive ? 'bg-gray-300 text-gray-500' : 'bg-indigo-100 text-indigo-700'}`}
           >
-            {isGeneral ? "General" : "Pool"}
+            {isGeneral ? 'General' : 'Pool'}
           </span>
           <h4 className="text-sm font-bold text-gray-900">{pool.poolTitle}</h4>
           {isInactive && (
@@ -378,7 +378,7 @@ function PoolCompositionCard({ pool }: { pool: PoolCompositionItem }) {
                     <div className="flex items-center gap-2">
                       <div
                         className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: TYPE_COLORS[t.type] ?? "#6b7280" }}
+                        style={{ backgroundColor: TYPE_COLORS[t.type] ?? '#6b7280' }}
                       />
                       <span className="font-medium text-gray-700">
                         {TYPE_LABELS[t.type] ?? t.type}
@@ -428,7 +428,7 @@ interface ActivePoolRowProps {
   centerLabel: string;
   total: number;
   tooltipSuffix: string;
-  donutSide: "left" | "right";
+  donutSide: 'left' | 'right';
   data: { type: string; name: string; value: number; color: string }[];
 }
 
@@ -466,7 +466,7 @@ function ActivePoolRow({
           </Pie>
           <Tooltip
             formatter={(value, name) => [`${value} ${tooltipSuffix}`, String(name)]}
-            contentStyle={{ borderRadius: "10px", border: "1px solid #e5e7eb", fontSize: 13 }}
+            contentStyle={{ borderRadius: '10px', border: '1px solid #e5e7eb', fontSize: 13 }}
           />
         </PieChart>
       </ResponsiveContainer>
@@ -503,7 +503,7 @@ function ActivePoolRow({
     <div>
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">{title}</p>
       <div className="flex flex-col lg:flex-row items-center gap-8">
-        {donutSide === "left" ? (
+        {donutSide === 'left' ? (
           <>
             {donut}
             {legend}
@@ -521,7 +521,7 @@ function ActivePoolRow({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-type AnalyticsSubtab = "composition" | "students";
+type AnalyticsSubtab = 'composition' | 'students';
 
 interface AnalyticsSectionProps {
   testId?: string;
@@ -531,7 +531,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [subtab, setSubtab] = useState<AnalyticsSubtab>("composition");
+  const [subtab, setSubtab] = useState<AnalyticsSubtab>('composition');
 
   const load = useCallback(async () => {
     if (!testId) return;
@@ -541,11 +541,11 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
       const res = await api(`/tests/${testId}/analytics`, { auth: true });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error((body as { message?: string }).message ?? "Failed to load analytics");
+        throw new Error((body as { message?: string }).message ?? 'Failed to load analytics');
       }
       setData(await res.json());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unknown error");
+      setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -598,7 +598,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
     questionDifficulty,
   } = data;
 
-  const gradeColor = GRADE_COLOR[pm.averageGrade] ?? "#6b7280";
+  const gradeColor = GRADE_COLOR[pm.averageGrade] ?? '#6b7280';
   const hasSubmissions = pm.totalSubmissions > 0;
 
   // Group difficulty rows by pool for display
@@ -606,11 +606,11 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
   const diffGroups: DiffGroup[] = [];
   const seen = new Map<string, DiffGroup>();
   for (const q of questionDifficulty) {
-    const key = q.poolId !== null ? `pool-${q.poolId}` : "ungrouped";
+    const key = q.poolId !== null ? `pool-${q.poolId}` : 'ungrouped';
     if (!seen.has(key)) {
       const g: DiffGroup = {
         key,
-        label: q.poolTitle ?? "General Questions",
+        label: q.poolTitle ?? 'General Questions',
         isPool: q.poolId !== null,
         rows: [],
       };
@@ -630,7 +630,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
           <h2 className="text-2xl font-bold text-gray-900">Test Analytics</h2>
           {hasSubmissions && (
             <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-semibold">
-              {pm.totalSubmissions} submission{pm.totalSubmissions !== 1 ? "s" : ""}
+              {pm.totalSubmissions} submission{pm.totalSubmissions !== 1 ? 's' : ''}
             </span>
           )}
         </div>
@@ -642,8 +642,8 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
         <div className="flex gap-1 p-1 bg-gray-100 rounded-xl">
           {(
             [
-              { key: "composition", label: "Test Composition", icon: "🧩" },
-              { key: "students", label: "Student Analytics", icon: "📊" },
+              { key: 'composition', label: 'Test Composition', icon: '🧩' },
+              { key: 'students', label: 'Student Analytics', icon: '📊' },
             ] as const
           ).map((tab) => (
             <button
@@ -651,8 +651,8 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
               onClick={() => setSubtab(tab.key)}
               className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-semibold transition-all ${
                 subtab === tab.key
-                  ? "bg-white shadow text-gray-900"
-                  : "text-gray-500 hover:text-gray-700"
+                  ? 'bg-white shadow text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               <span>{tab.icon}</span>
@@ -665,7 +665,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
       {/* ════════════════════════════════════════════════════════════════════════
           TEST COMPOSITION SUBTAB
           ════════════════════════════════════════════════════════════════════════ */}
-      {subtab === "composition" && (
+      {subtab === 'composition' && (
         <>
           {/* Active Pool Overall — Composition Charts */}
           {activeOverall && activeOverall.types.length > 0 && (
@@ -717,7 +717,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
                       type: t.type,
                       name: TYPE_LABELS[t.type] ?? t.type,
                       value: t.count,
-                      color: TYPE_COLORS[t.type] ?? "#6b7280",
+                      color: TYPE_COLORS[t.type] ?? '#6b7280',
                     }))}
                 />
 
@@ -734,7 +734,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
                       type: t.type,
                       name: TYPE_LABELS[t.type] ?? t.type,
                       value: t.selectionCount,
-                      color: TYPE_COLORS[t.type] ?? "#6b7280",
+                      color: TYPE_COLORS[t.type] ?? '#6b7280',
                     }))}
                 />
 
@@ -751,7 +751,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
                       type: t.type,
                       name: TYPE_LABELS[t.type] ?? t.type,
                       value: t.expectedMarks,
-                      color: TYPE_COLORS[t.type] ?? "#6b7280",
+                      color: TYPE_COLORS[t.type] ?? '#6b7280',
                     }))}
                 />
               </div>
@@ -777,7 +777,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
 
               <div className="space-y-4">
                 {poolComposition.map((pool) => (
-                  <PoolCompositionCard key={pool.poolId ?? "general"} pool={pool} />
+                  <PoolCompositionCard key={pool.poolId ?? 'general'} pool={pool} />
                 ))}
               </div>
             </div>
@@ -788,7 +788,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
       {/* ════════════════════════════════════════════════════════════════════════
           STUDENT ANALYTICS SUBTAB
           ════════════════════════════════════════════════════════════════════════ */}
-      {subtab === "students" && (
+      {subtab === 'students' && (
         <>
           {/* No submissions empty state */}
           {!hasSubmissions && (
@@ -831,7 +831,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
                 />
                 <KpiCard
                   title="Avg Duration"
-                  value={pm.averageDurationMinutes > 0 ? `${pm.averageDurationMinutes} min` : "—"}
+                  value={pm.averageDurationMinutes > 0 ? `${pm.averageDurationMinutes} min` : '—'}
                   sub="time to complete"
                   icon="⏱️"
                   gradient="from-orange-50 to-orange-100"
@@ -843,7 +843,7 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
                 <h3 className="text-lg font-bold text-gray-900 mb-1">Score Distribution</h3>
                 <p className="text-sm text-gray-500 mb-6">
                   How scores are spread across all {pm.totalSubmissions} submission
-                  {pm.totalSubmissions !== 1 ? "s" : ""}
+                  {pm.totalSubmissions !== 1 ? 's' : ''}
                 </p>
                 <ResponsiveContainer width="100%" height={240}>
                   <BarChart
@@ -853,22 +853,22 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
                     <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
                     <XAxis
                       dataKey="label"
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <YAxis
                       allowDecimals={false}
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
+                      tick={{ fontSize: 11, fill: '#9ca3af' }}
                       tickLine={false}
                       axisLine={false}
                     />
                     <Tooltip
-                      cursor={{ fill: "#f3f4f6" }}
-                      formatter={(value) => [value ?? 0, "Students"]}
+                      cursor={{ fill: '#f3f4f6' }}
+                      formatter={(value) => [value ?? 0, 'Students']}
                       contentStyle={{
-                        borderRadius: "10px",
-                        border: "1px solid #e5e7eb",
+                        borderRadius: '10px',
+                        border: '1px solid #e5e7eb',
                         fontSize: 13,
                       }}
                     />
@@ -898,15 +898,15 @@ export default function AnalyticsSection({ testId }: AnalyticsSectionProps) {
                             <span
                               className={`px-3 py-1 rounded-full text-xs font-bold ${
                                 group.isPool
-                                  ? "bg-indigo-100 text-indigo-700"
-                                  : "bg-gray-100 text-gray-600"
+                                  ? 'bg-indigo-100 text-indigo-700'
+                                  : 'bg-gray-100 text-gray-600'
                               }`}
                             >
-                              {group.isPool ? "Pool: " : ""}
+                              {group.isPool ? 'Pool: ' : ''}
                               {group.label}
                             </span>
                             <span className="text-xs text-gray-400">
-                              {group.rows.length} question{group.rows.length !== 1 ? "s" : ""}
+                              {group.rows.length} question{group.rows.length !== 1 ? 's' : ''}
                             </span>
                           </div>
                         )}

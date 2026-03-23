@@ -1,17 +1,17 @@
-import { Answer } from "../Submissions/types";
+import { Answer } from '../Submissions/types';
 
 /**
  * Format dates consistently across the TestDetail module
  */
 export const formatDate = (dateString: string | undefined): string => {
-  if (!dateString) return "Not available";
-  return new Date(dateString).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+  if (!dateString) return 'Not available';
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   });
 };
 
@@ -43,12 +43,12 @@ export const getSubmissionStatus = (submission: {
   obtainedMarks?: number | null;
 }): string => {
   if (submission.obtainedMarks !== null && submission.obtainedMarks !== undefined) {
-    return "Graded";
+    return 'Graded';
   }
-  if (submission.status === "SUBMITTED") {
-    return "Pending";
+  if (submission.status === 'SUBMITTED') {
+    return 'Pending';
   }
-  return submission.status || "Unknown";
+  return submission.status || 'Unknown';
 };
 
 /**
@@ -56,12 +56,12 @@ export const getSubmissionStatus = (submission: {
  */
 export const getSubmissionStatusColor = (status: string): string => {
   switch (status) {
-    case "Graded":
-      return "bg-green-100 text-green-800";
-    case "Pending":
-      return "bg-yellow-100 text-yellow-800";
+    case 'Graded':
+      return 'bg-green-100 text-green-800';
+    case 'Pending':
+      return 'bg-yellow-100 text-yellow-800';
     default:
-      return "bg-gray-100 text-gray-800";
+      return 'bg-gray-100 text-gray-800';
   }
 };
 
@@ -85,32 +85,32 @@ export const validateQuestion = (question: {
   correctAnswer?: number;
 }): string | null => {
   if (!question.text.trim()) {
-    return "Question text is required";
+    return 'Question text is required';
   }
 
   if (question.maxMarks <= 0) {
-    return "Max marks must be greater than 0";
+    return 'Max marks must be greater than 0';
   }
 
-  if (question.type === "MULTIPLE_CHOICE") {
+  if (question.type === 'MULTIPLE_CHOICE') {
     if (!question.options || question.options.length < 2) {
-      return "Multiple choice questions need at least 2 options";
+      return 'Multiple choice questions need at least 2 options';
     }
     if (
       question.correctAnswer === undefined ||
       question.correctAnswer < 0 ||
       question.correctAnswer >= question.options.length
     ) {
-      return "Please select a correct answer";
+      return 'Please select a correct answer';
     }
   }
 
-  if (question.type === "TRUE_FALSE") {
+  if (question.type === 'TRUE_FALSE') {
     if (
       question.correctAnswer === undefined ||
       (question.correctAnswer !== 0 && question.correctAnswer !== 1)
     ) {
-      return "Please select True or False as the correct answer";
+      return 'Please select True or False as the correct answer';
     }
   }
 
@@ -125,27 +125,27 @@ export const formatAnswerText = (
   questionType?: string,
   options?: string[],
 ): string => {
-  if (!answer) return "No answer provided";
+  if (!answer) return 'No answer provided';
 
-  if (questionType === "MULTIPLE_CHOICE") {
+  if (questionType === 'MULTIPLE_CHOICE') {
     const answerIndex = Number.isFinite(Number(answer))
       ? parseInt(answer)
-      : (options?.indexOf(answer || "") ?? -1);
+      : (options?.indexOf(answer || '') ?? -1);
     if (options && answerIndex >= 0 && options[answerIndex]) {
       return options[answerIndex];
     }
     return answer;
   }
 
-  if (questionType === "TRUE_FALSE") {
+  if (questionType === 'TRUE_FALSE') {
     // In this app, 1 => True, 0 => False
     const idx = Number.isFinite(Number(answer))
       ? parseInt(answer)
-      : (options?.indexOf(answer || "") ?? -1);
+      : (options?.indexOf(answer || '') ?? -1);
     if (options && idx >= 0 && options[idx]) {
       return options[idx];
     }
-    return idx === 1 ? "True" : idx === 0 ? "False" : answer;
+    return idx === 1 ? 'True' : idx === 0 ? 'False' : answer;
   }
 
   return answer;
@@ -159,21 +159,21 @@ export const getCorrectAnswerText = (
   questionType?: string,
   options?: string[],
 ): string => {
-  if (questionType === "MULTIPLE_CHOICE") {
+  if (questionType === 'MULTIPLE_CHOICE') {
     if (options && correctAnswer !== undefined && options[correctAnswer]) {
       return options[correctAnswer];
     }
-    return "N/A";
+    return 'N/A';
   }
 
-  if (questionType === "TRUE_FALSE") {
+  if (questionType === 'TRUE_FALSE') {
     if (options && correctAnswer !== undefined && options[correctAnswer]) {
       return options[correctAnswer];
     }
-    if (correctAnswer === 1) return "True";
-    if (correctAnswer === 0) return "False";
-    return "N/A";
+    if (correctAnswer === 1) return 'True';
+    if (correctAnswer === 0) return 'False';
+    return 'N/A';
   }
 
-  return "Teacher will review";
+  return 'Teacher will review';
 };

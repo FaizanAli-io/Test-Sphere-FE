@@ -1,17 +1,17 @@
-import { Submission, Answer, Test, QuestionType } from "./types";
+import { Submission, Answer, Test, QuestionType } from './types';
 
 /**
  * Format dates consistently across submission components
  */
 export const formatDate = (dateString: string | undefined): string => {
-  if (!dateString) return "Not available";
-  return new Date(dateString).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+  if (!dateString) return 'Not available';
+  return new Date(dateString).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   });
 };
 
@@ -52,9 +52,9 @@ export const formatAnswerText = (
   questionType?: string,
   options?: string[],
 ): string => {
-  if (!answer) return "No answer provided";
+  if (!answer) return 'No answer provided';
 
-  if (questionType === "MULTIPLE_CHOICE" || questionType === "TRUE_FALSE") {
+  if (questionType === 'MULTIPLE_CHOICE' || questionType === 'TRUE_FALSE') {
     const answerIndex = parseInt(answer);
     if (options && options[answerIndex] !== undefined) {
       return options[answerIndex];
@@ -72,7 +72,7 @@ export const getCorrectAnswerText = (
   questionType?: string,
   options?: string[],
 ): string => {
-  if (questionType === "MULTIPLE_CHOICE" || questionType === "TRUE_FALSE") {
+  if (questionType === 'MULTIPLE_CHOICE' || questionType === 'TRUE_FALSE') {
     if (
       options &&
       correctAnswer !== undefined &&
@@ -82,20 +82,20 @@ export const getCorrectAnswerText = (
       return options[correctAnswer];
     }
   }
-  return "Teacher will review";
+  return 'Teacher will review';
 };
 
 /**
  * Get submission status for display
  */
 export const getSubmissionStatus = (submission: Submission): string => {
-  if (submission.status === "GRADED" || submission.gradedAt) {
-    return "Graded";
+  if (submission.status === 'GRADED' || submission.gradedAt) {
+    return 'Graded';
   }
-  if (submission.status === "SUBMITTED") {
-    return "Submitted";
+  if (submission.status === 'SUBMITTED') {
+    return 'Submitted';
   }
-  return "In Progress";
+  return 'In Progress';
 };
 
 /**
@@ -103,14 +103,14 @@ export const getSubmissionStatus = (submission: Submission): string => {
  */
 export const getSubmissionStatusColor = (status: string): string => {
   switch (status.toLowerCase()) {
-    case "graded":
-      return "bg-green-100 text-green-800";
-    case "submitted":
-      return "bg-blue-100 text-blue-800";
-    case "in progress":
-      return "bg-yellow-100 text-yellow-800";
+    case 'graded':
+      return 'bg-green-100 text-green-800';
+    case 'submitted':
+      return 'bg-blue-100 text-blue-800';
+    case 'in progress':
+      return 'bg-yellow-100 text-yellow-800';
     default:
-      return "bg-gray-100 text-gray-800";
+      return 'bg-gray-100 text-gray-800';
   }
 };
 
@@ -127,7 +127,7 @@ export const isAnswerCorrect = (
     return answer.obtainedMarks === maxMarks && maxMarks > 0;
   }
 
-  if (questionType === "MULTIPLE_CHOICE" || questionType === "TRUE_FALSE") {
+  if (questionType === 'MULTIPLE_CHOICE' || questionType === 'TRUE_FALSE') {
     const studentAnswer = parseInt(answer.answer);
     return studentAnswer === correctAnswer;
   }
@@ -142,7 +142,7 @@ export const isAnswerCorrect = (
 export const getAnswerStatus = (
   answer: Answer,
 ): {
-  status: "correct" | "incorrect" | "pending" | "partial";
+  status: 'correct' | 'incorrect' | 'pending' | 'partial';
   color: string;
   icon: string;
 } => {
@@ -150,38 +150,38 @@ export const getAnswerStatus = (
   const obtained = answer.obtainedMarks || 0;
 
   const isPending =
-    answer.gradingStatus === "PENDING" ||
+    answer.gradingStatus === 'PENDING' ||
     (answer.obtainedMarks === null &&
-      (answer.question?.type === "SHORT_ANSWER" || answer.question?.type === "LONG_ANSWER"));
+      (answer.question?.type === 'SHORT_ANSWER' || answer.question?.type === 'LONG_ANSWER'));
 
   if (isPending) {
     return {
-      status: "pending",
-      color: "border-yellow-200 bg-yellow-50",
-      icon: "⏳",
+      status: 'pending',
+      color: 'border-yellow-200 bg-yellow-50',
+      icon: '⏳',
     };
   }
 
   if (obtained === maxMarks && maxMarks > 0) {
     return {
-      status: "correct",
-      color: "border-green-200 bg-green-50",
-      icon: "✅",
+      status: 'correct',
+      color: 'border-green-200 bg-green-50',
+      icon: '✅',
     };
   }
 
   if (obtained === 0) {
     return {
-      status: "incorrect",
-      color: "border-red-200 bg-red-50",
-      icon: "❌",
+      status: 'incorrect',
+      color: 'border-red-200 bg-red-50',
+      icon: '❌',
     };
   }
 
   return {
-    status: "partial",
-    color: "border-blue-200 bg-blue-50",
-    icon: "📝",
+    status: 'partial',
+    color: 'border-blue-200 bg-blue-50',
+    icon: '📝',
   };
 };
 
@@ -244,29 +244,29 @@ const normalizeTest = (t: unknown): Test | undefined => {
   const rt = t as RawTestLike;
   const cls = isObject(rt.class) ? (rt.class as Record<string, unknown>) : undefined;
   const classIdFromClass =
-    cls && (typeof cls.id === "string" || typeof cls.id === "number") ? Number(cls.id) : undefined;
+    cls && (typeof cls.id === 'string' || typeof cls.id === 'number') ? Number(cls.id) : undefined;
 
   return {
     id: Number(rt.id),
     classId: Number(rt.classId ?? classIdFromClass ?? 0),
-    title: String(rt.title || ""),
-    description: typeof rt.description === "string" ? rt.description : undefined,
+    title: String(rt.title || ''),
+    description: typeof rt.description === 'string' ? rt.description : undefined,
     duration: Number(rt.duration || 0),
-    startAt: String(rt.startAt || ""),
-    endAt: String(rt.endAt || ""),
-    status: String(rt.status || "") || "DRAFT",
-    createdAt: String(rt.createdAt || ""),
-    updatedAt: String(rt.updatedAt || ""),
+    startAt: String(rt.startAt || ''),
+    endAt: String(rt.endAt || ''),
+    status: String(rt.status || '') || 'DRAFT',
+    createdAt: String(rt.createdAt || ''),
+    updatedAt: String(rt.updatedAt || ''),
     class: cls
       ? {
           id: classIdFromClass ?? 0,
-          name: typeof cls.name === "string" ? cls.name : "",
+          name: typeof cls.name === 'string' ? cls.name : '',
         }
       : undefined,
   } as Test;
 };
 
-const isObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null;
+const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null;
 
 export const normalizeSubmission = (raw: unknown): Submission => {
   const r: RawSubmission = isObject(raw) ? (raw as RawSubmission) : {};
@@ -275,23 +275,23 @@ export const normalizeSubmission = (raw: unknown): Submission => {
     userId: Number(r.userId),
     testId: Number(r.testId),
     status:
-      r.status === "IN_PROGRESS" || r.status === "SUBMITTED" || r.status === "GRADED"
+      r.status === 'IN_PROGRESS' || r.status === 'SUBMITTED' || r.status === 'GRADED'
         ? r.status
-        : "SUBMITTED",
-    startedAt: typeof r.startedAt === "string" ? r.startedAt : undefined,
-    submittedAt: typeof r.submittedAt === "string" ? r.submittedAt : "",
-    gradedAt: typeof r.gradedAt === "string" ? r.gradedAt : r.gradedAt === null ? null : undefined,
+        : 'SUBMITTED',
+    startedAt: typeof r.startedAt === 'string' ? r.startedAt : undefined,
+    submittedAt: typeof r.submittedAt === 'string' ? r.submittedAt : '',
+    gradedAt: typeof r.gradedAt === 'string' ? r.gradedAt : r.gradedAt === null ? null : undefined,
     totalMarks:
-      typeof r.totalMarks === "number" || r.totalMarks === null ? r.totalMarks : undefined,
-    createdAt: typeof r.createdAt === "string" ? r.createdAt : "",
-    updatedAt: typeof r.updatedAt === "string" ? r.updatedAt : "",
+      typeof r.totalMarks === 'number' || r.totalMarks === null ? r.totalMarks : undefined,
+    createdAt: typeof r.createdAt === 'string' ? r.createdAt : '',
+    updatedAt: typeof r.updatedAt === 'string' ? r.updatedAt : '',
 
     student:
       r.user || r.student
         ? {
             id: Number((r.user || r.student)?.id),
-            name: String((r.user || r.student)?.name || ""),
-            email: String((r.user || r.student)?.email || ""),
+            name: String((r.user || r.student)?.name || ''),
+            email: String((r.user || r.student)?.email || ''),
           }
         : undefined,
     test: normalizeTest(r.test),
@@ -301,9 +301,9 @@ export const normalizeSubmission = (raw: unknown): Submission => {
             ? {
                 id: Number((a.question as Record<string, unknown>).id),
                 testId: Number((a.question as Record<string, unknown>).testId || 0),
-                text: String((a.question as Record<string, unknown>).text || ""),
+                text: String((a.question as Record<string, unknown>).text || ''),
                 type: String(
-                  (a.question as Record<string, unknown>).type || "MULTIPLE_CHOICE",
+                  (a.question as Record<string, unknown>).type || 'MULTIPLE_CHOICE',
                 ) as QuestionType,
                 options: Array.isArray((a.question as Record<string, unknown>).options)
                   ? ((a.question as Record<string, unknown>).options as unknown[]).map((o) =>
@@ -311,12 +311,12 @@ export const normalizeSubmission = (raw: unknown): Submission => {
                     )
                   : [],
                 correctAnswer:
-                  typeof (a.question as Record<string, unknown>).correctAnswer === "number"
+                  typeof (a.question as Record<string, unknown>).correctAnswer === 'number'
                     ? ((a.question as Record<string, unknown>).correctAnswer as number)
                     : undefined,
                 maxMarks: Number((a.question as Record<string, unknown>).maxMarks || 0),
                 image:
-                  typeof (a.question as Record<string, unknown>).image === "string"
+                  typeof (a.question as Record<string, unknown>).image === 'string'
                     ? ((a.question as Record<string, unknown>).image as string)
                     : undefined,
               }
@@ -326,19 +326,19 @@ export const normalizeSubmission = (raw: unknown): Submission => {
             studentId: Number(a.studentId),
             questionId: Number(a.questionId),
             submissionId: Number(a.submissionId),
-            answer: typeof a.answer === "string" ? a.answer : "",
+            answer: typeof a.answer === 'string' ? a.answer : '',
             obtainedMarks:
-              typeof a.obtainedMarks === "number" || a.obtainedMarks === null
+              typeof a.obtainedMarks === 'number' || a.obtainedMarks === null
                 ? a.obtainedMarks
                 : null,
             gradingStatus:
-              a.gradingStatus === "AUTOMATIC" ||
-              a.gradingStatus === "PENDING" ||
-              a.gradingStatus === "GRADED"
+              a.gradingStatus === 'AUTOMATIC' ||
+              a.gradingStatus === 'PENDING' ||
+              a.gradingStatus === 'GRADED'
                 ? a.gradingStatus
-                : "PENDING",
-            createdAt: typeof a.createdAt === "string" ? a.createdAt : "",
-            updatedAt: typeof a.updatedAt === "string" ? a.updatedAt : "",
+                : 'PENDING',
+            createdAt: typeof a.createdAt === 'string' ? a.createdAt : '',
+            updatedAt: typeof a.updatedAt === 'string' ? a.updatedAt : '',
             question,
             maxMarks: Number((question && question.maxMarks) || a.maxMarks || 0),
           } as Answer;

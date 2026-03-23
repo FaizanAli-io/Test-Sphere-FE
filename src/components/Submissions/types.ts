@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-export type QuestionType = "TRUE_FALSE" | "MULTIPLE_CHOICE" | "SHORT_ANSWER" | "LONG_ANSWER";
-export type SubmissionStatus = "IN_PROGRESS" | "SUBMITTED" | "GRADED";
-export type GradingStatus = "AUTOMATIC" | "PENDING" | "GRADED";
+export type QuestionType = 'TRUE_FALSE' | 'MULTIPLE_CHOICE' | 'SHORT_ANSWER' | 'LONG_ANSWER';
+export type SubmissionStatus = 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED';
+export type GradingStatus = 'AUTOMATIC' | 'PENDING' | 'GRADED';
 
 export interface User {
   id: number;
@@ -84,7 +84,7 @@ export interface GradeSubmissionPayload {
   }[];
 }
 
-export type ViewContext = "teacher" | "student";
+export type ViewContext = 'teacher' | 'student';
 
 export interface SubmissionDetailProps {
   isOpen: boolean;

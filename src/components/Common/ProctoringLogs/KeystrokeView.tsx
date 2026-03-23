@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
-import { Keyboard, TrendingUp, Hash } from "lucide-react";
+import React, { useMemo } from 'react';
+import { Keyboard, TrendingUp, Hash } from 'lucide-react';
 
-import { ProctoringLog, KeystrokeMeta } from "./types";
+import { ProctoringLog, KeystrokeMeta } from './types';
 
 interface KeystrokeViewProps {
   logs: ProctoringLog[];
@@ -13,7 +13,7 @@ interface KeystrokeEvent extends KeystrokeMeta {
 
 export const KeystrokeView: React.FC<KeystrokeViewProps> = ({ logs }) => {
   const keystrokeEvents = useMemo(() => {
-    const keystrokeLogs = logs.filter((log) => log.logType === "KEYSTROKE");
+    const keystrokeLogs = logs.filter((log) => log.logType === 'KEYSTROKE');
 
     const events: KeystrokeEvent[] = keystrokeLogs.flatMap((log) =>
       log.meta.map((meta) => ({
@@ -61,20 +61,20 @@ export const KeystrokeView: React.FC<KeystrokeViewProps> = ({ logs }) => {
 
   const getKeyDisplayName = (key: string) => {
     const keyMap: Record<string, string> = {
-      " ": "Space",
-      Enter: "↵ Enter",
-      Backspace: "⌫ Backspace",
-      Tab: "⇥ Tab",
-      Shift: "⇧ Shift",
-      Control: "⌃ Ctrl",
-      Alt: "⎇ Alt",
-      Escape: "⎋ Esc",
-      ArrowUp: "↑",
-      ArrowDown: "↓",
-      ArrowLeft: "←",
-      ArrowRight: "→",
-      Delete: "⌦ Del",
-      CapsLock: "⇪ Caps",
+      ' ': 'Space',
+      Enter: '↵ Enter',
+      Backspace: '⌫ Backspace',
+      Tab: '⇥ Tab',
+      Shift: '⇧ Shift',
+      Control: '⌃ Ctrl',
+      Alt: '⎇ Alt',
+      Escape: '⎋ Esc',
+      ArrowUp: '↑',
+      ArrowDown: '↓',
+      ArrowLeft: '←',
+      ArrowRight: '→',
+      Delete: '⌦ Del',
+      CapsLock: '⇪ Caps',
     };
 
     return keyMap[key] || key;
@@ -109,7 +109,7 @@ export const KeystrokeView: React.FC<KeystrokeViewProps> = ({ logs }) => {
         <div className="bg-pink-50 border-2 border-pink-200 rounded-lg p-4">
           <p className="text-xs text-pink-600 font-medium mb-1">Most Frequent</p>
           <p className="text-2xl font-bold text-pink-900">
-            {stats.mostFrequent ? getKeyDisplayName(stats.mostFrequent.key) : "—"}
+            {stats.mostFrequent ? getKeyDisplayName(stats.mostFrequent.key) : '—'}
           </p>
           {stats.mostFrequent && (
             <p className="text-xs text-pink-600 mt-1">{stats.mostFrequent.count} times</p>
@@ -131,16 +131,16 @@ export const KeystrokeView: React.FC<KeystrokeViewProps> = ({ logs }) => {
             {topKeys.map(([key, count], idx) => {
               const percentage = (count / stats.total) * 100;
               const colors = [
-                "bg-indigo-500",
-                "bg-purple-500",
-                "bg-pink-500",
-                "bg-blue-500",
-                "bg-cyan-500",
-                "bg-teal-500",
-                "bg-green-500",
-                "bg-lime-500",
-                "bg-yellow-500",
-                "bg-orange-500",
+                'bg-indigo-500',
+                'bg-purple-500',
+                'bg-pink-500',
+                'bg-blue-500',
+                'bg-cyan-500',
+                'bg-teal-500',
+                'bg-green-500',
+                'bg-lime-500',
+                'bg-yellow-500',
+                'bg-orange-500',
               ];
 
               return (
@@ -188,24 +188,24 @@ export const KeystrokeView: React.FC<KeystrokeViewProps> = ({ logs }) => {
           <div className="divide-y divide-gray-200">
             {keystrokeEvents.map((event, idx) => {
               const isSpecialKey = [
-                "Enter",
-                "Backspace",
-                "Tab",
-                "Shift",
-                "Control",
-                "Alt",
-                "Escape",
-                "Delete",
-                "CapsLock",
+                'Enter',
+                'Backspace',
+                'Tab',
+                'Shift',
+                'Control',
+                'Alt',
+                'Escape',
+                'Delete',
+                'CapsLock',
               ].includes(event.key);
 
-              const isArrowKey = event.key.startsWith("Arrow");
+              const isArrowKey = event.key.startsWith('Arrow');
 
               return (
                 <div
                   key={`${event.logId}-${idx}`}
                   className={`p-3 hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                    isSpecialKey || isArrowKey ? "bg-blue-50/50" : ""
+                    isSpecialKey || isArrowKey ? 'bg-blue-50/50' : ''
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -216,8 +216,8 @@ export const KeystrokeView: React.FC<KeystrokeViewProps> = ({ logs }) => {
                     <div
                       className={`px-3 py-1.5 rounded-md border-2 font-mono text-sm font-bold min-w-[60px] text-center ${
                         isSpecialKey || isArrowKey
-                          ? "bg-blue-100 border-blue-300 text-blue-800"
-                          : "bg-gray-100 border-gray-300 text-gray-800"
+                          ? 'bg-blue-100 border-blue-300 text-blue-800'
+                          : 'bg-gray-100 border-gray-300 text-gray-800'
                       }`}
                     >
                       {getKeyDisplayName(event.key)}

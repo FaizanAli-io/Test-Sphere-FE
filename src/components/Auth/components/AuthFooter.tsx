@@ -1,31 +1,31 @@
 interface AuthFooterProps {
-  authMode: "login" | "signup" | "forgot" | "reset";
+  authMode: 'login' | 'signup' | 'forgot' | 'reset';
   loading: boolean;
-  onSwitchMode: (mode: "login" | "signup" | "forgot" | "reset") => void;
+  onSwitchMode: (mode: 'login' | 'signup' | 'forgot' | 'reset') => void;
 }
 
 export default function AuthFooter({ authMode, loading, onSwitchMode }: AuthFooterProps) {
   return (
     <div className="mt-6 text-center">
       <p className="text-sm text-gray-600">
-        {authMode === "login" ? (
+        {authMode === 'login' ? (
           <>
             Don{"'"}t have an account?
             <button
               type="button"
-              onClick={() => onSwitchMode("signup")}
+              onClick={() => onSwitchMode('signup')}
               disabled={loading}
               className="text-indigo-600 font-semibold hover:text-indigo-700 hover:underline disabled:opacity-50 ml-1"
             >
               Sign up
             </button>
           </>
-        ) : authMode === "signup" ? (
+        ) : authMode === 'signup' ? (
           <>
-            Already have an account?{" "}
+            Already have an account?{' '}
             <button
               type="button"
-              onClick={() => onSwitchMode("login")}
+              onClick={() => onSwitchMode('login')}
               disabled={loading}
               className="text-indigo-600 font-semibold hover:text-indigo-700 hover:underline disabled:opacity-50"
             >
@@ -34,10 +34,10 @@ export default function AuthFooter({ authMode, loading, onSwitchMode }: AuthFoot
           </>
         ) : (
           <>
-            Remember your password?{" "}
+            Remember your password?{' '}
             <button
               type="button"
-              onClick={() => onSwitchMode("login")}
+              onClick={() => onSwitchMode('login')}
               disabled={loading}
               className="text-indigo-600 font-semibold hover:text-indigo-700 hover:underline disabled:opacity-50"
             >

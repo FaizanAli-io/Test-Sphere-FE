@@ -9,7 +9,7 @@
  * @returns UTC ISO string (YYYY-MM-DDTHH:mm:ss.sssZ)
  */
 export const localDatetimeToUtcIso = (localDatetimeValue: string): string => {
-  if (!localDatetimeValue) return "";
+  if (!localDatetimeValue) return '';
 
   // Parse the local datetime value (browser interprets it as local time)
   const localDate = new Date(localDatetimeValue);
@@ -26,7 +26,7 @@ export const localDatetimeToUtcIso = (localDatetimeValue: string): string => {
  * @returns datetime-local value (YYYY-MM-DDTHH:mm)
  */
 export const utcIsoToLocalDatetime = (utcIsoString: string): string => {
-  if (!utcIsoString) return "";
+  if (!utcIsoString) return '';
 
   const utcDate = new Date(utcIsoString);
   // Adjust for timezone offset to get local time

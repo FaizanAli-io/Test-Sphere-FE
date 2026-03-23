@@ -1,8 +1,8 @@
-import React from "react";
-import Image from "next/image";
+import React from 'react';
+import Image from 'next/image';
 
-import { getAnswerStatus, formatAnswerText, getCorrectAnswerText } from "../utils";
-import { Answer } from "../types";
+import { getAnswerStatus, formatAnswerText, getCorrectAnswerText } from '../utils';
+import { Answer } from '../types';
 
 type Props = {
   answer: Answer;
@@ -34,8 +34,8 @@ export default function QuestionItem({
   const effectiveOptions =
     question?.options && question.options.length > 0
       ? question.options
-      : question?.type === "TRUE_FALSE"
-        ? ["True", "False"]
+      : question?.type === 'TRUE_FALSE'
+        ? ['True', 'False']
         : question?.options;
 
   const formattedStudentAnswer = formatAnswerText(
@@ -60,13 +60,13 @@ export default function QuestionItem({
               Question {index + 1}
               {question?.type && (
                 <span className="ml-2 text-sm bg-gray-200 px-2 py-1 rounded">
-                  {question.type.replace("_", " ")}
+                  {question.type.replace('_', ' ')}
                 </span>
               )}
             </h5>
           </div>
           <p className="text-gray-800 font-medium leading-relaxed">
-            {question?.text || "Question text not available"}
+            {question?.text || 'Question text not available'}
           </p>
           {question?.image && (
             <div className="mt-3 max-w-md rounded-lg overflow-hidden shadow-md relative">
@@ -111,19 +111,19 @@ export default function QuestionItem({
 
       <div className="bg-white/80 rounded-xl p-4 mb-4">
         <h6 className="font-semibold text-gray-900 mb-2">
-          {isTeacherView ? "Student's Answer:" : "Your Answer:"}
+          {isTeacherView ? "Student's Answer:" : 'Your Answer:'}
         </h6>
         <p className="text-gray-800 font-medium">{formattedStudentAnswer}</p>
       </div>
 
-      {(question?.type === "MULTIPLE_CHOICE" || question?.type === "TRUE_FALSE") && (
+      {(question?.type === 'MULTIPLE_CHOICE' || question?.type === 'TRUE_FALSE') && (
         <div className="bg-white/80 rounded-xl p-4 mb-4">
           <h6 className="font-semibold text-green-800 mb-2">Correct Answer:</h6>
           <p className="text-green-700 font-medium">{correctAnswerText}</p>
         </div>
       )}
 
-      {question?.type === "MULTIPLE_CHOICE" && effectiveOptions && (
+      {question?.type === 'MULTIPLE_CHOICE' && effectiveOptions && (
         <div className="bg-white/80 rounded-xl p-4">
           <h6 className="font-semibold text-gray-900 mb-3">Options:</h6>
           <div className="space-y-2">
@@ -136,12 +136,12 @@ export default function QuestionItem({
                   key={optIndex}
                   className={`p-3 rounded-lg border-2 ${
                     isStudentChoice && isCorrectOption
-                      ? "border-green-400 bg-green-100"
+                      ? 'border-green-400 bg-green-100'
                       : isStudentChoice && !isCorrectOption
-                        ? "border-red-400 bg-red-100"
+                        ? 'border-red-400 bg-red-100'
                         : isCorrectOption
-                          ? "border-green-300 bg-green-50"
-                          : "border-gray-200 bg-gray-50"
+                          ? 'border-green-300 bg-green-50'
+                          : 'border-gray-200 bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center justify-between">

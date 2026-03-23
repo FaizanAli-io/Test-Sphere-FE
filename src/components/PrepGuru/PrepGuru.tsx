@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import React, { useEffect, useRef, useState } from "react";
-import { ClipboardCopy, Check } from "lucide-react";
-import dynamic from "next/dynamic";
+import React, { useEffect, useRef, useState } from 'react';
+import { ClipboardCopy, Check } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
-import { useAgentStream } from "./useAgentStream";
+import { useAgentStream } from './useAgentStream';
 
-const ReactMarkdown = dynamic(() => import("react-markdown"), { ssr: false });
+const ReactMarkdown = dynamic(() => import('react-markdown'), { ssr: false });
 
 interface ChatMessage {
   id: string;
-  role: "user" | "assistant";
+  role: 'user' | 'assistant';
   content: string;
   streaming?: boolean;
 }
@@ -33,7 +33,7 @@ export default function PrepGuru() {
         setTimeout(() => setCopiedId(null), 2000);
       },
       (err) => {
-        console.error("Could not copy text: ", err);
+        console.error('Could not copy text: ', err);
       },
     );
   };
@@ -42,8 +42,8 @@ export default function PrepGuru() {
   useEffect(() => {
     if (isStreaming) {
       setMessages((prev) => {
-        if (prev.some((m) => m.streaming && m.role === "assistant")) return prev;
-        return [...prev, { id: genId(), role: "assistant", content: "", streaming: true }];
+        if (prev.some((m) => m.streaming && m.role === 'assistant')) return prev;
+        return [...prev, { id: genId(), role: 'assistant', content: '', streaming: true }];
       });
     }
   }, [isStreaming]);
@@ -52,7 +52,7 @@ export default function PrepGuru() {
   useEffect(() => {
     if (!response) return;
     setMessages((prev) =>
-      prev.map((m) => (m.streaming && m.role === "assistant" ? { ...m, content: response } : m)),
+      prev.map((m) => (m.streaming && m.role === 'assistant' ? { ...m, content: response } : m)),
     );
   }, [response]);
 
@@ -65,27 +65,27 @@ export default function PrepGuru() {
 
   // auto scroll
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages]);
 
   const adjustHeight = () => {
     const el = textareaRef.current;
     if (!el) return;
-    el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 200) + "px";
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 200) + 'px';
   };
 
   const sendPrompt = () => {
     if (!message.trim() || isStreaming) return;
     const trimmed = message.trim();
-    setMessages((prev) => [...prev, { id: genId(), role: "user", content: trimmed }]);
+    setMessages((prev) => [...prev, { id: genId(), role: 'user', content: trimmed }]);
     send(trimmed);
-    setMessage("");
-    if (textareaRef.current) textareaRef.current.style.height = "auto";
+    setMessage('');
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       e.preventDefault();
       sendPrompt();
     }
@@ -94,7 +94,7 @@ export default function PrepGuru() {
   const clearChat = () => {
     abort();
     setMessages([]);
-    setMessage("");
+    setMessage('');
   };
 
   return (
@@ -127,23 +127,23 @@ export default function PrepGuru() {
           <div key={m.id} className="flex gap-3">
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                m.role === "user" ? "bg-indigo-600 text-white" : "bg-blue-500 text-white"
+                m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-blue-500 text-white'
               }`}
             >
-              {m.role === "user" ? "Y" : "AI"}
+              {m.role === 'user' ? 'Y' : 'AI'}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="text-xs text-gray-500 uppercase mb-1">
-                {m.role === "user" ? "You" : "Assistant"}
+                {m.role === 'user' ? 'You' : 'Assistant'}
               </div>
 
               <div
                 className={`rounded-xl border p-4 text-gray-800 leading-relaxed relative group ${
-                  m.role === "user" ? "bg-indigo-50 border-indigo-100" : "bg-white border-gray-200"
+                  m.role === 'user' ? 'bg-indigo-50 border-indigo-100' : 'bg-white border-gray-200'
                 }`}
               >
-                {m.role === "assistant" && !m.streaming && (
+                {m.role === 'assistant' && !m.streaming && (
                   <button
                     onClick={() => copyToClipboard(m.content, m.id)}
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-600"

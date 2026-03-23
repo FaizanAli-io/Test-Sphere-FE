@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import TestDetail from "@/components/TestDetail";
+import TestDetail from '@/components/TestDetail';
 
 export default function TestDetailPage() {
   return <TestDetail />;

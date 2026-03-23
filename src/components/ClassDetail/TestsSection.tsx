@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
-import type { TeacherRole } from "@/utils/rolePermissions";
+'use client';
+import React from 'react';
+import { canEdit as checkCanEdit } from '@/utils/rolePermissions';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 interface Test {
   id: number;
@@ -10,7 +10,7 @@ interface Test {
   duration: number;
   startAt: string;
   endAt: string;
-  status: "DRAFT" | "ACTIVE" | "COMPLETED" | "ARCHIVED";
+  status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED';
   questionCount?: number;
 }
 
@@ -28,26 +28,26 @@ interface TestsSectionProps {
 
 const BUTTON_STYLES = {
   secondary:
-    "px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl",
+    'px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl',
 };
 
-const getStatusColor = (status: Test["status"]) => {
+const getStatusColor = (status: Test['status']) => {
   const colors: Record<string, string> = {
-    DRAFT: "bg-gray-100 text-gray-800 border-gray-300",
-    ACTIVE: "bg-green-100 text-green-800 border-green-300",
-    COMPLETED: "bg-blue-100 text-blue-800 border-blue-300",
-    ARCHIVED: "bg-purple-100 text-purple-800 border-purple-300",
+    DRAFT: 'bg-gray-100 text-gray-800 border-gray-300',
+    ACTIVE: 'bg-green-100 text-green-800 border-green-300',
+    COMPLETED: 'bg-blue-100 text-blue-800 border-blue-300',
+    ARCHIVED: 'bg-purple-100 text-purple-800 border-purple-300',
   };
   return colors[status] || colors.DRAFT;
 };
 
 const formatDateLocal = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 };
@@ -57,17 +57,17 @@ const getTimeStatus = (startAt: string, endAt: string): TimeStatus => {
   const start = new Date(startAt);
   const end = new Date(endAt);
   if (now >= start && now <= end)
-    return { text: "LIVE NOW", color: "bg-red-500 text-white animate-pulse" };
-  if (start > now) return { text: "UPCOMING", color: "bg-yellow-500 text-white" };
-  if (now > end) return { text: "ENDED", color: "bg-gray-500 text-white" };
-  return { text: "DRAFT", color: "bg-gray-400 text-white" };
+    return { text: 'LIVE NOW', color: 'bg-red-500 text-white animate-pulse' };
+  if (start > now) return { text: 'UPCOMING', color: 'bg-yellow-500 text-white' };
+  if (now > end) return { text: 'ENDED', color: 'bg-gray-500 text-white' };
+  return { text: 'DRAFT', color: 'bg-gray-400 text-white' };
 };
 
 const TestsSection: React.FC<TestsSectionProps> = ({
   tests,
   onCreateTest,
   onNavigate,
-  userRole = "VIEWER",
+  userRole = 'VIEWER',
 }) => {
   const canCreateTest = checkCanEdit(userRole);
   return (
@@ -105,7 +105,7 @@ const TestsSection: React.FC<TestsSectionProps> = ({
                   {test.title}
                 </h4>
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                  {test.description || "No description provided"}
+                  {test.description || 'No description provided'}
                 </p>
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center gap-3">

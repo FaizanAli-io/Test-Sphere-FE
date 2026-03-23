@@ -1,6 +1,6 @@
-import React from "react";
-import { formatDate } from "../utils";
-import { SubmissionStatus, Submission } from "../types";
+import React from 'react';
+import { formatDate } from '../utils';
+import { SubmissionStatus, Submission } from '../types';
 
 type Props = {
   isTeacherView: boolean;
@@ -24,13 +24,13 @@ export default function ScoreSummary({
     <div
       className={`rounded-2xl p-6 border-2 shadow-lg ${
         isTeacherView
-          ? "bg-gradient-to-r from-purple-100 to-indigo-100 border-purple-300"
-          : "bg-gradient-to-r from-green-100 to-emerald-100 border-green-300"
+          ? 'bg-gradient-to-r from-purple-100 to-indigo-100 border-purple-300'
+          : 'bg-gradient-to-r from-green-100 to-emerald-100 border-green-300'
       }`}
     >
       <div className="flex items-center justify-between mb-4">
         <h4 className="text-xl font-bold text-gray-900">
-          📊 {isTeacherView ? "Grading Summary" : "Your Score"}
+          📊 {isTeacherView ? 'Grading Summary' : 'Your Score'}
         </h4>
 
         {/* Status Actions for Teachers */}
@@ -38,26 +38,26 @@ export default function ScoreSummary({
           <div className="flex items-center gap-3">
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
-                submission.status === "GRADED"
-                  ? "bg-green-500/90 text-white"
-                  : submission.status === "SUBMITTED"
-                    ? "bg-yellow-500/90 text-white"
-                    : "bg-gray-500/90 text-white"
+                submission.status === 'GRADED'
+                  ? 'bg-green-500/90 text-white'
+                  : submission.status === 'SUBMITTED'
+                    ? 'bg-yellow-500/90 text-white'
+                    : 'bg-gray-500/90 text-white'
               }`}
             >
               {submission.status}
             </span>
 
-            {submission.status !== "GRADED" ? (
+            {submission.status !== 'GRADED' ? (
               <button
-                onClick={() => handleStatusUpdate("GRADED")}
+                onClick={() => handleStatusUpdate('GRADED')}
                 className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all font-medium text-sm"
               >
                 Mark as Graded
               </button>
             ) : (
               <button
-                onClick={() => handleStatusUpdate("SUBMITTED")}
+                onClick={() => handleStatusUpdate('SUBMITTED')}
                 className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all font-medium text-sm"
               >
                 Mark as Submitted
@@ -70,7 +70,7 @@ export default function ScoreSummary({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
         <div className="bg-white/80 rounded-xl p-4 text-center">
           <p
-            className={`text-3xl font-bold ${isTeacherView ? "text-purple-800" : "text-green-800"}`}
+            className={`text-3xl font-bold ${isTeacherView ? 'text-purple-800' : 'text-green-800'}`}
           >
             {currentTotal}/{totalPossible}
           </p>
@@ -82,14 +82,14 @@ export default function ScoreSummary({
             className={`inline-flex px-4 py-3 rounded-full font-bold text-lg ${
               totalPossible > 0
                 ? currentTotal / totalPossible >= 0.8
-                  ? "bg-green-500 text-white"
+                  ? 'bg-green-500 text-white'
                   : currentTotal / totalPossible >= 0.6
-                    ? "bg-yellow-500 text-white"
-                    : "bg-red-500 text-white"
-                : "bg-gray-400 text-white"
+                    ? 'bg-yellow-500 text-white'
+                    : 'bg-red-500 text-white'
+                : 'bg-gray-400 text-white'
             }`}
           >
-            {totalPossible > 0 ? `${((currentTotal / totalPossible) * 100).toFixed(1)}%` : "---%"}
+            {totalPossible > 0 ? `${((currentTotal / totalPossible) * 100).toFixed(1)}%` : '---%'}
           </div>
           <p className="text-sm text-gray-700 mt-1 font-medium">Score Percentage</p>
         </div>

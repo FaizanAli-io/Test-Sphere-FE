@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { Mail, KeyRound } from "lucide-react";
+import { useState, useEffect, useRef } from 'react';
+import { Mail, KeyRound } from 'lucide-react';
 
-import api from "@/hooks/useApi";
-import { extractErrorMessage } from "@/utils/error";
+import api from '@/hooks/useApi';
+import { extractErrorMessage } from '@/utils/error';
 
 interface RouterLike {
   push: (href: string) => void;
@@ -31,7 +31,7 @@ export default function OtpVerification({
   onBackToLogin,
   router,
 }: OtpVerificationProps) {
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState('');
   const [resendCooldown, setResendCooldown] = useState(60);
   const [autoResending, setAutoResending] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -47,7 +47,7 @@ export default function OtpVerification({
 
   // Auto-resend OTP if there was an email sending issue
   useEffect(() => {
-    if (error && error.includes("issue sending verification email")) {
+    if (error && error.includes('issue sending verification email')) {
       // Clear any existing timeout
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -56,19 +56,19 @@ export default function OtpVerification({
       timeoutRef.current = setTimeout(async () => {
         setAutoResending(true);
         try {
-          const res = await api("/auth/resend-otp", {
-            method: "POST",
+          const res = await api('/auth/resend-otp', {
+            method: 'POST',
             body: JSON.stringify({ email }),
           });
 
           // We intentionally ignore response body unless needed later
           if (res.ok) {
-            setSuccess("OTP resent to your email! Please check your inbox.");
-            setError("");
+            setSuccess('OTP resent to your email! Please check your inbox.');
+            setError('');
             setResendCooldown(60);
           }
         } catch (err) {
-          console.error("Auto-resend error:", err);
+          console.error('Auto-resend error:', err);
         } finally {
           setAutoResending(false);
           timeoutRef.current = null;
@@ -118,25 +118,25 @@ export default function OtpVerification({
     // Prevent double submission
     if (loading) return;
 
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
-      const res = await api("/auth/verify-otp", {
-        method: "POST",
+      const res = await api('/auth/verify-otp', {
+        method: 'POST',
         body: JSON.stringify({ email, otp }),
       });
 
       const data: { message?: string } = await res.json();
 
       if (!res.ok) {
-        if (data.message === "Account is already verified.") {
-          setSuccess("Account already verified! Logging you in...");
+        if (data.message === 'Account is already verified.') {
+          setSuccess('Account already verified! Logging you in...');
         } else {
-          throw new Error(data.message || "OTP verification failed");
+          throw new Error(data.message || 'OTP verification failed');
         }
       } else {
-        setSuccess("Account verified successfully! Logging you in...");
+        setSuccess('Account verified successfully! Logging you in...');
       }
 
       // Clear any existing timeout
@@ -146,8 +146,8 @@ export default function OtpVerification({
 
       timeoutRef.current = setTimeout(async () => {
         try {
-          const loginRes = await api("/auth/login", {
-            method: "POST",
+          const loginRes = await api('/auth/login', {
+            method: 'POST',
             body: JSON.stringify({ email, password }),
           });
           const loginData: {
@@ -158,29 +158,29 @@ export default function OtpVerification({
           } = await loginRes.json();
 
           if (!loginRes.ok) {
-            throw new Error(loginData.message || "Auto-login failed");
+            throw new Error(loginData.message || 'Auto-login failed');
           }
 
           const authToken = loginData.token || loginData.accessToken;
           if (authToken && loginData.user?.role) {
-            localStorage.setItem("token", String(authToken));
-            localStorage.setItem("role", loginData.user.role);
+            localStorage.setItem('token', String(authToken));
+            localStorage.setItem('role', loginData.user.role);
             if (loginData.user.email) {
-              localStorage.setItem("userEmail", loginData.user.email);
+              localStorage.setItem('userEmail', loginData.user.email);
             } else {
-              localStorage.setItem("userEmail", email);
+              localStorage.setItem('userEmail', email);
             }
 
             await new Promise((resolve) => setTimeout(resolve, 50));
 
-            window.dispatchEvent(new Event("authChange"));
-            router.push("/" + loginData.user.role.toLowerCase());
+            window.dispatchEvent(new Event('authChange'));
+            router.push('/' + loginData.user.role.toLowerCase());
           } else {
-            throw new Error("Invalid login response");
+            throw new Error('Invalid login response');
           }
         } catch {
           setError(
-            "Verification successful but auto-login failed. Please try logging in manually.",
+            'Verification successful but auto-login failed. Please try logging in manually.',
           );
           setLoading(false);
         }
@@ -196,22 +196,22 @@ export default function OtpVerification({
   const handleResendOtp = async () => {
     if (resendCooldown > 0) return;
 
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
-      const res = await api("/auth/resend-otp", {
-        method: "POST",
+      const res = await api('/auth/resend-otp', {
+        method: 'POST',
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Failed to resend OTP");
+        throw new Error(data.message || 'Failed to resend OTP');
       }
 
-      setSuccess("OTP resent to your email! Please check your inbox.");
+      setSuccess('OTP resent to your email! Please check your inbox.');
       setResendCooldown(60);
     } catch (err: unknown) {
       setError(extractErrorMessage(err));
@@ -224,42 +224,42 @@ export default function OtpVerification({
     <div className="space-y-6">
       <div
         className={`text-center border rounded-xl p-4 ${
-          error && error.includes("issue sending verification email")
-            ? "bg-yellow-50 border-yellow-200"
-            : "bg-blue-50 border-blue-200"
+          error && error.includes('issue sending verification email')
+            ? 'bg-yellow-50 border-yellow-200'
+            : 'bg-blue-50 border-blue-200'
         }`}
       >
         <div className="flex items-center justify-center mb-2">
           <Mail
             className={`w-5 h-5 mr-2 ${
-              error && error.includes("issue sending verification email")
-                ? "text-yellow-600"
-                : "text-blue-600"
+              error && error.includes('issue sending verification email')
+                ? 'text-yellow-600'
+                : 'text-blue-600'
             }`}
           />
           <span
             className={`text-sm font-semibold ${
-              error && error.includes("issue sending verification email")
-                ? "text-yellow-800"
-                : "text-blue-800"
+              error && error.includes('issue sending verification email')
+                ? 'text-yellow-800'
+                : 'text-blue-800'
             }`}
           >
-            {error && error.includes("issue sending verification email")
-              ? "Email Verification (Resend Required)"
-              : "Email Verification Required"}
+            {error && error.includes('issue sending verification email')
+              ? 'Email Verification (Resend Required)'
+              : 'Email Verification Required'}
           </span>
         </div>
         <p
           className={`text-sm ${
-            error && error.includes("issue sending verification email")
-              ? "text-yellow-700"
-              : "text-blue-700"
+            error && error.includes('issue sending verification email')
+              ? 'text-yellow-700'
+              : 'text-blue-700'
           }`}
         >
           {autoResending
-            ? "Automatically resending verification code..."
-            : error && error.includes("issue sending verification email")
-              ? "There was an issue sending the verification email. Please use the resend button below to get your verification code."
+            ? 'Automatically resending verification code...'
+            : error && error.includes('issue sending verification email')
+              ? 'There was an issue sending the verification email. Please use the resend button below to get your verification code.'
               : `We've sent a 6-digit verification code to ${email}`}
         </p>
       </div>
@@ -274,7 +274,7 @@ export default function OtpVerification({
             <input
               type="text"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="000000"
               className="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-center text-3xl tracking-[0.5em] font-bold bg-gray-50"
               required
@@ -291,7 +291,7 @@ export default function OtpVerification({
                 <div
                   key={index}
                   className={`w-3 h-3 rounded-full ${
-                    index < otp.length ? "bg-green-500" : "bg-gray-300"
+                    index < otp.length ? 'bg-green-500' : 'bg-gray-300'
                   }`}
                 />
               ))}
@@ -310,7 +310,7 @@ export default function OtpVerification({
               Verifying...
             </div>
           ) : (
-            "Verify & Continue"
+            'Verify & Continue'
           )}
         </button>
 
@@ -321,15 +321,15 @@ export default function OtpVerification({
             disabled={loading || resendCooldown > 0}
             className={`w-full py-2 text-sm font-semibold border rounded-lg transition ${
               resendCooldown > 0
-                ? "text-gray-400 border-gray-200 cursor-not-allowed"
-                : "text-indigo-600 hover:text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+                ? 'text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'text-indigo-600 hover:text-indigo-700 border-indigo-200 hover:bg-indigo-50'
             }`}
           >
             {loading
-              ? "Resending..."
+              ? 'Resending...'
               : resendCooldown > 0
                 ? `Resend in ${resendCooldown}s`
-                : "Resend Verification Code"}
+                : 'Resend Verification Code'}
           </button>
 
           <div className="text-center">

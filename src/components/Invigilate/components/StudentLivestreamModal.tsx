@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
-import { X, Camera, Mic, Loader2, Activity, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import React, { useEffect, useRef, useState } from 'react';
+import { X, Camera, Mic, Loader2, Activity, AlertTriangle, Eye, EyeOff } from 'lucide-react';
 
-import { debugLogger } from "@/utils/logger";
-import { useWebRTC } from "@/hooks/useWebRTC";
-import type { InvigilatingStudent } from "../hooks";
-import type { ProctoringData } from "../hooks";
-import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
+import { debugLogger } from '@/utils/logger';
+import { useWebRTC } from '@/hooks/useWebRTC';
+import type { InvigilatingStudent } from '../hooks';
+import type { ProctoringData } from '../hooks';
+import { useConnectionMonitor } from '@/hooks/useConnectionMonitor';
 
 function getScoreColor(score: number): string {
   const hue = (1 - Math.min(Math.max(score, 0), 1)) * 120;
@@ -13,13 +13,13 @@ function getScoreColor(score: number): string {
 }
 
 function getScoreLabel(score: number): string {
-  if (score <= 0.3) return "Safe";
-  if (score <= 0.6) return "Warning";
-  return "High Risk";
+  if (score <= 0.3) return 'Safe';
+  if (score <= 0.6) return 'Warning';
+  return 'High Risk';
 }
 
 function formatFlag(flag: string): string {
-  return flag.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return flag.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 interface StudentLivestreamModalProps {
@@ -38,9 +38,9 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
   proctoring,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [selectedStreamType, setSelectedStreamType] = useState<"webcam" | "screen">("webcam");
+  const [selectedStreamType, setSelectedStreamType] = useState<'webcam' | 'screen'>('webcam');
   const [hasRequested, setHasRequested] = useState(false);
-  const [currentStreamType, setCurrentStreamType] = useState<"webcam" | "screen" | null>(null);
+  const [currentStreamType, setCurrentStreamType] = useState<'webcam' | 'screen' | null>(null);
   const wasOfflineRef = useRef(false);
 
   const {
@@ -54,7 +54,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     reconnect,
   } = useWebRTC({
     userId: teacherId,
-    role: "teacher",
+    role: 'teacher',
     testId,
     enabled: !!student,
   });
@@ -69,7 +69,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     try {
       await requestStream(student.id.toString(), selectedStreamType);
     } catch (error) {
-      console.error("Failed to request stream:", error);
+      console.error('Failed to request stream:', error);
       setHasRequested(false);
       setCurrentStreamType(null);
     }
@@ -83,7 +83,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     }
   };
 
-  const handleSwitchStream = async (newType: "webcam" | "screen") => {
+  const handleSwitchStream = async (newType: 'webcam' | 'screen') => {
     if (!student) return;
 
     // Stop current stream
@@ -95,7 +95,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     try {
       await requestStream(student.id.toString(), newType);
     } catch (error) {
-      console.error("Failed to switch stream:", error);
+      console.error('Failed to switch stream:', error);
       setHasRequested(false);
       setCurrentStreamType(null);
     }
@@ -108,10 +108,10 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
     if (!isOnline) {
       // Connection lost
       wasOfflineRef.current = true;
-      debugLogger("[StudentLivestreamModal] Connection lost");
+      debugLogger('[StudentLivestreamModal] Connection lost');
     } else if (wasOfflineRef.current && isOnline) {
       // Connection restored
-      debugLogger("[StudentLivestreamModal] Connection restored, triggering WebRTC reconnection");
+      debugLogger('[StudentLivestreamModal] Connection restored, triggering WebRTC reconnection');
       wasOfflineRef.current = false;
 
       // Trigger WebRTC reconnection
@@ -122,7 +122,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
       // If we were viewing a stream before disconnect, request it again
       if (hasRequested && currentStreamType) {
         setTimeout(() => {
-          debugLogger("[StudentLivestreamModal] Re-requesting stream after reconnection");
+          debugLogger('[StudentLivestreamModal] Re-requesting stream after reconnection');
           requestStream(student.id.toString(), currentStreamType);
         }, 2000); // Wait 2 seconds for socket to fully reconnect
       }
@@ -201,11 +201,11 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
                 <p className="text-white text-lg font-semibold mb-4">Select Stream Type</p>
                 <div className="flex flex-col gap-3 mb-6">
                   <button
-                    onClick={() => setSelectedStreamType("webcam")}
+                    onClick={() => setSelectedStreamType('webcam')}
                     className={`px-4 py-3 rounded-lg transition-all ${
-                      selectedStreamType === "webcam"
-                        ? "bg-yellow-500 text-white ring-2 ring-yellow-300"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                      selectedStreamType === 'webcam'
+                        ? 'bg-yellow-500 text-white ring-2 ring-yellow-300'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                   >
                     <div className="flex items-center gap-2 justify-center">
@@ -214,11 +214,11 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
                     </div>
                   </button>
                   <button
-                    onClick={() => setSelectedStreamType("screen")}
+                    onClick={() => setSelectedStreamType('screen')}
                     className={`px-4 py-3 rounded-lg transition-all ${
-                      selectedStreamType === "screen"
-                        ? "bg-yellow-500 text-white ring-2 ring-yellow-300"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                      selectedStreamType === 'screen'
+                        ? 'bg-yellow-500 text-white ring-2 ring-yellow-300'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                     }`}
                   >
                     <div className="flex items-center gap-2 justify-center">
@@ -277,7 +277,7 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
                 <div className="flex items-center gap-2 bg-green-500 bg-opacity-90 text-white text-sm px-3 py-1 rounded-full">
                   <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                   <span className="font-medium">
-                    {currentStreamType === "screen" ? "Screen Share" : "Webcam"}
+                    {currentStreamType === 'screen' ? 'Screen Share' : 'Webcam'}
                   </span>
                 </div>
               </div>
@@ -286,14 +286,14 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
               <div className="absolute top-4 left-4 z-10 flex gap-2">
                 <button
                   onClick={() =>
-                    handleSwitchStream(currentStreamType === "webcam" ? "screen" : "webcam")
+                    handleSwitchStream(currentStreamType === 'webcam' ? 'screen' : 'webcam')
                   }
                   className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
                   title={
-                    currentStreamType === "webcam" ? "Switch to Screen Share" : "Switch to Webcam"
+                    currentStreamType === 'webcam' ? 'Switch to Screen Share' : 'Switch to Webcam'
                   }
                 >
-                  {currentStreamType === "webcam" ? (
+                  {currentStreamType === 'webcam' ? (
                     <>
                       <svg
                         className="w-4 h-4"
@@ -331,24 +331,24 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
           <div className="absolute bottom-4 left-4 flex gap-3">
             <div
               className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
-                student.cameraEnabled ? "bg-green-500 bg-opacity-80" : "bg-gray-700 bg-opacity-80"
+                student.cameraEnabled ? 'bg-green-500 bg-opacity-80' : 'bg-gray-700 bg-opacity-80'
               }`}
             >
               <Camera size={18} className="text-white" />
               <span className="text-white text-sm font-medium">
-                {student.cameraEnabled ? "Camera On" : "Camera Off"}
+                {student.cameraEnabled ? 'Camera On' : 'Camera Off'}
               </span>
             </div>
             <div
               className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                 student.microphoneEnabled
-                  ? "bg-green-500 bg-opacity-80"
-                  : "bg-gray-700 bg-opacity-80"
+                  ? 'bg-green-500 bg-opacity-80'
+                  : 'bg-gray-700 bg-opacity-80'
               }`}
             >
               <Mic size={18} className="text-white" />
               <span className="text-white text-sm font-medium">
-                {student.microphoneEnabled ? "Mic On" : "Mic Off"}
+                {student.microphoneEnabled ? 'Mic On' : 'Mic Off'}
               </span>
             </div>
           </div>
@@ -405,9 +405,9 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
                       <EyeOff size={18} className="text-red-400" />
                     )}
                     <span
-                      className={`font-semibold text-sm ${proctoring.faceDetected ? "text-green-400" : "text-red-400"}`}
+                      className={`font-semibold text-sm ${proctoring.faceDetected ? 'text-green-400' : 'text-red-400'}`}
                     >
-                      {proctoring.faceDetected ? "Detected" : "Not Detected"}
+                      {proctoring.faceDetected ? 'Detected' : 'Not Detected'}
                     </span>
                   </div>
                 </div>
@@ -448,6 +448,12 @@ export const StudentLivestreamModal: React.FC<StudentLivestreamModalProps> = ({
                     <span className="text-green-400 text-sm font-medium">None</span>
                   )}
                 </div>
+              </div>
+
+              <div className="mt-3 text-xs text-gray-300 flex flex-wrap gap-3">
+                <span>Objects: {proctoring.detectedObjects?.length ?? 0}</span>
+                <span>Suspicious: {proctoring.suspiciousObjects?.length ?? 0}</span>
+                <span>Extra People: {proctoring.extraPeopleCount ?? 0}</span>
               </div>
             </div>
           )}

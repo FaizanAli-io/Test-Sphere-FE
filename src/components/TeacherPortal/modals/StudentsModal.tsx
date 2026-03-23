@@ -1,5 +1,5 @@
-import React from "react";
-import { Class, KickConfirm } from "../types";
+import React from 'react';
+import { Class, KickConfirm } from '../types';
 
 interface StudentsModalProps {
   isOpen: boolean;
@@ -27,8 +27,8 @@ export default function StudentsModal({
             <div>
               <h3 className="text-3xl font-bold text-gray-900">{selectedClass.name}</h3>
               <p className="text-gray-600 mt-1">
-                {selectedClass.students?.length || 0} enrolled{" "}
-                {selectedClass.students?.length === 1 ? "student" : "students"}
+                {selectedClass.students?.length || 0} enrolled{' '}
+                {selectedClass.students?.length === 1 ? 'student' : 'students'}
               </p>
             </div>
           </div>
@@ -78,7 +78,7 @@ export default function StudentsModal({
             </div>
             <p className="text-gray-600 font-semibold text-lg">No students enrolled yet</p>
             <p className="text-gray-500 text-sm mt-2">
-              Share class code:{" "}
+              Share class code:{' '}
               <span className="font-bold text-indigo-600">{selectedClass.code}</span>
             </p>
           </div>

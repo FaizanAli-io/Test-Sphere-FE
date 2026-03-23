@@ -1,7 +1,7 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from 'lucide-react';
 
 interface AuthHeaderProps {
-  authMode: "login" | "signup" | "forgot" | "reset";
+  authMode: 'login' | 'signup' | 'forgot' | 'reset';
   otpSent: boolean;
   onBack: () => void;
   showBackButton: boolean;
@@ -9,22 +9,22 @@ interface AuthHeaderProps {
 
 export default function AuthHeader({ authMode, otpSent, onBack, showBackButton }: AuthHeaderProps) {
   const getTitle = () => {
-    if (authMode === "login") return "Welcome Back";
-    if (authMode === "signup" && !otpSent) return "Create Account";
-    if (authMode === "signup" && otpSent) return "Verify Email";
-    if (authMode === "forgot" && !otpSent) return "Forgot Password";
-    if (authMode === "forgot" && otpSent) return "Reset Password";
-    if (authMode === "reset") return "Reset Password";
-    return "";
+    if (authMode === 'login') return 'Welcome Back';
+    if (authMode === 'signup' && !otpSent) return 'Create Account';
+    if (authMode === 'signup' && otpSent) return 'Verify Email';
+    if (authMode === 'forgot' && !otpSent) return 'Forgot Password';
+    if (authMode === 'forgot' && otpSent) return 'Reset Password';
+    if (authMode === 'reset') return 'Reset Password';
+    return '';
   };
 
   const getSubtitle = () => {
-    if (authMode === "login") return "Sign in to continue your journey";
-    if (authMode === "signup" && !otpSent) return "Join us today and get started";
-    if (authMode === "signup" && otpSent) return "Enter the OTP sent to your email";
-    if (authMode === "forgot" && !otpSent) return "We'll send you a reset code";
-    if (authMode === "forgot" && otpSent) return "Enter OTP and new password";
-    return "";
+    if (authMode === 'login') return 'Sign in to continue your journey';
+    if (authMode === 'signup' && !otpSent) return 'Join us today and get started';
+    if (authMode === 'signup' && otpSent) return 'Enter the OTP sent to your email';
+    if (authMode === 'forgot' && !otpSent) return "We'll send you a reset code";
+    if (authMode === 'forgot' && otpSent) return 'Enter OTP and new password';
+    return '';
   };
 
   return (

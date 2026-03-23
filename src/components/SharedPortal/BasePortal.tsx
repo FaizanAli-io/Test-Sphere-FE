@@ -1,9 +1,9 @@
-import React from "react";
-import { GraduationCap, BookOpen } from "lucide-react";
+import React from 'react';
+import { GraduationCap, BookOpen } from 'lucide-react';
 
-import { BasePortalProps } from "./types";
-import BaseClassCard from "./BaseClassCard";
-import BaseQuickActionCard from "./BaseQuickActionCard";
+import { BasePortalProps } from './types';
+import BaseClassCard from './BaseClassCard';
+import BaseQuickActionCard from './BaseQuickActionCard';
 
 export default function BasePortal({
   role,
@@ -19,29 +19,29 @@ export default function BasePortal({
   onClassClick,
   children,
 }: BasePortalProps) {
-  const isTeacher = role === "teacher";
+  const isTeacher = role === 'teacher';
 
   const config = {
-    title: isTeacher ? "Teacher Portal" : "Student Portal",
+    title: isTeacher ? 'Teacher Portal' : 'Student Portal',
     subtitle: isTeacher
-      ? "Manage your classes, track student progress, and create engaging assessments"
-      : "Manage your classes and assignments",
+      ? 'Manage your classes, track student progress, and create engaging assessments'
+      : 'Manage your classes and assignments',
     headerIcon: isTeacher ? (
       <GraduationCap className="w-10 h-10 text-white" />
     ) : (
       <BookOpen className="w-10 h-10 text-white" />
     ),
-    classListTitle: "My Classes",
+    classListTitle: 'My Classes',
     classListSubtitle: isTeacher
-      ? "Manage and monitor all your classes"
-      : "Access your enrolled classes and assignments",
-    primaryActionLabel: isTeacher ? "Create New Class" : "Join New Class",
-    emptyStateTitle: "No Classes Yet",
+      ? 'Manage and monitor all your classes'
+      : 'Access your enrolled classes and assignments',
+    primaryActionLabel: isTeacher ? 'Create New Class' : 'Join New Class',
+    emptyStateTitle: 'No Classes Yet',
     emptyStateSubtitle: isTeacher
-      ? "Start your teaching journey by creating your first class"
-      : "Join your first class using a code provided by your teacher",
-    emptyStateIcon: isTeacher ? "🏫" : "📚",
-    emptyStateActionLabel: isTeacher ? "Create Your First Class" : "Join Your First Class",
+      ? 'Start your teaching journey by creating your first class'
+      : 'Join your first class using a code provided by your teacher',
+    emptyStateIcon: isTeacher ? '🏫' : '📚',
+    emptyStateActionLabel: isTeacher ? 'Create Your First Class' : 'Join Your First Class',
   };
 
   return (

@@ -1,5 +1,5 @@
-"use client";
-import React from "react";
+'use client';
+import React from 'react';
 
 interface ClassSelectorProps {
   classesLoading: boolean;
@@ -50,7 +50,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
         <div>
           <div className="relative">
             <select
-              value={classId || ""}
+              value={classId || ''}
               onChange={(e) => onSelect(Number(e.target.value))}
               className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium appearance-none pr-12 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
               disabled={!!prefilledClassId}
@@ -81,7 +81,7 @@ export const ClassSelector: React.FC<ClassSelectorProps> = ({
           {prefilledClassId && (
             <p className="mt-2 text-sm text-green-600 font-medium flex items-center gap-2">
               <span>✓</span>
-              Using prefilled class:{" "}
+              Using prefilled class:{' '}
               {classes.find((c) => Number(c.id) === prefilledClassId)?.name ||
                 `ID: ${prefilledClassId}`}
             </p>

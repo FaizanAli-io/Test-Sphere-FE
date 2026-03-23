@@ -21,19 +21,19 @@ export interface FullscreenDocument extends Document {
 export interface FullscreenEventTarget extends EventTarget {
   addEventListener(
     type:
-      | "fullscreenchange"
-      | "webkitfullscreenchange"
-      | "mozfullscreenchange"
-      | "msfullscreenchange",
+      | 'fullscreenchange'
+      | 'webkitfullscreenchange'
+      | 'mozfullscreenchange'
+      | 'msfullscreenchange',
     listener: EventListener,
     options?: boolean | AddEventListenerOptions,
   ): void;
   removeEventListener(
     type:
-      | "fullscreenchange"
-      | "webkitfullscreenchange"
-      | "mozfullscreenchange"
-      | "msfullscreenchange",
+      | 'fullscreenchange'
+      | 'webkitfullscreenchange'
+      | 'mozfullscreenchange'
+      | 'msfullscreenchange',
     listener: EventListener,
     options?: boolean | EventListenerOptions,
   ): void;

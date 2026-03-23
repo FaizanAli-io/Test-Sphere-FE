@@ -1,5 +1,5 @@
-export * from "./hooks";
-export * from "./types";
-export * from "./modals";
+export * from './hooks';
+export * from './types';
+export * from './modals';
 
-export { default } from "./TeacherPortal";
+export { default } from './TeacherPortal';

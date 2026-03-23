@@ -1,8 +1,8 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import api from "../../hooks/useApi";
-import { Class, NewClass, KickConfirm, RequestAction } from "./types";
-import type { TeacherRole } from "@/utils/rolePermissions";
-import { useNotifications } from "../../contexts/NotificationContext";
+import { useState, useCallback, useEffect, useRef } from 'react';
+import api from '../../hooks/useApi';
+import { Class, NewClass, KickConfirm, RequestAction } from './types';
+import type { TeacherRole } from '@/utils/rolePermissions';
+import { useNotifications } from '../../contexts/NotificationContext';
 
 export const useTeacherPortal = () => {
   const [classes, setClasses] = useState<Class[]>([]);
@@ -14,10 +14,10 @@ export const useTeacherPortal = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api("/classes", { method: "GET", auth: true });
+      const response = await api('/classes', { method: 'GET', auth: true });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch classes");
+        throw new Error(errorData.message || 'Failed to fetch classes');
       }
       const data = await response.json();
 
@@ -40,13 +40,13 @@ export const useTeacherPortal = () => {
               assignedAt: wrapper.assignedAt as string | undefined,
               testCount: Array.isArray(c.tests)
                 ? c.tests.length
-                : typeof c.testCount === "number"
+                : typeof c.testCount === 'number'
                   ? c.testCount
                   : 0,
               // Count only approved students for the display count
               studentCount: Array.isArray(c.students)
                 ? c.students.filter((student) => student.approved === true).length
-                : typeof c.studentCount === "number"
+                : typeof c.studentCount === 'number'
                   ? c.studentCount
                   : 0,
             } as Class;
@@ -55,7 +55,7 @@ export const useTeacherPortal = () => {
 
       setClasses(normalized);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch classes");
+      setError(err instanceof Error ? err.message : 'Failed to fetch classes');
     } finally {
       setLoading(false);
     }
@@ -63,20 +63,20 @@ export const useTeacherPortal = () => {
 
   const createClass = async (newClass: NewClass): Promise<boolean> => {
     if (!newClass.name.trim()) {
-      notifications.showError("Please enter a class name");
+      notifications.showError('Please enter a class name');
       return false;
     }
     setLoading(true);
     try {
-      const response = await api("/classes", {
-        method: "POST",
+      const response = await api('/classes', {
+        method: 'POST',
         auth: true,
         body: JSON.stringify(newClass),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create class");
+        throw new Error(errorData.message || 'Failed to create class');
       }
 
       const data = await response.json();
@@ -86,7 +86,7 @@ export const useTeacherPortal = () => {
       await fetchClasses();
       return true;
     } catch (err) {
-      notifications.showError(err instanceof Error ? err.message : "Failed to create class");
+      notifications.showError(err instanceof Error ? err.message : 'Failed to create class');
       return false;
     } finally {
       setLoading(false);
@@ -95,13 +95,13 @@ export const useTeacherPortal = () => {
 
   const updateClass = async (classToUpdate: Class): Promise<boolean> => {
     if (!classToUpdate.name.trim()) {
-      notifications.showError("Please enter a class name");
+      notifications.showError('Please enter a class name');
       return false;
     }
     setLoading(true);
     try {
       const response = await api(`/classes/${classToUpdate.id}`, {
-        method: "PATCH",
+        method: 'PATCH',
         auth: true,
         body: JSON.stringify({
           name: classToUpdate.name,
@@ -111,14 +111,14 @@ export const useTeacherPortal = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to update class");
+        throw new Error(errorData.message || 'Failed to update class');
       }
 
-      notifications.showSuccess("Class updated successfully!");
+      notifications.showSuccess('Class updated successfully!');
       await fetchClasses();
       return true;
     } catch (err) {
-      notifications.showError(err instanceof Error ? err.message : "Failed to update class");
+      notifications.showError(err instanceof Error ? err.message : 'Failed to update class');
       return false;
     } finally {
       setLoading(false);
@@ -129,19 +129,19 @@ export const useTeacherPortal = () => {
     setLoading(true);
     try {
       const response = await api(`/classes/${classId}`, {
-        method: "DELETE",
+        method: 'DELETE',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete class");
+        throw new Error(errorData.message || 'Failed to delete class');
       }
 
-      notifications.showSuccess("Class deleted successfully!");
+      notifications.showSuccess('Class deleted successfully!');
       await fetchClasses();
     } catch (err) {
-      notifications.showError(err instanceof Error ? err.message : "Failed to delete class");
+      notifications.showError(err instanceof Error ? err.message : 'Failed to delete class');
     } finally {
       setLoading(false);
     }
@@ -178,12 +178,12 @@ export const useClassDetails = () => {
     setLoading(true);
     try {
       const response = await api(`/classes/${classId}`, {
-        method: "GET",
+        method: 'GET',
         auth: true,
       });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch class details");
+        throw new Error(errorData.message || 'Failed to fetch class details');
       }
       const data = await response.json();
 
@@ -194,7 +194,7 @@ export const useClassDetails = () => {
         role: currentClassRoleRef.current ?? (data.role as TeacherRole | undefined),
         testCount: Array.isArray(data.tests)
           ? data.tests.length
-          : typeof data.testCount === "number"
+          : typeof data.testCount === 'number'
             ? data.testCount
             : 0,
       };
@@ -202,7 +202,7 @@ export const useClassDetails = () => {
       setSelectedClass(normalized);
       return normalized;
     } catch (err) {
-      notifications.showError(err instanceof Error ? err.message : "Failed to fetch class details");
+      notifications.showError(err instanceof Error ? err.message : 'Failed to fetch class details');
       return null;
     } finally {
       setLoading(false);
@@ -213,14 +213,14 @@ export const useClassDetails = () => {
     setLoading(true);
     try {
       const response = await api(`/classes/${kickConfirm.classId}/remove`, {
-        method: "POST",
+        method: 'POST',
         auth: true,
         body: JSON.stringify({ studentId: kickConfirm.studentId }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to remove student");
+        throw new Error(errorData.message || 'Failed to remove student');
       }
 
       notifications.showSuccess(`${kickConfirm.studentName} has been removed from the class`);
@@ -229,7 +229,7 @@ export const useClassDetails = () => {
       await fetchClassDetails(kickConfirm.classId);
       return true;
     } catch (err) {
-      notifications.showError(err instanceof Error ? err.message : "Failed to remove student");
+      notifications.showError(err instanceof Error ? err.message : 'Failed to remove student');
       return false;
     } finally {
       setLoading(false);
@@ -246,13 +246,13 @@ export const useClassDetails = () => {
       // Based on the user's requirements, both endpoints are /classes/{id}/remove
       // But logically approve should be different. Let me use approve for now
       const endpoint =
-        action.action === "approve"
+        action.action === 'approve'
           ? `/classes/${action.classId}/approve`
           : `/classes/${action.classId}/remove`;
 
       const response = await api(endpoint, {
         auth: true,
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ studentId: action.studentId }),
       });
 
@@ -261,7 +261,7 @@ export const useClassDetails = () => {
         throw new Error(errorData.message || `Failed to ${action.action} student`);
       }
 
-      const actionText = action.action === "approve" ? "approved" : "rejected";
+      const actionText = action.action === 'approve' ? 'approved' : 'rejected';
       notifications.showSuccess(`${action.studentName} has been ${actionText}`);
 
       // Refresh class details
@@ -279,7 +279,7 @@ export const useClassDetails = () => {
 
   const handleBulkStudentRequest = async (action: {
     classId: string;
-    action: "approve-all" | "reject-all";
+    action: 'approve-all' | 'reject-all';
   }): Promise<boolean> => {
     setLoading(true);
     try {
@@ -287,7 +287,7 @@ export const useClassDetails = () => {
 
       const response = await api(endpoint, {
         auth: true,
-        method: "POST",
+        method: 'POST',
       });
 
       if (!response.ok) {
@@ -295,7 +295,7 @@ export const useClassDetails = () => {
         throw new Error(errorData.message || `Failed to ${action.action} students`);
       }
 
-      const actionText = action.action === "approve-all" ? "approved" : "rejected";
+      const actionText = action.action === 'approve-all' ? 'approved' : 'rejected';
       notifications.showSuccess(`All pending students have been ${actionText}`);
 
       // Refresh class details

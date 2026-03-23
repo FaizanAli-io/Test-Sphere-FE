@@ -6,9 +6,9 @@
 
 // ===== Base Types =====
 
-export type LogType = "SCREENSHOT" | "WEBCAM_PHOTO" | "FOCUS_CHANGE" | "MOUSECLICK" | "KEYSTROKE";
+export type LogType = 'SCREENSHOT' | 'WEBCAM_PHOTO' | 'FOCUS_CHANGE' | 'MOUSECLICK' | 'KEYSTROKE';
 
-export type FilterType = "ALL" | LogType;
+export type FilterType = 'ALL' | LogType;
 
 // ===== Metadata Types =====
 
@@ -24,7 +24,7 @@ export interface FocusChangeMeta {
 }
 
 export interface MouseClickMeta {
-  type: "LEFT" | "RIGHT";
+  type: 'LEFT' | 'RIGHT';
   position: [number, number]; // [x, y]
   loggedAt: string;
 }
@@ -40,7 +40,7 @@ export interface ImageLog {
   id: number;
   submissionId: number;
   meta: ImageMeta[];
-  logType: "SCREENSHOT" | "WEBCAM_PHOTO";
+  logType: 'SCREENSHOT' | 'WEBCAM_PHOTO';
   metaLength: number;
 }
 
@@ -48,7 +48,7 @@ export interface FocusChangeLog {
   id: number;
   submissionId: number;
   meta: FocusChangeMeta[];
-  logType: "FOCUS_CHANGE";
+  logType: 'FOCUS_CHANGE';
   metaLength: number;
 }
 
@@ -56,7 +56,7 @@ export interface MouseClickLog {
   id: number;
   submissionId: number;
   meta: MouseClickMeta[];
-  logType: "MOUSECLICK";
+  logType: 'MOUSECLICK';
   metaLength: number;
 }
 
@@ -64,7 +64,7 @@ export interface KeystrokeLog {
   id: number;
   submissionId: number;
   meta: KeystrokeMeta[];
-  logType: "KEYSTROKE";
+  logType: 'KEYSTROKE';
   metaLength: number;
 }
 

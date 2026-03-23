@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { api } from "./useApi";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { api } from './useApi';
 
 interface UserProfile {
   id: number;
@@ -18,13 +18,13 @@ export function useProfileEditor(
   userProfile: UserProfile | null,
   onSaved: (updated: UserProfile) => void,
 ) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState("");
-  const [cnic, setCnic] = useState("");
+  const [profileImage, setProfileImage] = useState('');
+  const [cnic, setCnic] = useState('');
   const [msg, setMsg] = useState<{
-    type: "success" | "error";
+    type: 'success' | 'error';
     text: string;
   } | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -32,9 +32,9 @@ export function useProfileEditor(
   // Initialize form data when userProfile changes
   useEffect(() => {
     if (userProfile) {
-      setName(userProfile.name ?? "");
-      setCnic(userProfile.cnic ?? "");
-      setProfileImage(userProfile.profileImage ?? "");
+      setName(userProfile.name ?? '');
+      setCnic(userProfile.cnic ?? '');
+      setProfileImage(userProfile.profileImage ?? '');
     }
   }, [userProfile]);
 
@@ -47,18 +47,18 @@ export function useProfileEditor(
         profileImage: profileImage || undefined,
         cnic: cnic || undefined,
       };
-      const res = await api("/auth/me", {
+      const res = await api('/auth/me', {
         auth: true,
-        method: "PATCH",
+        method: 'PATCH',
         body: JSON.stringify(payload),
       });
       if (!res.ok) {
-        const text = await res.text().catch(() => "Failed to update");
-        setMsg({ type: "error", text: text || "Failed to update profile" });
+        const text = await res.text().catch(() => 'Failed to update');
+        setMsg({ type: 'error', text: text || 'Failed to update profile' });
         return;
       }
       const updated = await res.json();
-      setMsg({ type: "success", text: "Profile updated successfully" });
+      setMsg({ type: 'success', text: 'Profile updated successfully' });
       setEditing(false);
       onSaved(updated);
 
@@ -74,7 +74,7 @@ export function useProfileEditor(
       }, 2500);
     } catch (err) {
       console.error(err);
-      setMsg({ type: "error", text: "Network error while updating profile" });
+      setMsg({ type: 'error', text: 'Network error while updating profile' });
     } finally {
       setSaving(false);
     }
@@ -82,9 +82,9 @@ export function useProfileEditor(
 
   const handleCancel = useCallback(() => {
     // revert form to original
-    setName(userProfile?.name ?? "");
-    setCnic(userProfile?.cnic ?? "");
-    setProfileImage(userProfile?.profileImage ?? "");
+    setName(userProfile?.name ?? '');
+    setCnic(userProfile?.cnic ?? '');
+    setProfileImage(userProfile?.profileImage ?? '');
     setEditing(false);
     setMsg(null);
   }, [userProfile]);

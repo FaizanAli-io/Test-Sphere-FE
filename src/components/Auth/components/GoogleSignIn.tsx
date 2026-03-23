@@ -1,14 +1,14 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState } from 'react';
 
-import api from "@/hooks/useApi";
-import { extractErrorMessage } from "@/utils/error";
-import { auth, googleProvider } from "@/utils/firebase";
+import api from '@/hooks/useApi';
+import { extractErrorMessage } from '@/utils/error';
+import { auth, googleProvider } from '@/utils/firebase';
 
-import { signInWithPopup } from "firebase/auth";
-import GoogleSignupModal from "./GoogleSignupModal";
+import { signInWithPopup } from 'firebase/auth';
+import GoogleSignupModal from './GoogleSignupModal';
 
 interface GoogleSignInProps {
-  mode: "login" | "signup";
+  mode: 'login' | 'signup';
   setError: (error: string) => void;
   setSuccess: (success: string) => void;
   setLoading: (loading: boolean) => void;
@@ -32,7 +32,7 @@ export default function GoogleSignIn({
     photoURL: string | null;
   } | null>(null);
 
-  const completeSignup = async (details: { role: "STUDENT" | "TEACHER"; cnic: string }) => {
+  const completeSignup = async (details: { role: 'STUDENT' | 'TEACHER'; cnic: string }) => {
     if (!pendingUser) return;
     try {
       setLoading(true);
@@ -40,14 +40,14 @@ export default function GoogleSignIn({
       const signupPayload = {
         email: pendingUser.email,
         firebaseId: pendingUser.uid,
-        name: pendingUser.displayName || pendingUser.email?.split("@")[0] || "User",
+        name: pendingUser.displayName || pendingUser.email?.split('@')[0] || 'User',
         role: details.role,
         cnic: details.cnic,
         profileImage: pendingUser.photoURL || undefined,
       };
 
-      const res = await api("/auth/signup", {
-        method: "POST",
+      const res = await api('/auth/signup', {
+        method: 'POST',
         body: JSON.stringify(signupPayload),
       });
 
@@ -58,51 +58,51 @@ export default function GoogleSignIn({
       } = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Signup failed");
+        throw new Error(data.message || 'Signup failed');
       }
 
       if (data.accessToken && data.user?.role) {
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("role", data.user.role);
+        localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('role', data.user.role);
         if (data.user.email) {
-          localStorage.setItem("userEmail", data.user.email);
+          localStorage.setItem('userEmail', data.user.email);
         } else if (pendingUser?.email) {
-          localStorage.setItem("userEmail", pendingUser.email);
+          localStorage.setItem('userEmail', pendingUser.email);
         }
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 
-        window.dispatchEvent(new Event("authChange"));
-        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : "Success!");
+        window.dispatchEvent(new Event('authChange'));
+        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : 'Success!');
         setShowModal(false);
         setPendingUser(null);
 
         setTimeout(() => {
-          router.push("/" + data.user!.role.toLowerCase());
+          router.push('/' + data.user!.role.toLowerCase());
         }, 1000);
       }
     } catch (err) {
       const errorMessage = extractErrorMessage(err);
       setError(errorMessage);
-      console.error(" Google Signup Error:", errorMessage);
+      console.error(' Google Signup Error:', errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
       googleProvider.setCustomParameters({
-        prompt: "select_account",
+        prompt: 'select_account',
       });
 
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
-      if (mode === "signup") {
+      if (mode === 'signup') {
         setPendingUser({
           email: user.email,
           uid: user.uid,
@@ -119,8 +119,8 @@ export default function GoogleSignIn({
         firebaseId: user.uid,
       };
 
-      const res = await api("/auth/login", {
-        method: "POST",
+      const res = await api('/auth/login', {
+        method: 'POST',
         body: JSON.stringify(loginPayload),
       });
 
@@ -131,41 +131,41 @@ export default function GoogleSignIn({
       } = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data.message || 'Login failed');
       }
 
       if (data.accessToken && data.user?.role) {
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("role", data.user.role);
+        localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('role', data.user.role);
         if (data.user.email) {
-          localStorage.setItem("userEmail", data.user.email);
+          localStorage.setItem('userEmail', data.user.email);
         } else if (user.email) {
-          localStorage.setItem("userEmail", user.email);
+          localStorage.setItem('userEmail', user.email);
         }
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 
-        window.dispatchEvent(new Event("authChange"));
-        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : "Success!");
+        window.dispatchEvent(new Event('authChange'));
+        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : 'Success!');
 
         setTimeout(() => {
-          router.push("/" + data.user!.role.toLowerCase());
+          router.push('/' + data.user!.role.toLowerCase());
         }, 1000);
       }
     } catch (err: unknown) {
       const errorMessage = extractErrorMessage(err);
 
       if (
-        errorMessage.includes("Cross-Origin-Opener-Policy") ||
-        errorMessage.includes("window.close")
+        errorMessage.includes('Cross-Origin-Opener-Policy') ||
+        errorMessage.includes('window.close')
       ) {
-        console.warn("COOP policy warning (non-blocking):", errorMessage);
+        console.warn('COOP policy warning (non-blocking):', errorMessage);
 
         return;
       }
 
       setError(errorMessage);
-      console.error("❌ Google Auth Error:", errorMessage);
+      console.error('❌ Google Auth Error:', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -196,7 +196,7 @@ export default function GoogleSignIn({
             fill="#EA4335"
           />
         </svg>
-        <span>{mode === "login" ? "Login with Google" : "Sign up with Google"}</span>
+        <span>{mode === 'login' ? 'Login with Google' : 'Sign up with Google'}</span>
       </button>
 
       <GoogleSignupModal

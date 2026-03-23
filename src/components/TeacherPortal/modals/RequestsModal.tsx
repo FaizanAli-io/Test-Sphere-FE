@@ -1,6 +1,6 @@
-import React from "react";
-import { Class, RequestAction, BulkRequestAction } from "../types";
-import { canEdit } from "@/utils/rolePermissions";
+import React from 'react';
+import { Class, RequestAction, BulkRequestAction } from '../types';
+import { canEdit } from '@/utils/rolePermissions';
 
 interface RequestsModalProps {
   isOpen: boolean;
@@ -50,8 +50,8 @@ export default function RequestsModal({
             <div>
               <h3 className="text-3xl font-bold text-gray-900">{selectedClass.name} - Requests</h3>
               <p className="text-gray-600 mt-1">
-                {pendingStudents.length} pending{" "}
-                {pendingStudents.length === 1 ? "request" : "requests"}
+                {pendingStudents.length} pending{' '}
+                {pendingStudents.length === 1 ? 'request' : 'requests'}
               </p>
             </div>
           </div>
@@ -79,7 +79,7 @@ export default function RequestsModal({
                   onClick={() =>
                     onBulkRequestAction({
                       classId: selectedClass.id,
-                      action: "approve-all",
+                      action: 'approve-all',
                     })
                   }
                   disabled={loading}
@@ -91,7 +91,7 @@ export default function RequestsModal({
                   onClick={() =>
                     onBulkRequestAction({
                       classId: selectedClass.id,
-                      action: "reject-all",
+                      action: 'reject-all',
                     })
                   }
                   disabled={loading}
@@ -127,7 +127,7 @@ export default function RequestsModal({
                             classId: selectedClass.id,
                             studentId: classStudent.student.id,
                             studentName: classStudent.student.name,
-                            action: "approve",
+                            action: 'approve',
                           })
                         }
                         disabled={loading}
@@ -141,7 +141,7 @@ export default function RequestsModal({
                             classId: selectedClass.id,
                             studentId: classStudent.student.id,
                             studentName: classStudent.student.name,
-                            action: "reject",
+                            action: 'reject',
                           })
                         }
                         disabled={loading}

@@ -1,6 +1,6 @@
-export { default as SubmissionDetail } from "./SubmissionDetail/SubmissionDetail";
-export { default as SubmissionsList } from "./SubmissionsList";
-export { useSubmissions } from "./useSubmissions";
+export { default as SubmissionDetail } from './SubmissionDetail/SubmissionDetail';
+export { default as SubmissionsList } from './SubmissionsList';
+export { useSubmissions } from './useSubmissions';
 
 export type {
   Submission,
@@ -16,7 +16,7 @@ export type {
   SubmissionDetailProps,
   GradeSubmissionPayload,
   NotificationFunctions,
-} from "./types";
+} from './types';
 
 export {
   formatDate,
@@ -30,4 +30,4 @@ export {
   getSubmissionStatusColor,
   isAnswerCorrect,
   normalizeSubmission,
-} from "./utils";
+} from './utils';

@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-@import "highlight.js/styles/github.css";
+@import 'highlight.js/styles/github.css';
 
 :root {
   --background: #ffffff;
@@ -66,7 +66,7 @@ body {
 }
 
 .navbar-logo h1::after {
-  content: "";
+  content: '';
   position: absolute;
   width: 6px;
   height: 6px;
@@ -105,7 +105,7 @@ nav {
 }
 
 .nav-link::after {
-  content: "";
+  content: '';
   position: absolute;
   width: 100%;
   height: 2px;
@@ -144,7 +144,7 @@ nav {
 }
 
 .auth-btn::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;
@@ -180,7 +180,7 @@ nav {
   overflow: hidden;
 }
 .signout-btn::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;
@@ -226,7 +226,7 @@ nav {
 }
 .hamburger::before,
 .hamburger::after {
-  content: "";
+  content: '';
   position: absolute;
   width: 20px;
   height: 2px;

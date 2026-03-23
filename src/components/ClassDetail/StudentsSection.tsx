@@ -1,6 +1,6 @@
-"use client";
-import React from "react";
-import type { TeacherRole } from "@/utils/rolePermissions";
+'use client';
+import React from 'react';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 interface Student {
   id: number;
@@ -21,9 +21,9 @@ const StudentsSection: React.FC<StudentsSectionProps> = ({
   kickingStudent,
   onKick,
   classCode,
-  userRole = "VIEWER",
+  userRole = 'VIEWER',
 }) => {
-  const canRemoveStudent = userRole === "OWNER" || userRole === "EDITOR";
+  const canRemoveStudent = userRole === 'OWNER' || userRole === 'EDITOR';
   return (
     <div>
       <h3 className="text-2xl font-bold text-gray-900 mb-6">Enrolled Students</h3>

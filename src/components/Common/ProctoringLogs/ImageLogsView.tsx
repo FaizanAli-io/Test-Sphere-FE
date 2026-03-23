@@ -1,24 +1,24 @@
-import React, { useState, useMemo } from "react";
-import { Camera, Monitor } from "lucide-react";
-import Image from "next/image";
+import React, { useState, useMemo } from 'react';
+import { Camera, Monitor } from 'lucide-react';
+import Image from 'next/image';
 
-import { ProctoringLog, ImageMeta } from "./types";
+import { ProctoringLog, ImageMeta } from './types';
 
 interface ImageLogsViewProps {
   logs: ProctoringLog[];
   showFilters?: boolean;
-  initialFilter?: "ALL" | "SCREENSHOT" | "WEBCAM_PHOTO";
+  initialFilter?: 'ALL' | 'SCREENSHOT' | 'WEBCAM_PHOTO';
 }
 
-type ImageFilterType = "ALL" | "SCREENSHOT" | "WEBCAM_PHOTO";
+type ImageFilterType = 'ALL' | 'SCREENSHOT' | 'WEBCAM_PHOTO';
 
 export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
   logs,
   showFilters = false,
-  initialFilter = "ALL",
+  initialFilter = 'ALL',
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [internalFilter, setInternalFilter] = useState<ImageFilterType>("ALL");
+  const [internalFilter, setInternalFilter] = useState<ImageFilterType>('ALL');
 
   // Use initialFilter from parent when not showing internal filters, otherwise use internal state
   const activeFilter = showFilters ? internalFilter : initialFilter;
@@ -26,11 +26,11 @@ export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
   // Filter and flatten image logs
   const filteredImages = useMemo(() => {
     const imageLogs = logs.filter(
-      (log) => log.logType === "SCREENSHOT" || log.logType === "WEBCAM_PHOTO",
+      (log) => log.logType === 'SCREENSHOT' || log.logType === 'WEBCAM_PHOTO',
     );
 
     const filtered =
-      activeFilter === "ALL" ? imageLogs : imageLogs.filter((log) => log.logType === activeFilter);
+      activeFilter === 'ALL' ? imageLogs : imageLogs.filter((log) => log.logType === activeFilter);
 
     const allImages = filtered.flatMap((log) =>
       log.meta.map((meta) => ({
@@ -46,15 +46,15 @@ export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
   // Count images by type
   const imageCounts = useMemo(() => {
     const imageLogs = logs.filter(
-      (log) => log.logType === "SCREENSHOT" || log.logType === "WEBCAM_PHOTO",
+      (log) => log.logType === 'SCREENSHOT' || log.logType === 'WEBCAM_PHOTO',
     );
 
     return imageLogs.reduce(
       (acc, log) => {
         const count = log.metaLength;
-        if (log.logType === "SCREENSHOT") {
+        if (log.logType === 'SCREENSHOT') {
           acc.screenshot += count;
-        } else if (log.logType === "WEBCAM_PHOTO") {
+        } else if (log.logType === 'WEBCAM_PHOTO') {
           acc.webcam += count;
         }
         acc.total += count;
@@ -70,9 +70,9 @@ export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
         <div className="text-center">
           <p className="text-gray-500 text-lg">No images found</p>
           <p className="text-gray-400 text-sm mt-2">
-            {activeFilter === "ALL"
-              ? "No screenshots or webcam photos have been captured yet"
-              : `No ${activeFilter.toLowerCase().replace("_", " ")} found`}
+            {activeFilter === 'ALL'
+              ? 'No screenshots or webcam photos have been captured yet'
+              : `No ${activeFilter.toLowerCase().replace('_', ' ')} found`}
           </p>
         </div>
       </div>
@@ -85,11 +85,11 @@ export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
       {showFilters && (
         <div className="flex flex-wrap gap-3">
           <button
-            onClick={() => setInternalFilter("ALL")}
+            onClick={() => setInternalFilter('ALL')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-              internalFilter === "ALL"
-                ? "bg-yellow-500 text-white shadow-md"
-                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+              internalFilter === 'ALL'
+                ? 'bg-yellow-500 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
             }`}
           >
             <span>All Images</span>
@@ -99,11 +99,11 @@ export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
           </button>
 
           <button
-            onClick={() => setInternalFilter("SCREENSHOT")}
+            onClick={() => setInternalFilter('SCREENSHOT')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-              internalFilter === "SCREENSHOT"
-                ? "bg-blue-500 text-white shadow-md"
-                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+              internalFilter === 'SCREENSHOT'
+                ? 'bg-blue-500 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
             }`}
           >
             <Monitor size={18} />
@@ -114,11 +114,11 @@ export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
           </button>
 
           <button
-            onClick={() => setInternalFilter("WEBCAM_PHOTO")}
+            onClick={() => setInternalFilter('WEBCAM_PHOTO')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
-              internalFilter === "WEBCAM_PHOTO"
-                ? "bg-green-500 text-white shadow-md"
-                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+              internalFilter === 'WEBCAM_PHOTO'
+                ? 'bg-green-500 text-white shadow-md'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
             }`}
           >
             <Camera size={18} />
@@ -143,13 +143,13 @@ export const ImageLogsView: React.FC<ImageLogsViewProps> = ({
               <div className="absolute top-2 left-2 z-10">
                 <div
                   className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium shadow-md ${
-                    meta.logType === "SCREENSHOT"
-                      ? "bg-blue-500 text-white"
-                      : "bg-green-500 text-white"
+                    meta.logType === 'SCREENSHOT'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-green-500 text-white'
                   }`}
                 >
-                  {meta.logType === "SCREENSHOT" ? <Monitor size={12} /> : <Camera size={12} />}
-                  <span>{meta.logType === "SCREENSHOT" ? "Screen" : "Webcam"}</span>
+                  {meta.logType === 'SCREENSHOT' ? <Monitor size={12} /> : <Camera size={12} />}
+                  <span>{meta.logType === 'SCREENSHOT' ? 'Screen' : 'Webcam'}</span>
                 </div>
               </div>
 

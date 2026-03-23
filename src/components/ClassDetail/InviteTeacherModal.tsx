@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import api from "../../hooks/useApi";
-import ConfirmationModal from "../ConfirmationModal";
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import api from '../../hooks/useApi';
+import ConfirmationModal from '../ConfirmationModal';
 
 interface InvitableTeacher {
   id: number;
@@ -35,7 +35,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
 }) => {
   const [invitableTeachers, setInvitableTeachers] = useState<InvitableTeacher[]>([]);
   const [selectedTeacher, setSelectedTeacher] = useState<InvitableTeacher | null>(null);
-  const [selectedRole, setSelectedRole] = useState<"EDITOR" | "VIEWER">("EDITOR");
+  const [selectedRole, setSelectedRole] = useState<'EDITOR' | 'VIEWER'>('EDITOR');
   const [loading, setLoading] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,13 +51,13 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
 
     try {
       const response = await api(`/classes/${classId}/inviteable-teachers`, {
-        method: "GET",
+        method: 'GET',
         auth: true,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch inviteable teachers");
+        throw new Error(errorData.message || 'Failed to fetch inviteable teachers');
       }
 
       const data = await response.json();
@@ -66,7 +66,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
         setSelectedTeacher(data[0]);
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to fetch teachers";
+      const message = err instanceof Error ? err.message : 'Failed to fetch teachers';
       setError(message);
       console.error(message);
     } finally {
@@ -83,7 +83,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
 
   const handleInvite = async () => {
     if (!selectedTeacher) {
-      setError("Please select a teacher to invite");
+      setError('Please select a teacher to invite');
       return;
     }
 
@@ -92,7 +92,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
 
     try {
       const response = await api(`/classes/${classId}/teachers/${selectedTeacher.id}`, {
-        method: "POST",
+        method: 'POST',
         auth: true,
         body: JSON.stringify({
           role: selectedRole,
@@ -101,7 +101,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to invite teacher");
+        throw new Error(errorData.message || 'Failed to invite teacher');
       }
 
       setSuccess(`Teacher invited as ${selectedRole}`);
@@ -112,12 +112,12 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
         setError(null);
         setSuccess(null);
         setSelectedTeacher(invitableTeachers.length > 0 ? invitableTeachers[0] : null);
-        setSelectedRole("EDITOR");
+        setSelectedRole('EDITOR');
         onClose();
         onInviteSuccess?.();
       }, 1500);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to invite teacher";
+      const message = err instanceof Error ? err.message : 'Failed to invite teacher';
       setError(message);
       setInviting(false);
     }
@@ -151,7 +151,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">Select Teacher</label>
               <select
-                value={selectedTeacher?.id || ""}
+                value={selectedTeacher?.id || ''}
                 onChange={(e) => {
                   const teacher = invitableTeachers.find((t) => t.id === Number(e.target.value));
                   if (teacher) setSelectedTeacher(teacher);
@@ -159,7 +159,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
                 disabled={loading || inviting}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-600 font-semibold text-gray-900 disabled:bg-gray-100"
               >
-                <option value="">{loading ? "Loading teachers..." : "Choose a teacher..."}</option>
+                <option value="">{loading ? 'Loading teachers...' : 'Choose a teacher...'}</option>
                 {invitableTeachers.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>
                     {teacher.name} ({teacher.email})
@@ -172,7 +172,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
               <label className="block text-sm font-bold text-gray-700 mb-3">Role</label>
               <select
                 value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value as "EDITOR" | "VIEWER")}
+                onChange={(e) => setSelectedRole(e.target.value as 'EDITOR' | 'VIEWER')}
                 disabled={inviting}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-600 font-semibold text-gray-900 disabled:bg-gray-100"
               >
@@ -195,7 +195,7 @@ const InviteTeacherModal: React.FC<InviteTeacherModalProps> = ({
               disabled={!selectedTeacher || loading || inviting}
               className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {inviting ? "Inviting..." : "Invite"}
+              {inviting ? 'Inviting...' : 'Invite'}
             </button>
           </div>
         </div>

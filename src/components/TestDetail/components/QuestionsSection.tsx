@@ -1,8 +1,8 @@
-import React from "react";
-import Image from "next/image";
-import type { Question, QuestionPool } from "../types";
-import { canEdit as checkCanEdit } from "@/utils/rolePermissions";
-import type { TeacherRole } from "@/utils/rolePermissions";
+import React from 'react';
+import Image from 'next/image';
+import type { Question, QuestionPool } from '../types';
+import { canEdit as checkCanEdit } from '@/utils/rolePermissions';
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 interface QuestionsSectionProps {
   questions: Question[];
@@ -11,7 +11,7 @@ interface QuestionsSectionProps {
   onEditQuestion: (q: Question) => void;
   onDeleteQuestion: (id: number) => void;
   isPoolMode?: boolean;
-  poolInfo?: { type: "warning" | "info"; message: string } | undefined;
+  poolInfo?: { type: 'warning' | 'info'; message: string } | undefined;
   pools?: QuestionPool[];
   onUnassignQuestion?: (questionId: number, poolId: number) => void;
   onAddPool?: () => void;
@@ -84,12 +84,12 @@ export default function QuestionsSection({
   onToggleActive,
   onAssignQuestionsToPool,
   isTeacher,
-  teacherRole = "VIEWER",
+  teacherRole = 'VIEWER',
 }: QuestionsSectionProps) {
   const [isSectionOpen, setIsSectionOpen] = React.useState(true);
   const [openQuestionIds, setOpenQuestionIds] = React.useState<Set<number>>(() => new Set());
   const [openPoolIds, setOpenPoolIds] = React.useState<Set<number>>(() => new Set());
-  const [sortBy, setSortBy] = React.useState<"default" | "type">("default");
+  const [sortBy, setSortBy] = React.useState<'default' | 'type'>('default');
 
   const canEditQuestions = checkCanEdit(teacherRole);
 
@@ -112,7 +112,7 @@ export default function QuestionsSection({
   };
 
   const sortedQuestions = React.useMemo(() => {
-    if (sortBy === "default") return questions;
+    if (sortBy === 'default') return questions;
     return [...questions].sort((a, b) => a.type.localeCompare(b.type));
   }, [questions, sortBy]);
 
@@ -129,7 +129,7 @@ export default function QuestionsSection({
     });
 
     sortedQuestions.forEach((q) => {
-      const poolId = q.questionPoolId?.toString() ?? "null";
+      const poolId = q.questionPoolId?.toString() ?? 'null';
       // Fallback if question points to a pool that is not in the pools list (deleted?)
       if (!groups[poolId]) groups[poolId] = [];
       groups[poolId].push(q);
@@ -139,7 +139,7 @@ export default function QuestionsSection({
   }, [sortedQuestions, isPoolMode, pools]);
 
   const getPoolTitle = (poolId: number | null) => {
-    if (!poolId) return "Unassigned Questions";
+    if (!poolId) return 'Unassigned Questions';
     return pools?.find((p) => p.id === poolId)?.title || `Pool #${poolId}`;
   };
 
@@ -159,7 +159,7 @@ export default function QuestionsSection({
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold text-gray-900">Questions ({questions.length})</h2>
               <span
-                className={`text-gray-500 transition-transform ${isSectionOpen ? "rotate-180" : ""}`}
+                className={`text-gray-500 transition-transform ${isSectionOpen ? 'rotate-180' : ''}`}
               >
                 ▼
               </span>
@@ -176,7 +176,7 @@ export default function QuestionsSection({
             <div className="relative">
               <select
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as "default" | "type")}
+                onChange={(e) => setSortBy(e.target.value as 'default' | 'type')}
                 className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 hover:bg-gray-100 transition-all cursor-pointer appearance-none pr-8"
               >
                 <option value="default">Default Sort</option>
@@ -217,7 +217,7 @@ export default function QuestionsSection({
       {/* Collapsible Content */}
       <div
         className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          isSectionOpen ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
+          isSectionOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         {loadingQuestions ? (
@@ -239,7 +239,7 @@ export default function QuestionsSection({
           </div>
         ) : (
           <div className="space-y-4">
-            {poolInfo && poolInfo.type === "warning" && (
+            {poolInfo && poolInfo.type === 'warning' && (
               <div className="bg-yellow-50 border-2 border-yellow-200 p-4 rounded-xl mb-4 text-yellow-800">
                 ⚠️ {poolInfo.message}
               </div>
@@ -249,7 +249,7 @@ export default function QuestionsSection({
               // Pool mode: grouped by pool
               <div className="space-y-4">
                 {Object.entries(groupedQuestions).map(([poolIdStr, poolQuestions]) => {
-                  const poolId = poolIdStr === "null" ? null : Number(poolIdStr);
+                  const poolId = poolIdStr === 'null' ? null : Number(poolIdStr);
                   const isPoolOpen = poolId === null ? true : openPoolIds.has(poolId);
                   const poolData = getPoolInfo(poolId);
 
@@ -272,8 +272,8 @@ export default function QuestionsSection({
                                 {getPoolTitle(poolId)}
                               </h3>
                               <span className="px-3 py-1 bg-purple-200 text-purple-800 rounded-full text-sm font-medium">
-                                {poolQuestions.length}{" "}
-                                {poolQuestions.length === 1 ? "question" : "questions"}
+                                {poolQuestions.length}{' '}
+                                {poolQuestions.length === 1 ? 'question' : 'questions'}
                               </span>
                             </div>
 
@@ -320,26 +320,26 @@ export default function QuestionsSection({
                                   onClick={(e) => e.stopPropagation()}
                                 >
                                   <span className="text-xs font-medium text-gray-500 select-none">
-                                    {poolData.active !== false ? "Active" : "Inactive"}
+                                    {poolData.active !== false ? 'Active' : 'Inactive'}
                                   </span>
                                   <button
                                     role="switch"
                                     aria-checked={poolData.active !== false}
                                     onClick={() => onToggleActive(poolData)}
                                     className={`relative inline-flex w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 flex-shrink-0 ${
-                                      poolData.active !== false ? "bg-indigo-500" : "bg-gray-300"
+                                      poolData.active !== false ? 'bg-indigo-500' : 'bg-gray-300'
                                     }`}
                                     title={
                                       poolData.active !== false
-                                        ? "Deactivate pool"
-                                        : "Activate pool"
+                                        ? 'Deactivate pool'
+                                        : 'Activate pool'
                                     }
                                   >
                                     <span
                                       className={`absolute top-[2px] w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
                                         poolData.active !== false
-                                          ? "translate-x-[22px]"
-                                          : "translate-x-[2px]"
+                                          ? 'translate-x-[22px]'
+                                          : 'translate-x-[2px]'
                                       }`}
                                     />
                                   </button>
@@ -348,7 +348,7 @@ export default function QuestionsSection({
 
                               {poolId !== null && (
                                 <span
-                                  className={`text-purple-600 transition-transform ${isPoolOpen ? "rotate-180" : ""}`}
+                                  className={`text-purple-600 transition-transform ${isPoolOpen ? 'rotate-180' : ''}`}
                                 >
                                   ▼
                                 </span>
@@ -366,7 +366,7 @@ export default function QuestionsSection({
                       {/* Pool Questions */}
                       <div
                         className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                          isPoolOpen ? "max-h-[10000px] opacity-100" : "max-h-0 opacity-0"
+                          isPoolOpen ? 'max-h-[10000px] opacity-100' : 'max-h-0 opacity-0'
                         }`}
                       >
                         <div className="p-4 space-y-3 bg-white">
@@ -396,23 +396,23 @@ export default function QuestionsSection({
                                       {!isOpen && (
                                         <div className="flex items-center gap-2 ml-auto text-xs text-gray-600">
                                           <span className="px-2 py-1 bg-blue-50 rounded text-blue-700 font-medium">
-                                            {question.type === "MULTIPLE_CHOICE"
-                                              ? "MCQ"
-                                              : question.type === "TRUE_FALSE"
-                                                ? "T/F"
-                                                : question.type === "SHORT_ANSWER"
-                                                  ? "Short"
-                                                  : "Long"}
+                                            {question.type === 'MULTIPLE_CHOICE'
+                                              ? 'MCQ'
+                                              : question.type === 'TRUE_FALSE'
+                                                ? 'T/F'
+                                                : question.type === 'SHORT_ANSWER'
+                                                  ? 'Short'
+                                                  : 'Long'}
                                           </span>
                                           <span className="px-2 py-1 bg-orange-50 rounded text-orange-700 font-medium">
                                             {question.maxMarks} mark
-                                            {question.maxMarks !== 1 ? "s" : ""}
+                                            {question.maxMarks !== 1 ? 's' : ''}
                                           </span>
                                         </div>
                                       )}
                                     </div>
                                     <span
-                                      className={`text-gray-500 transition-transform flex-shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                                      className={`text-gray-500 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
                                     >
                                       ▼
                                     </span>
@@ -422,24 +422,24 @@ export default function QuestionsSection({
                                     <div className="mt-4 border-t pt-4">
                                       <div className="flex items-center gap-3 mb-2">
                                         <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                                          {question.type === "MULTIPLE_CHOICE"
-                                            ? "Multiple Choice"
-                                            : question.type === "TRUE_FALSE"
-                                              ? "True/False"
-                                              : question.type === "SHORT_ANSWER"
-                                                ? "Short Answer"
-                                                : "Long Answer"}
+                                          {question.type === 'MULTIPLE_CHOICE'
+                                            ? 'Multiple Choice'
+                                            : question.type === 'TRUE_FALSE'
+                                              ? 'True/False'
+                                              : question.type === 'SHORT_ANSWER'
+                                                ? 'Short Answer'
+                                                : 'Long Answer'}
                                         </span>
                                         <span className="text-sm text-gray-600">
-                                          {question.maxMarks}{" "}
-                                          {question.maxMarks === 1 ? "mark" : "marks"}
+                                          {question.maxMarks}{' '}
+                                          {question.maxMarks === 1 ? 'mark' : 'marks'}
                                         </span>
                                       </div>
 
                                       {question.image && (
                                         <div
                                           className="mb-4 relative w-full"
-                                          style={{ maxHeight: "300px" }}
+                                          style={{ maxHeight: '300px' }}
                                         >
                                           <Image
                                             src={question.image}
@@ -448,25 +448,25 @@ export default function QuestionsSection({
                                             height={0}
                                             sizes="100vw"
                                             className="w-full h-auto rounded-lg border border-gray-200"
-                                            style={{ maxHeight: "300px", width: "auto" }}
+                                            style={{ maxHeight: '300px', width: 'auto' }}
                                           />
                                         </div>
                                       )}
 
-                                      {question.type === "MULTIPLE_CHOICE" && question.options && (
+                                      {question.type === 'MULTIPLE_CHOICE' && question.options && (
                                         <div className="space-y-2">
                                           {question.options.map((option, optIndex) => (
                                             <div
                                               key={optIndex}
                                               className={`p-3 rounded-lg border ${
                                                 question.correctAnswer === optIndex
-                                                  ? "bg-green-50 border-green-200 text-green-800"
-                                                  : "bg-gray-50 border-gray-200 text-gray-900"
+                                                  ? 'bg-green-50 border-green-200 text-green-800'
+                                                  : 'bg-gray-50 border-gray-200 text-gray-900'
                                               }`}
                                             >
                                               <span className="font-medium">
                                                 {String.fromCharCode(65 + optIndex)}.
-                                              </span>{" "}
+                                              </span>{' '}
                                               {option}
                                               {question.correctAnswer === optIndex && (
                                                 <span className="text-green-600 font-bold ml-2">
@@ -478,16 +478,16 @@ export default function QuestionsSection({
                                         </div>
                                       )}
 
-                                      {question.type === "TRUE_FALSE" && (
+                                      {question.type === 'TRUE_FALSE' && (
                                         <div className="flex gap-4">
                                           <div
                                             className={`p-3 rounded-lg border ${
                                               question.correctAnswer === 1
-                                                ? "bg-green-50 border-green-200 text-green-800"
-                                                : "bg-gray-50 border-gray-200 text-gray-900"
+                                                ? 'bg-green-50 border-green-200 text-green-800'
+                                                : 'bg-gray-50 border-gray-200 text-gray-900'
                                             }`}
                                           >
-                                            True{" "}
+                                            True{' '}
                                             {question.correctAnswer === 1 && (
                                               <span className="text-green-600 font-bold">✓</span>
                                             )}
@@ -495,11 +495,11 @@ export default function QuestionsSection({
                                           <div
                                             className={`p-3 rounded-lg border ${
                                               question.correctAnswer === 0
-                                                ? "bg-green-50 border-green-200 text-green-800"
-                                                : "bg-gray-50 border-gray-200 text-gray-900"
+                                                ? 'bg-green-50 border-green-200 text-green-800'
+                                                : 'bg-gray-50 border-gray-200 text-gray-900'
                                             }`}
                                           >
-                                            False{" "}
+                                            False{' '}
                                             {question.correctAnswer === 0 && (
                                               <span className="text-green-600 font-bold">✓</span>
                                             )}
@@ -569,22 +569,22 @@ export default function QuestionsSection({
                           {!isOpen && (
                             <div className="flex items-center gap-2 ml-auto text-xs text-gray-600">
                               <span className="px-2 py-1 bg-blue-50 rounded text-blue-700 font-medium">
-                                {question.type === "MULTIPLE_CHOICE"
-                                  ? "MCQ"
-                                  : question.type === "TRUE_FALSE"
-                                    ? "T/F"
-                                    : question.type === "SHORT_ANSWER"
-                                      ? "Short"
-                                      : "Long"}
+                                {question.type === 'MULTIPLE_CHOICE'
+                                  ? 'MCQ'
+                                  : question.type === 'TRUE_FALSE'
+                                    ? 'T/F'
+                                    : question.type === 'SHORT_ANSWER'
+                                      ? 'Short'
+                                      : 'Long'}
                               </span>
                               <span className="px-2 py-1 bg-orange-50 rounded text-orange-700 font-medium">
-                                {question.maxMarks} mark{question.maxMarks !== 1 ? "s" : ""}
+                                {question.maxMarks} mark{question.maxMarks !== 1 ? 's' : ''}
                               </span>
                             </div>
                           )}
                         </div>
                         <span
-                          className={`text-gray-500 transition-transform flex-shrink-0 ml-3 ${isOpen ? "rotate-180" : ""}`}
+                          className={`text-gray-500 transition-transform flex-shrink-0 ml-3 ${isOpen ? 'rotate-180' : ''}`}
                         >
                           ▼
                         </span>
@@ -594,21 +594,21 @@ export default function QuestionsSection({
                         <div className="mt-4 border-t pt-4">
                           <div className="flex items-center gap-3 mb-2">
                             <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                              {question.type === "MULTIPLE_CHOICE"
-                                ? "Multiple Choice"
-                                : question.type === "TRUE_FALSE"
-                                  ? "True/False"
-                                  : question.type === "SHORT_ANSWER"
-                                    ? "Short Answer"
-                                    : "Long Answer"}
+                              {question.type === 'MULTIPLE_CHOICE'
+                                ? 'Multiple Choice'
+                                : question.type === 'TRUE_FALSE'
+                                  ? 'True/False'
+                                  : question.type === 'SHORT_ANSWER'
+                                    ? 'Short Answer'
+                                    : 'Long Answer'}
                             </span>
                             <span className="text-sm text-gray-600">
-                              {question.maxMarks} {question.maxMarks === 1 ? "mark" : "marks"}
+                              {question.maxMarks} {question.maxMarks === 1 ? 'mark' : 'marks'}
                             </span>
                           </div>
 
                           {question.image && (
-                            <div className="mb-4 relative w-full" style={{ maxHeight: "300px" }}>
+                            <div className="mb-4 relative w-full" style={{ maxHeight: '300px' }}>
                               <Image
                                 src={question.image}
                                 alt="Question image"
@@ -616,25 +616,25 @@ export default function QuestionsSection({
                                 height={0}
                                 sizes="100vw"
                                 className="w-full h-auto rounded-lg border border-gray-200"
-                                style={{ maxHeight: "300px", width: "auto" }}
+                                style={{ maxHeight: '300px', width: 'auto' }}
                               />
                             </div>
                           )}
 
-                          {question.type === "MULTIPLE_CHOICE" && question.options && (
+                          {question.type === 'MULTIPLE_CHOICE' && question.options && (
                             <div className="space-y-2">
                               {question.options.map((option, optIndex) => (
                                 <div
                                   key={optIndex}
                                   className={`p-3 rounded-lg border ${
                                     question.correctAnswer === optIndex
-                                      ? "bg-green-50 border-green-200 text-green-800"
-                                      : "bg-gray-50 border-gray-200 text-gray-900"
+                                      ? 'bg-green-50 border-green-200 text-green-800'
+                                      : 'bg-gray-50 border-gray-200 text-gray-900'
                                   }`}
                                 >
                                   <span className="font-medium">
                                     {String.fromCharCode(65 + optIndex)}.
-                                  </span>{" "}
+                                  </span>{' '}
                                   {option}
                                   {question.correctAnswer === optIndex && (
                                     <span className="text-green-600 font-bold ml-2">✓</span>
@@ -644,16 +644,16 @@ export default function QuestionsSection({
                             </div>
                           )}
 
-                          {question.type === "TRUE_FALSE" && (
+                          {question.type === 'TRUE_FALSE' && (
                             <div className="flex gap-4">
                               <div
                                 className={`p-3 rounded-lg border ${
                                   question.correctAnswer === 1
-                                    ? "bg-green-50 border-green-200 text-green-800"
-                                    : "bg-gray-50 border-gray-200 text-gray-900"
+                                    ? 'bg-green-50 border-green-200 text-green-800'
+                                    : 'bg-gray-50 border-gray-200 text-gray-900'
                                 }`}
                               >
-                                True{" "}
+                                True{' '}
                                 {question.correctAnswer === 1 && (
                                   <span className="text-green-600 font-bold">✓</span>
                                 )}
@@ -661,11 +661,11 @@ export default function QuestionsSection({
                               <div
                                 className={`p-3 rounded-lg border ${
                                   question.correctAnswer === 0
-                                    ? "bg-green-50 border-green-200 text-green-800"
-                                    : "bg-gray-50 border-gray-200 text-gray-900"
+                                    ? 'bg-green-50 border-green-200 text-green-800'
+                                    : 'bg-gray-50 border-gray-200 text-gray-900'
                                 }`}
                               >
-                                False{" "}
+                                False{' '}
                                 {question.correctAnswer === 0 && (
                                   <span className="text-green-600 font-bold">✓</span>
                                 )}

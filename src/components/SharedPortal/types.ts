@@ -22,21 +22,21 @@ export interface QuickAction {
   title: string;
   description: string;
   actionText: string;
-  colorScheme: "indigo" | "orange" | "green" | "blue";
+  colorScheme: 'indigo' | 'orange' | 'green' | 'blue';
   onClick: () => void;
 }
 
 export interface ClassCardAction {
   label: string;
   onClick: (classData: BaseClass) => void;
-  colorScheme: "green" | "blue" | "yellow" | "red" | "orange";
-  variant?: "primary" | "secondary";
+  colorScheme: 'green' | 'blue' | 'yellow' | 'red' | 'orange';
+  variant?: 'primary' | 'secondary';
   badge?: (classData: BaseClass) => number | undefined;
   isVisible?: (classData: BaseClass) => boolean; // Optional visibility check based on class data
 }
 
 export interface BasePortalProps {
-  role: "student" | "teacher";
+  role: 'student' | 'teacher';
   quickActions: QuickAction[];
   classes: BaseClass[];
   loading: boolean;

@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { Lock, KeyRound, Eye, EyeOff } from "lucide-react";
+import { useState } from 'react';
+import { Lock, KeyRound, Eye, EyeOff } from 'lucide-react';
 
-import api from "@/hooks/useApi";
-import { extractErrorMessage } from "@/utils/error";
+import api from '@/hooks/useApi';
+import { extractErrorMessage } from '@/utils/error';
 
 interface ResetPasswordFormProps {
   email: string;
@@ -21,40 +21,40 @@ export default function ResetPasswordForm({
   setLoading,
   onResetComplete,
 }: ResetPasswordFormProps) {
-  const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPassword, setShowNewPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match');
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError('Password must be at least 6 characters');
       return;
     }
 
     setLoading(true);
 
     try {
-      const res = await api("/auth/reset-password", {
-        method: "POST",
+      const res = await api('/auth/reset-password', {
+        method: 'POST',
         body: JSON.stringify({ email, otp, newPassword }),
       });
 
       const data: { message?: string } = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Password reset failed");
+        throw new Error(data.message || 'Password reset failed');
       }
 
-      setSuccess("Password reset successful! You can now login.");
+      setSuccess('Password reset successful! You can now login.');
       setTimeout(() => {
         onResetComplete();
       }, 2000);
@@ -67,22 +67,22 @@ export default function ResetPasswordForm({
 
   const handleResendOtp = async (e: React.MouseEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
-      const res = await api("/auth/forgot-password", {
-        method: "POST",
+      const res = await api('/auth/forgot-password', {
+        method: 'POST',
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Failed to resend OTP");
+        throw new Error(data.message || 'Failed to resend OTP');
       }
 
-      setSuccess("OTP resent to your email! Please check your inbox.");
+      setSuccess('OTP resent to your email! Please check your inbox.');
     } catch (err: unknown) {
       setError(extractErrorMessage(err));
     } finally {
@@ -99,7 +99,7 @@ export default function ResetPasswordForm({
           <input
             type="text"
             value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
             placeholder="Enter 6-digit OTP"
             className="w-full pl-11 pr-4 py-3 border-2 border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-center text-2xl tracking-widest font-semibold"
             required
@@ -115,7 +115,7 @@ export default function ResetPasswordForm({
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
-            type={showNewPassword ? "text" : "password"}
+            type={showNewPassword ? 'text' : 'password'}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="At least 6 characters"
@@ -141,7 +141,7 @@ export default function ResetPasswordForm({
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
-            type={showNewPassword ? "text" : "password"}
+            type={showNewPassword ? 'text' : 'password'}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Re-enter your password"
@@ -158,7 +158,7 @@ export default function ResetPasswordForm({
         disabled={loading || otp.length !== 6}
         className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
-        {loading ? "Resetting Password..." : "Reset Password"}
+        {loading ? 'Resetting Password...' : 'Reset Password'}
       </button>
 
       <button

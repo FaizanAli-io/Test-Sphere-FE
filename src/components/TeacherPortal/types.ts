@@ -1,4 +1,4 @@
-import type { TeacherRole } from "@/utils/rolePermissions";
+import type { TeacherRole } from '@/utils/rolePermissions';
 
 export interface Student {
   id: number;
@@ -51,12 +51,12 @@ export interface RequestAction {
   classId: string;
   studentId: number;
   studentName: string;
-  action: "approve" | "reject";
+  action: 'approve' | 'reject';
 }
 
 export interface BulkRequestAction {
   classId: string;
-  action: "approve-all" | "reject-all";
+  action: 'approve-all' | 'reject-all';
 }
 
 export interface NewClass {

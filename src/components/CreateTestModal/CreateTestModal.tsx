@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import api from "../../hooks/useApi";
-import { useNotifications } from "../../contexts/NotificationContext";
-import { localDatetimeToUtcIso } from "../../utils/timezone";
-import CreateTestModalHeader from "./Header";
-import ClassSelector from "./ClassSelector";
-import DateTimeWindow from "./DateTimeWindow";
+import React, { useState, useEffect } from 'react';
+import api from '../../hooks/useApi';
+import { useNotifications } from '../../contexts/NotificationContext';
+import { localDatetimeToUtcIso } from '../../utils/timezone';
+import CreateTestModalHeader from './Header';
+import ClassSelector from './ClassSelector';
+import DateTimeWindow from './DateTimeWindow';
 
 interface Class {
   id: string;
@@ -25,7 +25,7 @@ interface TestData {
   duration: number;
   startAt: string;
   endAt: string;
-  status: "DRAFT" | "ACTIVE" | "CLOSED";
+  status: 'DRAFT' | 'ACTIVE' | 'CLOSED';
 }
 
 interface CreateTestModalProps {
@@ -45,12 +45,12 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
 
   const [formData, setFormData] = useState<TestData>({
     classId: prefilledClassId || 0,
-    title: "",
-    description: "",
+    title: '',
+    description: '',
     duration: 60,
-    startAt: "",
-    endAt: "",
-    status: "DRAFT",
+    startAt: '',
+    endAt: '',
+    status: 'DRAFT',
   });
 
   const [loading, setLoading] = useState(false);
@@ -63,17 +63,17 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
     setClassesLoading(true);
     setClassesError(null);
     try {
-      const response = await api("/classes", { method: "GET", auth: true });
+      const response = await api('/classes', { method: 'GET', auth: true });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch classes");
+        throw new Error(errorData.message || 'Failed to fetch classes');
       }
       const data = await response.json();
       // Extract class data from wrapper structure
       const normalized = Array.isArray(data)
         ? (data
             .map((wrapper: unknown) => {
-              if (!wrapper || typeof wrapper !== "object") return null;
+              if (!wrapper || typeof wrapper !== 'object') return null;
               const w = wrapper as Record<string, unknown>;
               // Get class data from nested property or use wrapper as fallback
               const classData = (w.class as Record<string, unknown> | undefined) || w;
@@ -93,7 +93,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
         : [];
       setClasses(normalized);
     } catch (err) {
-      setClassesError(err instanceof Error ? err.message : "Failed to fetch classes");
+      setClassesError(err instanceof Error ? err.message : 'Failed to fetch classes');
     } finally {
       setClassesLoading(false);
     }
@@ -125,33 +125,33 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
   const handleChange = <K extends keyof TestData>(key: K, value: TestData[K]) => {
     const newFormData = { ...formData, [key]: value };
 
-    if (key === "startAt" && value) {
+    if (key === 'startAt' && value) {
       const startDate = new Date(value as string);
       const endDate = new Date(startDate.getTime() + newFormData.duration * 60 * 1000);
       const year = endDate.getFullYear();
-      const month = String(endDate.getMonth() + 1).padStart(2, "0");
-      const day = String(endDate.getDate()).padStart(2, "0");
-      const hours = String(endDate.getHours()).padStart(2, "0");
-      const minutes = String(endDate.getMinutes()).padStart(2, "0");
+      const month = String(endDate.getMonth() + 1).padStart(2, '0');
+      const day = String(endDate.getDate()).padStart(2, '0');
+      const hours = String(endDate.getHours()).padStart(2, '0');
+      const minutes = String(endDate.getMinutes()).padStart(2, '0');
       newFormData.endAt = `${year}-${month}-${day}T${hours}:${minutes}`;
-    } else if (key === "duration" && newFormData.startAt) {
+    } else if (key === 'duration' && newFormData.startAt) {
       const startDate = new Date(newFormData.startAt);
       const endDate = new Date(startDate.getTime() + (value as number) * 60 * 1000);
       const year = endDate.getFullYear();
-      const month = String(endDate.getMonth() + 1).padStart(2, "0");
-      const day = String(endDate.getDate()).padStart(2, "0");
-      const hours = String(endDate.getHours()).padStart(2, "0");
-      const minutes = String(endDate.getMinutes()).padStart(2, "0");
+      const month = String(endDate.getMonth() + 1).padStart(2, '0');
+      const day = String(endDate.getDate()).padStart(2, '0');
+      const hours = String(endDate.getHours()).padStart(2, '0');
+      const minutes = String(endDate.getMinutes()).padStart(2, '0');
       newFormData.endAt = `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
     setFormData(newFormData);
 
-    if (key === "startAt" || key === "endAt" || key === "duration") {
+    if (key === 'startAt' || key === 'endAt' || key === 'duration') {
       validateDates(
-        key === "startAt" ? (value as string) : newFormData.startAt,
-        key === "endAt" ? (value as string) : newFormData.endAt,
-        key === "duration" ? (value as number) : newFormData.duration,
+        key === 'startAt' ? (value as string) : newFormData.startAt,
+        key === 'endAt' ? (value as string) : newFormData.endAt,
+        key === 'duration' ? (value as number) : newFormData.duration,
       );
     }
   };
@@ -159,12 +159,12 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
   const resetForm = () => {
     setFormData({
       classId: prefilledClassId || 0,
-      title: "",
-      description: "",
+      title: '',
+      description: '',
       duration: 60,
-      startAt: "",
-      endAt: "",
-      status: "DRAFT",
+      startAt: '',
+      endAt: '',
+      status: 'DRAFT',
     });
     setClasses([]);
     setClassesError(null);
@@ -179,15 +179,15 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) {
-      notifications.showError("Please enter a test title");
+      notifications.showError('Please enter a test title');
       return;
     }
     if (!formData.classId || formData.classId <= 0) {
-      notifications.showError("Please select a class");
+      notifications.showError('Please select a class');
       return;
     }
     if (!formData.startAt || !formData.endAt) {
-      notifications.showError("Please set both start and end date/time");
+      notifications.showError('Please set both start and end date/time');
       return;
     }
     if (dateError) {
@@ -216,14 +216,14 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
         status: formData.status,
       };
 
-      const res = await api("/tests", {
+      const res = await api('/tests', {
         body: JSON.stringify(payload),
-        method: "POST",
+        method: 'POST',
         auth: true,
       });
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to create test");
+        throw new Error(errorData.message || 'Failed to create test');
       }
       const data = await res.json();
       notifications.showSuccess(`Test created successfully! Test ID: ${data.id}`);
@@ -232,8 +232,8 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
       }
       handleClose();
     } catch (err) {
-      console.error("Failed to create test:", err);
-      notifications.showError(err instanceof Error ? err.message : "Error creating test");
+      console.error('Failed to create test:', err);
+      notifications.showError(err instanceof Error ? err.message : 'Error creating test');
     } finally {
       setLoading(false);
     }
@@ -253,7 +253,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
             classId={formData.classId}
             prefilledClassId={prefilledClassId}
             onRetry={fetchClasses}
-            onSelect={(id) => handleChange("classId", id)}
+            onSelect={(id) => handleChange('classId', id)}
           />
 
           {/* Title & Description */}
@@ -266,7 +266,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
               <input
                 type="text"
                 value={formData.title}
-                onChange={(e) => handleChange("title", e.target.value)}
+                onChange={(e) => handleChange('title', e.target.value)}
                 placeholder="e.g., Midterm Examination"
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
               />
@@ -280,7 +280,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
                 type="number"
                 min="1"
                 value={formData.duration}
-                onChange={(e) => handleChange("duration", Number(e.target.value))}
+                onChange={(e) => handleChange('duration', Number(e.target.value))}
                 placeholder="60"
                 className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 font-medium"
               />
@@ -294,7 +294,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => handleChange("description", e.target.value)}
+              onChange={(e) => handleChange('description', e.target.value)}
               placeholder="Provide a brief description of the test (optional)"
               rows={4}
               className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 placeholder-gray-400 resize-none font-medium"
@@ -316,7 +316,7 @@ const CreateTestModal: React.FC<CreateTestModalProps> = ({
             </label>
             <select
               value={formData.status}
-              onChange={(e) => handleChange("status", e.target.value as TestData["status"])}
+              onChange={(e) => handleChange('status', e.target.value as TestData['status'])}
               className="w-full px-4 py-3.5 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all text-gray-900 bg-white font-medium"
             >
               <option value="ACTIVE">Active - Students can take the test</option>

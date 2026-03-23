@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { TestConfig } from "../types";
+import React, { useState, useEffect } from 'react';
+import { TestConfig } from '../types';
 
 interface ConfigureTestModalProps {
   isOpen: boolean;
@@ -121,7 +121,7 @@ export function ConfigureTestModal({ isOpen, config, onClose, onUpdate }: Config
               <input
                 type="number"
                 min="1"
-                value={localConfig.maxViolationCount || ""}
+                value={localConfig.maxViolationCount || ''}
                 onChange={(e) =>
                   setLocalConfig((prev) => ({
                     ...prev,
@@ -161,7 +161,7 @@ export function ConfigureTestModal({ isOpen, config, onClose, onUpdate }: Config
               <input
                 type="number"
                 min="1"
-                value={localConfig.maxViolationDuration || ""}
+                value={localConfig.maxViolationDuration || ''}
                 onChange={(e) =>
                   setLocalConfig((prev) => ({
                     ...prev,
@@ -189,7 +189,7 @@ export function ConfigureTestModal({ isOpen, config, onClose, onUpdate }: Config
               disabled={updating}
               className="flex-1 px-6 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl disabled:opacity-50 hover:from-indigo-600 hover:to-purple-600 transition-all"
             >
-              {updating ? "Saving..." : "Save Configuration"}
+              {updating ? 'Saving...' : 'Save Configuration'}
             </button>
           </div>
         </div>

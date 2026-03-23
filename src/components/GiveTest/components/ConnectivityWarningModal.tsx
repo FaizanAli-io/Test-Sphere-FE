@@ -1,5 +1,5 @@
-import React from "react";
-import { WifiOff, Loader2, CheckCircle, AlertTriangle } from "lucide-react";
+import React from 'react';
+import { WifiOff, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 
 interface ConnectivityWarningModalProps {
   isOnline: boolean;
@@ -26,8 +26,8 @@ export const ConnectivityWarningModal: React.FC<ConnectivityWarningModalProps> =
         <div
           className={`px-6 py-4 ${
             isOnline
-              ? "bg-gradient-to-r from-green-50 to-emerald-50"
-              : "bg-gradient-to-r from-orange-50 to-red-50"
+              ? 'bg-gradient-to-r from-green-50 to-emerald-50'
+              : 'bg-gradient-to-r from-orange-50 to-red-50'
           }`}
         >
           <div className="flex items-center gap-3">
@@ -46,10 +46,10 @@ export const ConnectivityWarningModal: React.FC<ConnectivityWarningModalProps> =
             )}
             <div>
               <h2 className="text-lg font-bold text-gray-800">
-                {isOnline ? "Connection Restored" : "Connection Lost"}
+                {isOnline ? 'Connection Restored' : 'Connection Lost'}
               </h2>
               <p className="text-sm text-gray-600">
-                {isOnline ? "Syncing your data..." : "Internet connection unavailable"}
+                {isOnline ? 'Syncing your data...' : 'Internet connection unavailable'}
               </p>
             </div>
           </div>
@@ -122,12 +122,12 @@ export const ConnectivityWarningModal: React.FC<ConnectivityWarningModalProps> =
                 )}
                 <div className="flex-1">
                   <p className="text-sm font-medium text-green-900 mb-1">
-                    {isSyncing ? "Syncing your data..." : "Almost done!"}
+                    {isSyncing ? 'Syncing your data...' : 'Almost done!'}
                   </p>
                   <p className="text-xs text-green-700">
                     {isSyncing
                       ? "We're uploading your saved test data to the server. Please wait..."
-                      : "All your data has been uploaded. You can submit your test now."}
+                      : 'All your data has been uploaded. You can submit your test now.'}
                   </p>
                 </div>
               </div>
@@ -137,7 +137,7 @@ export const ConnectivityWarningModal: React.FC<ConnectivityWarningModalProps> =
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <Loader2 className="animate-spin text-gray-600" size={16} />
                     <p className="text-xs text-gray-600">
-                      Syncing <span className="font-bold text-gray-800">{pendingCount}</span>{" "}
+                      Syncing <span className="font-bold text-gray-800">{pendingCount}</span>{' '}
                       remaining entries...
                     </p>
                   </div>

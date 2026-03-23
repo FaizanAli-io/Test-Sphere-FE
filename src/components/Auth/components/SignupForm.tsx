@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Mail, Lock, User, Eye, EyeOff, CreditCard } from "lucide-react";
+import { useState } from 'react';
+import { Mail, Lock, User, Eye, EyeOff, CreditCard } from 'lucide-react';
 
-import api from "@/hooks/useApi";
-import GoogleSignIn from "./GoogleSignIn";
-import { extractErrorMessage } from "@/utils/error";
+import api from '@/hooks/useApi';
+import GoogleSignIn from './GoogleSignIn';
+import { extractErrorMessage } from '@/utils/error';
 
 interface RouterLike {
   push: (href: string) => void;
@@ -34,10 +34,10 @@ export default function SignupForm({
   setOtpSent,
   router,
 }: SignupFormProps) {
-  const [name, setName] = useState("");
-  const [role, setRole] = useState("");
-  const [cnic, setCnic] = useState("");
-  const [profileImage, setProfileImage] = useState("");
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('');
+  const [cnic, setCnic] = useState('');
+  const [profileImage, setProfileImage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +46,7 @@ export default function SignupForm({
     // Prevent double submission
     if (loading) return;
 
-    setError("");
+    setError('');
     setLoading(true);
 
     try {
@@ -59,8 +59,8 @@ export default function SignupForm({
         profileImage: profileImage || undefined,
       };
 
-      const res = await api("/auth/signup", {
-        method: "POST",
+      const res = await api('/auth/signup', {
+        method: 'POST',
         body: JSON.stringify(requestBody),
       });
 
@@ -71,35 +71,35 @@ export default function SignupForm({
       } = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Signup failed");
+        setError(data.message || 'Signup failed');
         return;
       }
 
-      if (data.message === "Signup successful. OTP sent to email for verification.") {
+      if (data.message === 'Signup successful. OTP sent to email for verification.') {
         setOtpSent(true);
-        setSuccess("OTP sent to your email! Please verify to continue.");
+        setSuccess('OTP sent to your email! Please verify to continue.');
       } else if (data.accessToken && data.user?.role) {
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("role", data.user.role);
+        localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('role', data.user.role);
         if (data.user.email) {
-          localStorage.setItem("userEmail", data.user.email);
+          localStorage.setItem('userEmail', data.user.email);
         } else {
-          localStorage.setItem("userEmail", email);
+          localStorage.setItem('userEmail', email);
         }
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 
-        window.dispatchEvent(new Event("authChange"));
-        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : "Signup successful!");
+        window.dispatchEvent(new Event('authChange'));
+        setSuccess(data.user.name ? `Welcome, ${data.user.name}!` : 'Signup successful!');
 
         setTimeout(() => {
-          router.push("/" + data.user!.role.toLowerCase());
+          router.push('/' + data.user!.role.toLowerCase());
         }, 1000);
       } else {
-        setSuccess(data.message || "Signup successful!");
+        setSuccess(data.message || 'Signup successful!');
       }
     } catch (err: unknown) {
-      setError(extractErrorMessage(err, "An unexpected error occurred. Please try again."));
+      setError(extractErrorMessage(err, 'An unexpected error occurred. Please try again.'));
     } finally {
       setLoading(false);
     }
@@ -159,7 +159,7 @@ export default function SignupForm({
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="At least 6 characters"
@@ -203,7 +203,7 @@ export default function SignupForm({
             type="text"
             value={cnic}
             onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, "");
+              const value = e.target.value.replace(/\D/g, '');
               setCnic(value);
             }}
             placeholder="3520212345678"
@@ -236,7 +236,7 @@ export default function SignupForm({
         disabled={loading}
         className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
-        {loading ? "Creating Account..." : "Create Account"}
+        {loading ? 'Creating Account...' : 'Create Account'}
       </button>
     </form>
   );

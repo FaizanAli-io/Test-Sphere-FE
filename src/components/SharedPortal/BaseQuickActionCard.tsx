@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface QuickActionCardProps {
   onClick: () => void;
@@ -6,33 +6,33 @@ interface QuickActionCardProps {
   title: string;
   description: string;
   actionText: string;
-  colorScheme: "indigo" | "orange" | "green" | "blue";
+  colorScheme: 'indigo' | 'orange' | 'green' | 'blue';
 }
 
 const colorSchemes = {
   indigo: {
-    gradient: "from-indigo-600 to-purple-600",
-    hoverBorder: "hover:border-indigo-300",
-    hoverText: "group-hover:text-indigo-600",
-    actionText: "text-indigo-600",
+    gradient: 'from-indigo-600 to-purple-600',
+    hoverBorder: 'hover:border-indigo-300',
+    hoverText: 'group-hover:text-indigo-600',
+    actionText: 'text-indigo-600',
   },
   orange: {
-    gradient: "from-orange-500 to-red-500",
-    hoverBorder: "hover:border-orange-300",
-    hoverText: "group-hover:text-orange-600",
-    actionText: "text-orange-600",
+    gradient: 'from-orange-500 to-red-500',
+    hoverBorder: 'hover:border-orange-300',
+    hoverText: 'group-hover:text-orange-600',
+    actionText: 'text-orange-600',
   },
   green: {
-    gradient: "from-green-500 to-emerald-600",
-    hoverBorder: "hover:border-green-300",
-    hoverText: "group-hover:text-green-600",
-    actionText: "text-green-600",
+    gradient: 'from-green-500 to-emerald-600',
+    hoverBorder: 'hover:border-green-300',
+    hoverText: 'group-hover:text-green-600',
+    actionText: 'text-green-600',
   },
   blue: {
-    gradient: "from-blue-500 to-indigo-600",
-    hoverBorder: "hover:border-blue-300",
-    hoverText: "group-hover:text-blue-600",
-    actionText: "text-blue-600",
+    gradient: 'from-blue-500 to-indigo-600',
+    hoverBorder: 'hover:border-blue-300',
+    hoverText: 'group-hover:text-blue-600',
+    actionText: 'text-blue-600',
   },
 };
 

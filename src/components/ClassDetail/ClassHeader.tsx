@@ -1,5 +1,5 @@
-"use client";
-import React from "react";
+'use client';
+import React from 'react';
 
 interface ClassHeaderProps {
   classData: {
@@ -28,7 +28,7 @@ const ClassHeader: React.FC<ClassHeaderProps> = ({ classData, testsCount, onBack
         <div className="relative z-10">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">{classData.name}</h1>
           <p className="text-gray-600 text-lg mb-4">
-            {classData.description || "No description provided"}
+            {classData.description || 'No description provided'}
           </p>
           <div className="flex items-center gap-4 flex-wrap">
             <div className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl shadow-md">

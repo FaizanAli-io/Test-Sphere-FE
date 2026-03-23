@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { useSearchParams, useRouter, useParams } from "next/navigation";
+import React, { useEffect, useState } from 'react';
+import { useSearchParams, useRouter, useParams } from 'next/navigation';
 
 import {
   TestHeader,
@@ -12,36 +12,36 @@ import {
   FullscreenViolationWarning,
   StreamingIndicator,
   ConnectivityWarningModal,
-} from "./components";
+} from './components';
 
 import {
   useTestExam,
   useTestMonitoring,
   useFullscreenMonitoring,
   useSystemEventMonitoring,
-} from "./hooks";
+} from './hooks';
 
-import api from "@/hooks/useApi";
-import { debugLogger } from "@/utils/logger";
-import { useNotifications } from "@/contexts/NotificationContext";
-import { useConnectionMonitor } from "@/hooks/useConnectionMonitor";
-import { useOfflineQueueManager } from "@/hooks/useOfflineQueueManager";
+import api from '@/hooks/useApi';
+import { debugLogger } from '@/utils/logger';
+import { useNotifications } from '@/contexts/NotificationContext';
+import { useConnectionMonitor } from '@/hooks/useConnectionMonitor';
+import { useOfflineQueueManager } from '@/hooks/useOfflineQueueManager';
 
 export default function GiveTest() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const params = useParams() as Record<string, string | string[]> | null;
 
-  const routeIdRaw = params?.["testId"] ?? params?.["id"];
+  const routeIdRaw = params?.['testId'] ?? params?.['id'];
   const routeId = Array.isArray(routeIdRaw) ? routeIdRaw[0] : routeIdRaw;
-  const qpId = searchParams?.get("testId") || searchParams?.get("id");
+  const qpId = searchParams?.get('testId') || searchParams?.get('id');
   const testIdParam = qpId || routeId || null;
   const testId = testIdParam ? Number(testIdParam) : null;
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
   const [showFullscreenModal, setShowFullscreenModal] = useState(false);
   const [startErrors, setStartErrors] = useState<string[]>([]);
-  const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [currentUserId, setCurrentUserId] = useState<string>('');
   const [initialWebcamStream, setInitialWebcamStream] = useState<MediaStream | undefined>();
   const [initialScreenStream, setInitialScreenStream] = useState<MediaStream | undefined>();
 
@@ -77,7 +77,7 @@ export default function GiveTest() {
     let ignore = false;
     const fetchMe = async () => {
       try {
-        const res = await api("/auth/me", { auth: true, method: "GET" });
+        const res = await api('/auth/me', { auth: true, method: 'GET' });
         if (!ignore && res.ok) {
           const me = await res.json();
           setCurrentUserId(String(me.id));
@@ -96,7 +96,7 @@ export default function GiveTest() {
   useEffect(() => {
     if (testStarted && timeRemaining <= 0 && hasPendingLogs) {
       notifications.showError(
-        "Test time expired while offline. Please wait for all logs to sync before closing the browser.",
+        'Test time expired while offline. Please wait for all logs to sync before closing the browser.',
       );
     }
   }, [testStarted, timeRemaining, hasPendingLogs, notifications]);
@@ -125,7 +125,7 @@ export default function GiveTest() {
     maxViolationDuration: testConfig.maxViolationDuration,
     onViolationLimit: async () => {
       // Auto-submit test when violation limit is reached
-      notifications.showError("Test auto-submitted due to multiple fullscreen violations.");
+      notifications.showError('Test auto-submitted due to multiple fullscreen violations.');
 
       // Log violation data locally for reference (frontend only)
 
@@ -133,7 +133,7 @@ export default function GiveTest() {
     },
     onExtendedFullscreenExit: async () => {
       // Auto-submit test when user stays out of fullscreen for too long
-      notifications.showError("Test auto-submitted due to extended fullscreen violation.");
+      notifications.showError('Test auto-submitted due to extended fullscreen violation.');
 
       // Log violation data locally for reference (frontend only)
 
@@ -183,7 +183,7 @@ export default function GiveTest() {
       };
       const anyWin = window as { getScreenDetails?: () => Promise<{ screens: unknown[] }> };
 
-      if (typeof anyWin.getScreenDetails !== "function") {
+      if (typeof anyWin.getScreenDetails !== 'function') {
         // API not supported; we cannot reliably detect multiple screens
         // Return a guidance error to keep policy strict, or null to allow. We enforce check only when supported.
         return null;
@@ -195,10 +195,10 @@ export default function GiveTest() {
           const status = await anyNav.permissions.query({
             // TS doesn't know this permission name yet
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            name: "window-management" as any,
+            name: 'window-management' as any,
           });
 
-          if (status.state === "denied") {
+          if (status.state === 'denied') {
             return "We need the 'Window Management' permission to verify you have only one display connected. Please allow the permission when prompted.";
           }
         } catch {
@@ -210,12 +210,12 @@ export default function GiveTest() {
       const count = Array.isArray(details?.screens) ? details.screens.length : 1;
 
       if (count > 1) {
-        return "Multiple displays detected. Disconnect external monitors and use a single display to start the test.";
+        return 'Multiple displays detected. Disconnect external monitors and use a single display to start the test.';
       }
       return null;
     } catch {
       // If anything fails, fail closed by asking the user to try again
-      return "Unable to verify the number of connected displays. Please ensure only one display is connected and try again.";
+      return 'Unable to verify the number of connected displays. Please ensure only one display is connected and try again.';
     }
   };
 
@@ -238,7 +238,7 @@ export default function GiveTest() {
     if (!isFullscreenSupported()) {
       setStartErrors((prev) => [
         ...prev,
-        "Fullscreen mode is not supported in your browser. Please use a modern browser to take this test.",
+        'Fullscreen mode is not supported in your browser. Please use a modern browser to take this test.',
       ]);
       return;
     }
@@ -256,7 +256,7 @@ export default function GiveTest() {
       if (!hasWebcam) {
         setStartErrors((prev) => [
           ...prev,
-          "No webcam detected. Please connect a camera to start the test.",
+          'No webcam detected. Please connect a camera to start the test.',
         ]);
         return;
       }
@@ -269,13 +269,13 @@ export default function GiveTest() {
       if (!screenPermissionGranted) {
         setStartErrors((prev) => [
           ...prev,
-          "Screen sharing permission is required to start the test. Please share your entire screen.",
+          'Screen sharing permission is required to start the test. Please share your entire screen.',
         ]);
         return;
       }
     } else {
       debugLogger(
-        "[GiveTest] Using initial screen stream from permission check, skipping requestScreenPermission",
+        '[GiveTest] Using initial screen stream from permission check, skipping requestScreenPermission',
       );
     }
 
@@ -301,7 +301,7 @@ export default function GiveTest() {
 
   const handleCancelFullscreen = () => {
     setShowFullscreenModal(false);
-    router.push("/student");
+    router.push('/student');
   };
 
   const handleSubmitTest = async () => {
@@ -333,9 +333,9 @@ export default function GiveTest() {
             <span className="text-4xl">⚠️</span>
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Error Loading Test</h2>
-          <p className="text-gray-600 mb-8 text-lg">{error || "Test not found"}</p>
+          <p className="text-gray-600 mb-8 text-lg">{error || 'Test not found'}</p>
           <button
-            onClick={() => router.push("/student")}
+            onClick={() => router.push('/student')}
             className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
           >
             Back to Dashboard
@@ -350,7 +350,7 @@ export default function GiveTest() {
       <TestInstructions
         test={test}
         onStartTest={handleStartTest}
-        onCancel={() => router.push("/student")}
+        onCancel={() => router.push('/student')}
         errors={startErrors}
       />
     );
@@ -359,7 +359,7 @@ export default function GiveTest() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
       {/* Hidden webcam video and canvas for monitoring */}
-      <div style={{ display: "none" }}>
+      <div style={{ display: 'none' }}>
         <video ref={videoRef} autoPlay playsInline muted />
         <canvas ref={canvasRef} />
       </div>
@@ -404,9 +404,9 @@ export default function GiveTest() {
               </p>
               <p className="text-gray-600 text-sm mt-1">
                 {totalQuestions - answeredCount === 0
-                  ? "All questions answered! You can submit now."
+                  ? 'All questions answered! You can submit now.'
                   : `${totalQuestions - answeredCount} question${
-                      totalQuestions - answeredCount !== 1 ? "s" : ""
+                      totalQuestions - answeredCount !== 1 ? 's' : ''
                     } remaining`}
               </p>
             </div>
@@ -416,12 +416,12 @@ export default function GiveTest() {
               className="px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 text-lg"
               title={
                 submitting
-                  ? "Submitting test..."
+                  ? 'Submitting test...'
                   : !isOnline || hasPendingLogs
-                    ? "Connection issues detected - will be shown after submit"
+                    ? 'Connection issues detected - will be shown after submit'
                     : submitting
-                      ? "Submitting..."
-                      : "Submit Test"
+                      ? 'Submitting...'
+                      : 'Submit Test'
               }
             >
               Submit Test
@@ -473,7 +473,7 @@ export default function GiveTest() {
       {testStarted && currentUserId && (
         <StreamingIndicator
           userId={currentUserId}
-          testId={testId?.toString() || ""}
+          testId={testId?.toString() || ''}
           enabled={testStarted && testConfig.webcamRequired}
           initialStream={initialWebcamStream}
           initialScreenStream={initialScreenStream}

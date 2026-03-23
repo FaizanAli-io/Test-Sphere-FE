@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Question } from "../types";
+import React, { useState, useEffect } from 'react';
+import { Question } from '../types';
 
 interface EditQuestionModalProps {
   showEditQuestionModal: boolean;
@@ -10,7 +10,7 @@ interface EditQuestionModalProps {
   testId?: string;
 }
 
-import { useQuestionPools } from "../hooks";
+import { useQuestionPools } from '../hooks';
 
 export function EditQuestionModal({
   showEditQuestionModal,
@@ -102,7 +102,7 @@ export function EditQuestionModal({
             </label>
             <input
               type="text"
-              value={localEditingQuestion.image || ""}
+              value={localEditingQuestion.image || ''}
               onChange={(e) =>
                 setLocalEditingQuestion({
                   ...localEditingQuestion,
@@ -121,11 +121,11 @@ export function EditQuestionModal({
                 Assign to Pool (optional)
               </label>
               <select
-                value={localEditingQuestion.questionPoolId ?? ""}
+                value={localEditingQuestion.questionPoolId ?? ''}
                 onChange={(e) =>
                   setLocalEditingQuestion({
                     ...localEditingQuestion,
-                    questionPoolId: e.target.value === "" ? null : Number(e.target.value),
+                    questionPoolId: e.target.value === '' ? null : Number(e.target.value),
                   })
                 }
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl"
@@ -140,7 +140,7 @@ export function EditQuestionModal({
             </div>
           )}
 
-          {localEditingQuestion.type === "MULTIPLE_CHOICE" && (
+          {localEditingQuestion.type === 'MULTIPLE_CHOICE' && (
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options</label>
               <div className="space-y-3">
@@ -177,7 +177,7 @@ export function EditQuestionModal({
             </div>
           )}
 
-          {localEditingQuestion.type === "TRUE_FALSE" && (
+          {localEditingQuestion.type === 'TRUE_FALSE' && (
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer</label>
               <div className="flex gap-4">
@@ -227,7 +227,7 @@ export function EditQuestionModal({
               disabled={loadingQuestions}
               className="flex-1 px-6 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-bold rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 text-lg"
             >
-              {loadingQuestions ? "Saving..." : "Save Changes"}
+              {loadingQuestions ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>

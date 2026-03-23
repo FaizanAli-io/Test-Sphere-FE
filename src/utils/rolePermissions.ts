@@ -3,14 +3,14 @@
  * DRY principle: centralized permission checks
  */
 
-export type TeacherRole = "OWNER" | "EDITOR" | "VIEWER";
+export type TeacherRole = 'OWNER' | 'EDITOR' | 'VIEWER';
 
 /**
  * Check if teacher can perform general edit operations
  * (create/edit tests, questions, pools, etc.)
  */
 export const canEdit = (role?: TeacherRole): boolean => {
-  return role === "OWNER" || role === "EDITOR";
+  return role === 'OWNER' || role === 'EDITOR';
 };
 
 /**
@@ -18,7 +18,7 @@ export const canEdit = (role?: TeacherRole): boolean => {
  * Only OWNER can delete: classes, tests, submissions, proctoring logs
  */
 export const canDelete = (role?: TeacherRole): boolean => {
-  return role === "OWNER";
+  return role === 'OWNER';
 };
 
 /**
@@ -26,7 +26,7 @@ export const canDelete = (role?: TeacherRole): boolean => {
  * Only OWNER can: add/update/remove teachers, approve/reject students
  */
 export const canManageMembers = (role?: TeacherRole): boolean => {
-  return role === "OWNER";
+  return role === 'OWNER';
 };
 
 /**

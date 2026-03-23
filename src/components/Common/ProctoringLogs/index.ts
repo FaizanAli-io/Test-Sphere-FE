@@ -1,1 +1,1 @@
-export { ProctoringLogsModal } from "./ProctoringLogsModal";
+export { ProctoringLogsModal } from './ProctoringLogsModal';

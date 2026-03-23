@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Question } from "../types";
+import React, { useState } from 'react';
+import { Question } from '../types';
 
 interface AIApprovalModalProps {
   showAIApprovalModal: boolean;
@@ -79,8 +79,8 @@ export function AIApprovalModal({
               key={index}
               className={`border-2 rounded-2xl p-6 transition-all cursor-pointer ${
                 selectedQuestions.includes(index)
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-blue-300"
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-blue-300'
               }`}
               onClick={() => !isDisabled && handleToggleSelection(index)}
             >
@@ -95,23 +95,23 @@ export function AIApprovalModal({
                 <span className="text-sm font-medium">Max Marks: {q.maxMarks}</span>
               </div>
               <h4 className="text-lg font-semibold mt-3">{q.text}</h4>
-              {q.type === "MULTIPLE_CHOICE" &&
+              {q.type === 'MULTIPLE_CHOICE' &&
                 q.options?.map((opt, i) => (
                   <div
                     key={i}
-                    className={`p-3 mt-2 rounded-lg border ${q.correctAnswer === i ? "bg-green-50 border-green-200" : "bg-gray-50 border-gray-200"}`}
+                    className={`p-3 mt-2 rounded-lg border ${q.correctAnswer === i ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'}`}
                   >
-                    {String.fromCharCode(65 + i)}. {opt} {q.correctAnswer === i && "✓"}
+                    {String.fromCharCode(65 + i)}. {opt} {q.correctAnswer === i && '✓'}
                   </div>
                 ))}
 
-              {q.type === "TRUE_FALSE" && (
+              {q.type === 'TRUE_FALSE' && (
                 <div className="flex gap-4 mt-3">
                   <div
                     className={`p-3 rounded-lg border ${
                       q.correctAnswer === 1
-                        ? "bg-green-50 border-green-200 text-green-800"
-                        : "bg-gray-50 border-gray-200 text-gray-900"
+                        ? 'bg-green-50 border-green-200 text-green-800'
+                        : 'bg-gray-50 border-gray-200 text-gray-900'
                     }`}
                   >
                     True {q.correctAnswer === 1 && <span className="font-bold">✓</span>}
@@ -119,8 +119,8 @@ export function AIApprovalModal({
                   <div
                     className={`p-3 rounded-lg border ${
                       q.correctAnswer === 0
-                        ? "bg-green-50 border-green-200 text-green-800"
-                        : "bg-gray-50 border-gray-200 text-gray-900"
+                        ? 'bg-green-50 border-green-200 text-green-800'
+                        : 'bg-gray-50 border-gray-200 text-gray-900'
                     }`}
                   >
                     False {q.correctAnswer === 0 && <span className="font-bold">✓</span>}
@@ -128,7 +128,7 @@ export function AIApprovalModal({
                 </div>
               )}
 
-              {q.type !== "MULTIPLE_CHOICE" && q.type !== "TRUE_FALSE" && (
+              {q.type !== 'MULTIPLE_CHOICE' && q.type !== 'TRUE_FALSE' && (
                 <p className="mt-3 text-sm text-blue-800 bg-blue-50 p-3 rounded-lg">
                   Requires manual grading.
                 </p>

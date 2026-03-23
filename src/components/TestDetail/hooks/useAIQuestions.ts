@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from 'react';
 
-import api from "@/hooks/useApi";
-import { Question, NotificationFunctions } from "../types";
+import api from '@/hooks/useApi';
+import { Question, NotificationFunctions } from '../types';
 
 export const useAIQuestions = (
   testId?: string,
@@ -9,7 +9,7 @@ export const useAIQuestions = (
   notifications?: NotificationFunctions,
   closeModal?: () => void,
 ) => {
-  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiPrompt, setAiPrompt] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
   const [aiPdfUploading, setAiPdfUploading] = useState(false);
 
@@ -35,17 +35,17 @@ export const useAIQuestions = (
 
   const normalizeAIQuestion = useCallback(
     (q: Record<string, unknown>): Question | null => {
-      const text = String(q.text || q.question || "").trim();
+      const text = String(q.text || q.question || '').trim();
       if (!text || text.length < 3) {
-        console.warn("Skipping question with invalid text:", q);
+        console.warn('Skipping question with invalid text:', q);
         return null;
       }
 
-      const rawType = String(q.type || "MULTIPLE_CHOICE").toUpperCase();
-      let type: Question["type"] = "MULTIPLE_CHOICE";
+      const rawType = String(q.type || 'MULTIPLE_CHOICE').toUpperCase();
+      let type: Question['type'] = 'MULTIPLE_CHOICE';
 
-      if (["TRUE_FALSE", "MULTIPLE_CHOICE", "SHORT_ANSWER", "LONG_ANSWER"].includes(rawType)) {
-        type = rawType as Question["type"];
+      if (['TRUE_FALSE', 'MULTIPLE_CHOICE', 'SHORT_ANSWER', 'LONG_ANSWER'].includes(rawType)) {
+        type = rawType as Question['type'];
       }
 
       const maxMarks = Math.max(1, Number(q.maxMarks || q.marks || q.points || 1));
@@ -53,7 +53,7 @@ export const useAIQuestions = (
       let options: string[] | undefined;
       let correctAnswer: number | undefined;
 
-      if (type === "MULTIPLE_CHOICE") {
+      if (type === 'MULTIPLE_CHOICE') {
         const rawOptions = Array.isArray(q.options)
           ? q.options.filter((opt) => opt && String(opt).trim().length > 0)
           : [];
@@ -61,18 +61,18 @@ export const useAIQuestions = (
         if (rawOptions.length >= 2) {
           options = rawOptions.map((opt) => String(opt).trim());
         } else {
-          options = ["Option A", "Option B", "Option C", "Option D"];
+          options = ['Option A', 'Option B', 'Option C', 'Option D'];
         }
 
         const rawCorrect = Number(q.correctAnswer || q.correct || 0);
         correctAnswer = Math.max(0, Math.min(options.length - 1, rawCorrect));
-      } else if (type === "TRUE_FALSE") {
-        options = ["True", "False"];
+      } else if (type === 'TRUE_FALSE') {
+        options = ['True', 'False'];
 
-        if (q.correctAnswer === "True" || q.correctAnswer === true || q.correctAnswer === 1) {
+        if (q.correctAnswer === 'True' || q.correctAnswer === true || q.correctAnswer === 1) {
           correctAnswer = 1;
         } else if (
-          q.correctAnswer === "False" ||
+          q.correctAnswer === 'False' ||
           q.correctAnswer === false ||
           q.correctAnswer === 0
         ) {
@@ -90,19 +90,19 @@ export const useAIQuestions = (
         maxMarks,
         options,
         correctAnswer,
-        image: typeof q.image === "string" && q.image.trim() ? q.image.trim() : undefined,
+        image: typeof q.image === 'string' && q.image.trim() ? q.image.trim() : undefined,
       };
 
-      if (type === "MULTIPLE_CHOICE" && (!options || options.length < 2)) {
-        console.warn("Invalid multiple choice question:", normalizedQuestion);
+      if (type === 'MULTIPLE_CHOICE' && (!options || options.length < 2)) {
+        console.warn('Invalid multiple choice question:', normalizedQuestion);
         return null;
       }
 
       if (
-        (type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE") &&
-        typeof correctAnswer !== "number"
+        (type === 'MULTIPLE_CHOICE' || type === 'TRUE_FALSE') &&
+        typeof correctAnswer !== 'number'
       ) {
-        console.warn("Missing correct answer for question:", normalizedQuestion);
+        console.warn('Missing correct answer for question:', normalizedQuestion);
         return null;
       }
 
@@ -114,7 +114,7 @@ export const useAIQuestions = (
   const generateAIQuestions = useCallback(
     async (prompt: string, poolId?: number) => {
       if (!prompt.trim()) {
-        notifRef.current?.showError?.("Please enter a prompt for AI question generation");
+        notifRef.current?.showError?.('Please enter a prompt for AI question generation');
         return false;
       }
 
@@ -122,8 +122,8 @@ export const useAIQuestions = (
       setAiMessages([]);
 
       try {
-        const response = await api("/agent/generate-questions/ask", {
-          method: "POST",
+        const response = await api('/agent/generate-questions/ask', {
+          method: 'POST',
           auth: true,
           body: JSON.stringify({
             prompt: prompt.trim(),
@@ -132,7 +132,7 @@ export const useAIQuestions = (
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to generate questions");
+          throw new Error(errorData.message || 'Failed to generate questions');
         }
 
         const result = await response.json();
@@ -154,12 +154,12 @@ export const useAIQuestions = (
             );
           }
         } else {
-          notifRef.current?.showWarning?.("No questions were generated from the prompt");
+          notifRef.current?.showWarning?.('No questions were generated from the prompt');
         }
 
         return true;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to generate AI questions";
+        const errorMessage = err instanceof Error ? err.message : 'Failed to generate AI questions';
         notifRef.current?.showError?.(errorMessage);
         return false;
       } finally {
@@ -172,17 +172,17 @@ export const useAIQuestions = (
   const uploadPDFForQuestions = useCallback(
     async (file: File, poolId?: number) => {
       if (!file) {
-        notifRef.current?.showError?.("No file selected. Please choose a PDF file.");
+        notifRef.current?.showError?.('No file selected. Please choose a PDF file.');
         return false;
       }
 
-      if (!file.type || !file.type.includes("pdf")) {
-        notifRef.current?.showError?.("Invalid file type. Please select a PDF file.");
+      if (!file.type || !file.type.includes('pdf')) {
+        notifRef.current?.showError?.('Invalid file type. Please select a PDF file.');
         return false;
       }
 
       // Log file details for debugging
-      console.log("PDF Upload - File Details:", {
+      console.log('PDF Upload - File Details:', {
         name: file.name,
         size: file.size,
         type: file.type,
@@ -193,18 +193,18 @@ export const useAIQuestions = (
 
       try {
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append('file', file);
 
-        const response = await api("/agent/generate-questions/pdf", {
-          method: "POST",
+        const response = await api('/agent/generate-questions/pdf', {
+          method: 'POST',
           auth: true,
           body: formData,
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          const errorMessage = errorData.message || "Failed to process PDF";
-          console.error("PDF Processing Error:", {
+          const errorMessage = errorData.message || 'Failed to process PDF';
+          console.error('PDF Processing Error:', {
             status: response.status,
             error: errorData,
             message: errorMessage,
@@ -222,13 +222,13 @@ export const useAIQuestions = (
           closeModalRef.current?.();
           notifRef.current?.showSuccess?.(`Extracted ${normalized.length} questions from PDF`);
         } else {
-          notifRef.current?.showWarning?.("No questions could be extracted from the PDF");
+          notifRef.current?.showWarning?.('No questions could be extracted from the PDF');
         }
 
         return true;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to process PDF";
-        console.error("PDF Upload Error:", err);
+        const errorMessage = err instanceof Error ? err.message : 'Failed to process PDF';
+        console.error('PDF Upload Error:', err);
         notifRef.current?.showError?.(errorMessage);
         return false;
       } finally {
@@ -246,24 +246,24 @@ export const useAIQuestions = (
         const questionsToCreate = questions.map((q) => {
           const questionData: {
             text: string;
-            type: Question["type"];
+            type: Question['type'];
             maxMarks: number;
             options?: string[];
             correctAnswer?: number;
             image?: string;
           } = {
-            text: q.text?.trim() || "Question text not provided",
-            type: q.type || "MULTIPLE_CHOICE",
+            text: q.text?.trim() || 'Question text not provided',
+            type: q.type || 'MULTIPLE_CHOICE',
             maxMarks: q.maxMarks || 1,
           };
 
-          if (q.type === "MULTIPLE_CHOICE" && q.options && q.options.length > 0) {
+          if (q.type === 'MULTIPLE_CHOICE' && q.options && q.options.length > 0) {
             questionData.options = q.options;
-            questionData.correctAnswer = typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
+            questionData.correctAnswer = typeof q.correctAnswer === 'number' ? q.correctAnswer : 0;
           }
 
-          if (q.type === "TRUE_FALSE") {
-            questionData.correctAnswer = typeof q.correctAnswer === "number" ? q.correctAnswer : 0;
+          if (q.type === 'TRUE_FALSE') {
+            questionData.correctAnswer = typeof q.correctAnswer === 'number' ? q.correctAnswer : 0;
           }
 
           if (q.image && q.image.trim()) {
@@ -281,14 +281,14 @@ export const useAIQuestions = (
         };
 
         const response = await api(`/tests/${testId}/questions`, {
-          method: "POST",
+          method: 'POST',
           auth: true,
           body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error("Question creation error:", errorData);
+          console.error('Question creation error:', errorData);
           throw new Error(
             errorData.message || `Failed to create questions: HTTP ${response.status}`,
           );
@@ -308,7 +308,7 @@ export const useAIQuestions = (
         return true;
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : "Failed to create approved questions";
+          err instanceof Error ? err.message : 'Failed to create approved questions';
         notifRef.current?.showError?.(errorMessage);
         return false;
       }
@@ -318,7 +318,7 @@ export const useAIQuestions = (
   );
 
   const resetAIState = useCallback(() => {
-    setAiPrompt("");
+    setAiPrompt('');
     setAiMessages([]);
     setShowAiSection(false);
     setPendingApprovalQuestions([]);

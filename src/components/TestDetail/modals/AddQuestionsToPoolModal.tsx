@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Question, QuestionPool } from "../types";
+import React, { useState } from 'react';
+import { Question, QuestionPool } from '../types';
 
 interface AddQuestionsToPoolModalProps {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export default function AddQuestionsToPoolModal({
   };
 
   const getPoolTitle = (poolId: number | null) => {
-    if (!poolId) return "Unassigned";
+    if (!poolId) return 'Unassigned';
     return pools?.find((p) => p.id === poolId)?.title || `Pool #${poolId}`;
   };
 
@@ -112,7 +112,7 @@ export default function AddQuestionsToPoolModal({
         <div className="space-y-3 mb-6">
           {allQuestions.filter((q) => !showUnassignedOnly || !q.questionPoolId).length === 0 ? (
             <div className="text-center py-8 text-gray-600">
-              No questions available {showUnassignedOnly ? "matching filter" : "for this test"}.
+              No questions available {showUnassignedOnly ? 'matching filter' : 'for this test'}.
             </div>
           ) : (
             allQuestions
@@ -125,8 +125,8 @@ export default function AddQuestionsToPoolModal({
                     key={question.id}
                     className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
                       isSelected
-                        ? "bg-blue-50 border-blue-400"
-                        : "bg-white border-gray-200 hover:border-gray-300"
+                        ? 'bg-blue-50 border-blue-400'
+                        : 'bg-white border-gray-200 hover:border-gray-300'
                     }`}
                     onClick={() => toggleQuestion(question.id)}
                   >
@@ -143,19 +143,19 @@ export default function AddQuestionsToPoolModal({
                           <h3 className="font-semibold text-gray-900">{question.text}</h3>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             <span className="px-2 py-1 bg-blue-50 rounded text-blue-700 text-xs font-medium">
-                              {question.type === "MULTIPLE_CHOICE"
-                                ? "MC"
-                                : question.type === "TRUE_FALSE"
-                                  ? "T/F"
-                                  : question.type === "SHORT_ANSWER"
-                                    ? "SA"
-                                    : "LA"}
+                              {question.type === 'MULTIPLE_CHOICE'
+                                ? 'MC'
+                                : question.type === 'TRUE_FALSE'
+                                  ? 'T/F'
+                                  : question.type === 'SHORT_ANSWER'
+                                    ? 'SA'
+                                    : 'LA'}
                             </span>
                             <span className="text-xs text-gray-600">{question.maxMarks}m</span>
                           </div>
                         </div>
                         <div className="text-sm text-gray-600">
-                          Current pool:{" "}
+                          Current pool:{' '}
                           <span className="font-medium text-gray-900">
                             {getPoolTitle(question.questionPoolId ?? null)}
                           </span>
@@ -182,8 +182,8 @@ export default function AddQuestionsToPoolModal({
             className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all"
           >
             {isSubmitting || loading
-              ? "Adding..."
-              : `Add ${selectedQuestionIds.size} Question${selectedQuestionIds.size !== 1 ? "s" : ""}`}
+              ? 'Adding...'
+              : `Add ${selectedQuestionIds.size} Question${selectedQuestionIds.size !== 1 ? 's' : ''}`}
           </button>
         </div>
       </div>

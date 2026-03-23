@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import ClassDetail from "@/components/ClassDetail";
+import ClassDetail from '@/components/ClassDetail';
 
 export default function ClassDetailPage() {
   return <ClassDetail />;

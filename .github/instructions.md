@@ -187,7 +187,7 @@ Central fetch wrapper at `src/hooks/useApi.ts`:
 
 ```typescript
 const api = useApi();
-const res = await api("/tests/123", { auth: true });
+const res = await api('/tests/123', { auth: true });
 ```
 
 **Features**:
@@ -203,9 +203,9 @@ const res = await api("/tests/123", { auth: true });
 ### Error Handling
 
 ```typescript
-import { extractErrorMessage } from "@/utils/error";
+import { extractErrorMessage } from '@/utils/error';
 
-const res = await api("/endpoint", { auth: true });
+const res = await api('/endpoint', { auth: true });
 if (!res.ok) {
   const msg = extractErrorMessage(await res.json());
   showError(msg);
@@ -323,7 +323,7 @@ Each feature has dedicated hooks that encapsulate API calls and state:
 ### Role-Based Permissions
 
 ```typescript
-import { canEdit, canDelete, canManageMembers } from "@/utils/rolePermissions";
+import { canEdit, canDelete, canManageMembers } from '@/utils/rolePermissions';
 
 canEdit(role); // OWNER or EDITOR
 canDelete(role); // OWNER only

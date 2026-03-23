@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface FullscreenViolationWarningProps {
   violationCount: number;
@@ -36,8 +36,8 @@ export const FullscreenViolationWarning: React.FC<FullscreenViolationWarningProp
             <p className="text-red-800 font-semibold">Violation recorded ({violationCount})</p>
             <p className="text-red-700 text-sm mt-2">
               {hasViolationLimit
-                ? `Please return to fullscreen. ${maxViolationCount - violationCount} violation${maxViolationCount - violationCount !== 1 ? "s" : ""} remaining before automatic submission.`
-                : "Please return to fullscreen mode to continue the test."}
+                ? `Please return to fullscreen. ${maxViolationCount - violationCount} violation${maxViolationCount - violationCount !== 1 ? 's' : ''} remaining before automatic submission.`
+                : 'Please return to fullscreen mode to continue the test.'}
             </p>
           </div>
 
@@ -51,7 +51,7 @@ export const FullscreenViolationWarning: React.FC<FullscreenViolationWarningProp
               </div>
               <p className="text-orange-800 font-semibold text-lg">
                 Auto-Submit in {countdownSeconds} second
-                {countdownSeconds !== 1 ? "s" : ""}
+                {countdownSeconds !== 1 ? 's' : ''}
               </p>
               <p className="text-orange-700 text-sm mt-1">
                 Click &ldquo;I Understand&rdquo; to continue the test, or the exam will be

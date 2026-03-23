@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 type Props = {
   gradingScores: Record<string, number>;
@@ -32,7 +32,7 @@ export default function GradingActions({
               <span>Updating...</span>
             </div>
           ) : (
-            "Update Scores"
+            'Update Scores'
           )}
         </button>
       </div>

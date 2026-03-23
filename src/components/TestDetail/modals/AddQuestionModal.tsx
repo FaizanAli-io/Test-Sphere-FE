@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { Question } from "../types";
+import React, { useState, useMemo } from 'react';
+import { Question } from '../types';
 
 interface AddQuestionModalProps {
   showAddQuestionModal: boolean;
@@ -16,7 +16,7 @@ interface AddQuestionModalProps {
   testId?: string;
 }
 
-import { useQuestionPools } from "../hooks";
+import { useQuestionPools } from '../hooks';
 
 export function AddQuestionModal({
   showAddQuestionModal,
@@ -36,26 +36,26 @@ export function AddQuestionModal({
   const baseQuestionState: Question = {
     id: 0,
     testId: 0,
-    text: "",
-    type: "MULTIPLE_CHOICE",
-    options: ["Option A", "Option B", "Option C", "Option D"],
+    text: '',
+    type: 'MULTIPLE_CHOICE',
+    options: ['Option A', 'Option B', 'Option C', 'Option D'],
     correctAnswer: 0,
     maxMarks: 1,
-    image: "",
+    image: '',
     questionPoolId: undefined,
   };
 
   const [newQuestion, setNewQuestion] = useState<Question>(baseQuestionState);
-  const [selectedPool, setSelectedPool] = useState<number | "">("");
+  const [selectedPool, setSelectedPool] = useState<number | ''>('');
 
-  const [subject, setSubject] = useState("");
-  const [difficulty, setDifficulty] = useState("Easy");
+  const [subject, setSubject] = useState('');
+  const [difficulty, setDifficulty] = useState('Easy');
   const [aiType, setAiType] = useState<
-    "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER" | "LONG_ANSWER"
-  >("MULTIPLE_CHOICE");
+    'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'LONG_ANSWER'
+  >('MULTIPLE_CHOICE');
   const [numberOfQuestions, setNumberOfQuestions] = useState(1);
   const [isCustomizingPrompt, setIsCustomizingPrompt] = useState(false);
-  const [customPrompt, setCustomPrompt] = useState("");
+  const [customPrompt, setCustomPrompt] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
 
   const resetQuestion = () => {
@@ -64,27 +64,27 @@ export function AddQuestionModal({
 
   const handleAddQuestion = async () => {
     if (loadingQuestions) return;
-    if (selectedPool !== "" && (selectedPool as number) < 0) {
-      setLocalError("Invalid pool selected");
+    if (selectedPool !== '' && (selectedPool as number) < 0) {
+      setLocalError('Invalid pool selected');
       return;
     }
     const payload = {
       ...newQuestion,
-      questionPoolId: selectedPool === "" ? undefined : (selectedPool as number),
+      questionPoolId: selectedPool === '' ? undefined : (selectedPool as number),
     };
     const success = await onAdd(payload);
     if (success) {
       resetQuestion();
-      setSelectedPool("");
+      setSelectedPool('');
       onClose();
     } else {
-      setLocalError("Failed to add question. Check fields and try again.");
+      setLocalError('Failed to add question. Check fields and try again.');
     }
   };
 
   const generatedPrompt = useMemo(() => {
-    if (!subject) return "";
-    return `Generate ${numberOfQuestions} ${difficulty} difficulty ${aiType.replace("_", " ")} question(s) for ${subject}.`;
+    if (!subject) return '';
+    return `Generate ${numberOfQuestions} ${difficulty} difficulty ${aiType.replace('_', ' ')} question(s) for ${subject}.`;
   }, [subject, difficulty, aiType, numberOfQuestions]);
 
   const promptToUse = isCustomizingPrompt ? customPrompt : generatedPrompt;
@@ -98,7 +98,7 @@ export function AddQuestionModal({
     label: string,
     value: T,
     onChange: (v: T) => void,
-    type: "text" | "number" = "text",
+    type: 'text' | 'number' = 'text',
   ) => (
     <div>
       <label className="block text-sm font-bold text-gray-700 mb-2">{label}</label>
@@ -106,7 +106,7 @@ export function AddQuestionModal({
         type={type}
         value={value}
         onChange={(e) => {
-          const val = type === "number" ? (Number(e.target.value) as T) : (e.target.value as T);
+          const val = type === 'number' ? (Number(e.target.value) as T) : (e.target.value as T);
           onChange(val);
         }}
         className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
@@ -131,7 +131,7 @@ export function AddQuestionModal({
               <select
                 value={selectedPool}
                 onChange={(e) =>
-                  setSelectedPool(e.target.value === "" ? "" : Number(e.target.value))
+                  setSelectedPool(e.target.value === '' ? '' : Number(e.target.value))
                 }
                 className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white"
                 disabled={loadingPools}
@@ -154,17 +154,17 @@ export function AddQuestionModal({
               className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow hover:shadow-lg transition-all"
             >
               <span className="flex items-center gap-2">
-                🧠 {showAiSection ? "Hide AI Generator" : "AI Question Generator"}
+                🧠 {showAiSection ? 'Hide AI Generator' : 'AI Question Generator'}
               </span>
-              <span>{showAiSection ? "▲" : "▼"}</span>
+              <span>{showAiSection ? '▲' : '▼'}</span>
             </button>
 
             {showAiSection && (
               <div className="mt-4 space-y-4">
                 {/* Subject + Difficulty Row */}
                 <div className="grid grid-cols-2 gap-4">
-                  {renderInput("Subject Matter", subject, setSubject)}
-                  {renderInput("Difficulty Level", difficulty, setDifficulty)}
+                  {renderInput('Subject Matter', subject, setSubject)}
+                  {renderInput('Difficulty Level', difficulty, setDifficulty)}
                 </div>
 
                 {/* Type + Number of Questions Row */}
@@ -185,10 +185,10 @@ export function AddQuestionModal({
                     </select>
                   </div>
                   {renderInput(
-                    "Number of Questions",
+                    'Number of Questions',
                     numberOfQuestions,
                     setNumberOfQuestions,
-                    "number",
+                    'number',
                   )}
                 </div>
 
@@ -224,8 +224,8 @@ export function AddQuestionModal({
                     rows={2}
                     className={`w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-gray-900 resize-none transition-all ${
                       isCustomizingPrompt
-                        ? "bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                        : "bg-gray-100"
+                        ? 'bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500'
+                        : 'bg-gray-100'
                     }`}
                   />
                 </div>
@@ -236,13 +236,13 @@ export function AddQuestionModal({
                     onClick={() =>
                       handleGenerateFromPrompt(
                         promptToUse,
-                        selectedPool === "" ? undefined : (selectedPool as number),
+                        selectedPool === '' ? undefined : (selectedPool as number),
                       )
                     }
                     disabled={aiPdfUploading || aiGenerating || !promptToUse}
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                   >
-                    {aiGenerating ? "Generating..." : "Generate from Prompt"}
+                    {aiGenerating ? 'Generating...' : 'Generate from Prompt'}
                   </button>
 
                   {/* PDF Upload */}
@@ -256,21 +256,21 @@ export function AddQuestionModal({
                       if (file) {
                         handleGenerateFromPdf(
                           file,
-                          selectedPool === "" ? undefined : (selectedPool as number),
+                          selectedPool === '' ? undefined : (selectedPool as number),
                         );
                         // Reset the input so the same file can be uploaded again
-                        e.target.value = "";
+                        e.target.value = '';
                       }
                     }}
                   />
                   <label htmlFor="pdf-upload" className="flex-1">
                     <button
                       type="button"
-                      onClick={() => document.getElementById("pdf-upload")?.click()}
+                      onClick={() => document.getElementById('pdf-upload')?.click()}
                       disabled={aiPdfUploading || aiGenerating}
                       className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl hover:from-orange-600 hover:to-red-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                     >
-                      {aiPdfUploading ? "Processing PDF..." : "Generate from PDF"}
+                      {aiPdfUploading ? 'Processing PDF...' : 'Generate from PDF'}
                     </button>
                   </label>
                 </div>
@@ -308,18 +308,18 @@ export function AddQuestionModal({
               <select
                 value={newQuestion.type}
                 onChange={(e) => {
-                  const type = e.target.value as Question["type"];
+                  const type = e.target.value as Question['type'];
                   setNewQuestion({
                     ...newQuestion,
                     type,
                     options:
-                      type === "MULTIPLE_CHOICE"
-                        ? ["Option A", "Option B", "Option C", "Option D"]
-                        : type === "TRUE_FALSE"
-                          ? ["True", "False"]
+                      type === 'MULTIPLE_CHOICE'
+                        ? ['Option A', 'Option B', 'Option C', 'Option D']
+                        : type === 'TRUE_FALSE'
+                          ? ['True', 'False']
                           : undefined,
                     correctAnswer:
-                      type === "MULTIPLE_CHOICE" || type === "TRUE_FALSE" ? 0 : undefined,
+                      type === 'MULTIPLE_CHOICE' || type === 'TRUE_FALSE' ? 0 : undefined,
                   });
                 }}
                 className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900 bg-white"
@@ -354,7 +354,7 @@ export function AddQuestionModal({
             </label>
             <input
               type="text"
-              value={newQuestion.image || ""}
+              value={newQuestion.image || ''}
               onChange={(e) => setNewQuestion({ ...newQuestion, image: e.target.value })}
               placeholder="https://example.com/image.jpg"
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-gray-900"
@@ -364,7 +364,7 @@ export function AddQuestionModal({
           {localError && <p className="text-sm text-red-600 mt-2">{localError}</p>}
 
           {/* Dynamic Options */}
-          {newQuestion.type === "MULTIPLE_CHOICE" && (
+          {newQuestion.type === 'MULTIPLE_CHOICE' && (
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">Answer Options *</label>
               <div className="space-y-3">
@@ -431,11 +431,11 @@ export function AddQuestionModal({
           )}
 
           {/* True/False */}
-          {newQuestion.type === "TRUE_FALSE" && (
+          {newQuestion.type === 'TRUE_FALSE' && (
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-3">Correct Answer *</label>
               <div className="flex gap-4">
-                {["True", "False"].map((val, idx) => (
+                {['True', 'False'].map((val, idx) => (
                   <label key={idx} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="radio"
@@ -452,7 +452,7 @@ export function AddQuestionModal({
           )}
 
           {/* Short/Long Answer Info */}
-          {(newQuestion.type === "SHORT_ANSWER" || newQuestion.type === "LONG_ANSWER") && (
+          {(newQuestion.type === 'SHORT_ANSWER' || newQuestion.type === 'LONG_ANSWER') && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
               <p className="text-sm text-blue-800 font-medium">
                 ℹ️ This question type requires manual grading. Students will provide written answers
@@ -478,7 +478,7 @@ export function AddQuestionModal({
               disabled={isProcessing}
               className="flex-1 px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 text-lg"
             >
-              {loadingQuestions ? "Adding..." : "Add Question"}
+              {loadingQuestions ? 'Adding...' : 'Add Question'}
             </button>
           </div>
         </div>

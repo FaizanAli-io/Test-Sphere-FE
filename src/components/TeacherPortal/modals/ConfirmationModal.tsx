@@ -1,11 +1,11 @@
-import React from "react";
+import React from 'react';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   loading?: boolean;
-  type: "delete" | "kick";
+  type: 'delete' | 'kick';
   data?: {
     studentName?: string;
   };
@@ -23,23 +23,23 @@ export default function ConfirmationModal({
 
   const config = {
     delete: {
-      icon: "⚠️",
-      title: "Delete Class?",
+      icon: '⚠️',
+      title: 'Delete Class?',
       message:
-        "Are you sure you want to delete this class? All associated data will be permanently removed. This action cannot be undone.",
-      confirmText: "Delete",
-      gradient: "from-red-600 to-rose-600",
-      hoverGradient: "hover:from-red-700 hover:to-rose-700",
+        'Are you sure you want to delete this class? All associated data will be permanently removed. This action cannot be undone.',
+      confirmText: 'Delete',
+      gradient: 'from-red-600 to-rose-600',
+      hoverGradient: 'hover:from-red-700 hover:to-rose-700',
     },
     kick: {
-      icon: "👤",
-      title: "Remove Student?",
+      icon: '👤',
+      title: 'Remove Student?',
       message: `Are you sure you want to remove ${
-        data?.studentName || "this student"
+        data?.studentName || 'this student'
       } from this class? They will lose access to all class materials and tests.`,
-      confirmText: "Remove",
-      gradient: "from-red-600 to-rose-600",
-      hoverGradient: "hover:from-red-700 hover:to-rose-700",
+      confirmText: 'Remove',
+      gradient: 'from-red-600 to-rose-600',
+      hoverGradient: 'hover:from-red-700 hover:to-rose-700',
     },
   };
 
@@ -54,7 +54,7 @@ export default function ConfirmationModal({
           </div>
           <h3 className="text-3xl font-bold text-gray-900 mb-4">{modalConfig.title}</h3>
 
-          {type === "kick" && data?.studentName && (
+          {type === 'kick' && data?.studentName && (
             <>
               <p className="text-gray-600 mb-2 text-lg">Are you sure you want to remove</p>
               <p className="text-indigo-600 font-bold text-xl mb-6">{data.studentName}</p>
@@ -64,7 +64,7 @@ export default function ConfirmationModal({
             </>
           )}
 
-          {type === "delete" && (
+          {type === 'delete' && (
             <p className="text-gray-600 mb-8 text-lg leading-relaxed">{modalConfig.message}</p>
           )}
         </div>
@@ -80,7 +80,7 @@ export default function ConfirmationModal({
             disabled={loading}
             className={`flex-1 px-6 py-4 bg-gradient-to-r ${modalConfig.gradient} text-white font-bold rounded-xl ${modalConfig.hoverGradient} transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl text-lg`}
           >
-            {loading ? "Processing..." : modalConfig.confirmText}
+            {loading ? 'Processing...' : modalConfig.confirmText}
           </button>
         </div>
       </div>

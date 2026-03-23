@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import api from "../../../hooks/useApi";
-import { ConfirmationFunction, NotificationFunctions, QuestionPool } from "../types";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import api from '../../../hooks/useApi';
+import { ConfirmationFunction, NotificationFunctions, QuestionPool } from '../types';
 
 export const useQuestionPools = (
   testId?: string,
@@ -25,15 +25,15 @@ export const useQuestionPools = (
     setLoadingPools(true);
 
     try {
-      const res = await api(`/tests/${testId}/pools`, { method: "GET", auth: true });
+      const res = await api(`/tests/${testId}/pools`, { method: 'GET', auth: true });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to fetch pools");
+        throw new Error(err.message || 'Failed to fetch pools');
       }
       const data = await res.json();
       setPools(Array.isArray(data) ? data : []);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to fetch pools";
+      const msg = err instanceof Error ? err.message : 'Failed to fetch pools';
       notifRef.current?.showError?.(msg);
       setPools([]);
     } finally {
@@ -46,20 +46,20 @@ export const useQuestionPools = (
       if (!testId) return false;
       try {
         const res = await api(`/tests/${testId}/pools`, {
-          method: "POST",
+          method: 'POST',
           auth: true,
           body: JSON.stringify(payload),
         });
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(err.message || "Failed to create pool");
+          throw new Error(err.message || 'Failed to create pool');
         }
         const created = await res.json();
         setPools((p) => [...p, created]);
-        notifRef.current?.showSuccess?.("Question pool created successfully");
+        notifRef.current?.showSuccess?.('Question pool created successfully');
         return true;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to create pool";
+        const msg = err instanceof Error ? err.message : 'Failed to create pool';
         notifRef.current?.showError?.(msg);
         return false;
       }
@@ -71,20 +71,20 @@ export const useQuestionPools = (
     async (id: number, updates: Partial<{ title: string; config: Record<string, number> }>) => {
       try {
         const res = await api(`/tests/pools/${id}`, {
-          method: "PATCH",
+          method: 'PATCH',
           auth: true,
           body: JSON.stringify(updates),
         });
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(err.message || "Failed to update pool");
+          throw new Error(err.message || 'Failed to update pool');
         }
         const updated = await res.json();
         setPools((prev) => prev.map((p) => (p.id === id ? updated : p)));
-        notifRef.current?.showSuccess?.("Question pool updated successfully");
+        notifRef.current?.showSuccess?.('Question pool updated successfully');
         return true;
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Failed to update pool";
+        const msg = err instanceof Error ? err.message : 'Failed to update pool';
         notifRef.current?.showError?.(msg);
         return false;
       }
@@ -95,25 +95,25 @@ export const useQuestionPools = (
   const deletePool = useCallback(async (id: number) => {
     if (!confirmRef.current) return false;
     const confirmed = await confirmRef.current({
-      title: "Delete Pool",
+      title: 'Delete Pool',
       message:
-        "Are you sure you want to delete this pool? This will unassign any questions in the pool.",
-      confirmText: "Delete",
-      type: "danger",
+        'Are you sure you want to delete this pool? This will unassign any questions in the pool.',
+      confirmText: 'Delete',
+      type: 'danger',
     });
     if (!confirmed) return false;
 
     try {
-      const res = await api(`/tests/pools/${id}`, { method: "DELETE", auth: true });
+      const res = await api(`/tests/pools/${id}`, { method: 'DELETE', auth: true });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to delete pool");
+        throw new Error(err.message || 'Failed to delete pool');
       }
       setPools((prev) => prev.filter((p) => p.id !== id));
-      notifRef.current?.showSuccess?.("Question pool deleted successfully");
+      notifRef.current?.showSuccess?.('Question pool deleted successfully');
       return true;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to delete pool";
+      const msg = err instanceof Error ? err.message : 'Failed to delete pool';
       notifRef.current?.showError?.(msg);
       return false;
     }
@@ -123,18 +123,18 @@ export const useQuestionPools = (
     if (questionIds.length === 0) return false;
     try {
       const res = await api(`/tests/pools/${poolId}/questions`, {
-        method: "POST",
+        method: 'POST',
         auth: true,
         body: JSON.stringify({ questionIds }),
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to add questions to pool");
+        throw new Error(err.message || 'Failed to add questions to pool');
       }
       notifRef.current?.showSuccess?.(`${questionIds.length} question(s) added to pool`);
       return true;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to add questions to pool";
+      const msg = err instanceof Error ? err.message : 'Failed to add questions to pool';
       notifRef.current?.showError?.(msg);
       return false;
     }
@@ -144,18 +144,18 @@ export const useQuestionPools = (
     if (questionIds.length === 0) return false;
     try {
       const res = await api(`/tests/pools/${poolId}/questions`, {
-        method: "DELETE",
+        method: 'DELETE',
         auth: true,
         body: JSON.stringify({ questionIds }),
       });
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to remove questions from pool");
+        throw new Error(err.message || 'Failed to remove questions from pool');
       }
       notifRef.current?.showSuccess?.(`${questionIds.length} question(s) removed from pool`);
       return true;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to remove questions from pool";
+      const msg = err instanceof Error ? err.message : 'Failed to remove questions from pool';
       notifRef.current?.showError?.(msg);
       return false;
     }
@@ -167,7 +167,7 @@ export const useQuestionPools = (
     setPools((prev) => prev.map((p) => (p.id === pool.id ? { ...p, active: newActive } : p)));
     try {
       const res = await api(`/tests/pools/${pool.id}`, {
-        method: "PATCH",
+        method: 'PATCH',
         auth: true,
         body: JSON.stringify({ active: newActive }),
       });
@@ -175,14 +175,14 @@ export const useQuestionPools = (
         const err = await res.json();
         // Revert on failure
         setPools((prev) => prev.map((p) => (p.id === pool.id ? { ...p, active: !newActive } : p)));
-        throw new Error(err.message || "Failed to toggle pool active state");
+        throw new Error(err.message || 'Failed to toggle pool active state');
       }
       const updated = await res.json();
       setPools((prev) => prev.map((p) => (p.id === pool.id ? updated : p)));
-      notifRef.current?.showSuccess?.(newActive ? "Pool activated" : "Pool deactivated");
+      notifRef.current?.showSuccess?.(newActive ? 'Pool activated' : 'Pool deactivated');
       return true;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to toggle pool";
+      const msg = err instanceof Error ? err.message : 'Failed to toggle pool';
       // Revert if catch was triggered before the revert above
       setPools((prev) =>
         prev.map((p) =>

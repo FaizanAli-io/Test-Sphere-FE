@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { useState, useRef, useEffect } from 'react';
+import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
-import api from "@/hooks/useApi";
-import GoogleSignIn from "./GoogleSignIn";
-import { extractErrorMessage } from "@/utils/error";
+import api from '@/hooks/useApi';
+import GoogleSignIn from './GoogleSignIn';
+import { extractErrorMessage } from '@/utils/error';
 
 interface RouterLike {
   push: (href: string) => void;
@@ -53,11 +53,11 @@ export default function LoginForm({
     if (loading) return;
 
     setLoading(true);
-    setError("");
+    setError('');
 
     try {
-      const res = await api("/auth/login", {
-        method: "POST",
+      const res = await api('/auth/login', {
+        method: 'POST',
         body: JSON.stringify({ email, password }),
       });
 
@@ -68,21 +68,21 @@ export default function LoginForm({
       } = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data.message || 'Login failed');
       }
 
       if (data.accessToken && data.user?.role) {
-        localStorage.setItem("token", data.accessToken);
-        localStorage.setItem("role", data.user.role);
+        localStorage.setItem('token', data.accessToken);
+        localStorage.setItem('role', data.user.role);
         if (data.user.email) {
-          localStorage.setItem("userEmail", data.user.email);
+          localStorage.setItem('userEmail', data.user.email);
         } else {
-          localStorage.setItem("userEmail", email);
+          localStorage.setItem('userEmail', email);
         }
 
         await new Promise((resolve) => setTimeout(resolve, 50));
 
-        window.dispatchEvent(new Event("authChange"));
+        window.dispatchEvent(new Event('authChange'));
         if (data.user.name) setSuccess(`Welcome back, ${data.user.name}!`);
 
         // Clear any existing timeout
@@ -92,7 +92,7 @@ export default function LoginForm({
 
         // Set timeout with proper cleanup
         timeoutRef.current = setTimeout(() => {
-          router.push("/" + data.user!.role.toLowerCase());
+          router.push('/' + data.user!.role.toLowerCase());
           timeoutRef.current = null;
         }, 1000);
       }
@@ -141,7 +141,7 @@ export default function LoginForm({
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
@@ -175,7 +175,7 @@ export default function LoginForm({
         disabled={loading}
         className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
-        {loading ? "Signing in..." : "Sign In"}
+        {loading ? 'Signing in...' : 'Sign In'}
       </button>
     </form>
   );

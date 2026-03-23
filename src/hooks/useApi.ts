@@ -1,7 +1,7 @@
-import { debugLogger } from "@/utils/logger";
+import { debugLogger } from '@/utils/logger';
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_DEV_MODE === "true"
+  process.env.NEXT_PUBLIC_DEV_MODE === 'true'
     ? process.env.NEXT_PUBLIC_API_BASE_URL_DEV
     : process.env.NEXT_PUBLIC_API_BASE_URL_PROD;
 
@@ -21,21 +21,21 @@ const CACHE_DURATION = 100; // 100ms to deduplicate rapid calls
 export const api = async (path: string, options?: ExtendedRequestInit) => {
   if (!API_BASE_URL) {
     throw new Error(
-      "Missing API base URL. Set NEXT_PUBLIC_API_BASE_URL_DEV and NEXT_PUBLIC_API_BASE_URL_PROD in your environment.",
+      'Missing API base URL. Set NEXT_PUBLIC_API_BASE_URL_DEV and NEXT_PUBLIC_API_BASE_URL_PROD in your environment.',
     );
   }
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
   // Log base URL and auth header once (on first call)
   if (!apiBaseLogged) {
     apiBaseLogged = true;
-    debugLogger("API Base URL:", API_BASE_URL);
-    debugLogger("Auth Header:", token ? `Bearer ${token}` : "None");
+    debugLogger('API Base URL:', API_BASE_URL);
+    debugLogger('Auth Header:', token ? `Bearer ${token}` : 'None');
   }
 
   let headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   };
 
   // If body is FormData, don't set Content-Type (let fetch handle it)
@@ -49,7 +49,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
         ...headers,
         ...Object.fromEntries(Array.from(options.headers.entries())),
       };
-    } else if (typeof options.headers === "object" && !Array.isArray(options.headers)) {
+    } else if (typeof options.headers === 'object' && !Array.isArray(options.headers)) {
       headers = {
         ...headers,
         ...(options.headers as Record<string, string>),
@@ -59,14 +59,14 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
 
   // If an authenticated request is attempted without a token, short-circuit with 401
   if (options?.auth && !token) {
-    return new Response(JSON.stringify({ message: "Unauthorized" }), {
-      headers: { "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ message: 'Unauthorized' }), {
+      headers: { 'Content-Type': 'application/json' },
       status: 401,
     });
   }
 
   if (options?.auth && token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers['Authorization'] = `Bearer ${token}`;
   }
 
   let body: Record<string, unknown> | undefined;
@@ -74,7 +74,7 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   if (options?.body) {
     const rawBody = options.body;
 
-    if (typeof rawBody === "string") {
+    if (typeof rawBody === 'string') {
       try {
         body = JSON.parse(rawBody) as Record<string, unknown>;
       } catch {
@@ -89,21 +89,21 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
       ArrayBuffer.isView(rawBody)
     ) {
       body = undefined;
-    } else if (typeof rawBody === "object") {
+    } else if (typeof rawBody === 'object') {
       body = rawBody as Record<string, unknown>;
     }
   } else {
     body = {};
   }
 
-  if (options?.date && typeof body === "object" && body !== null && !Array.isArray(body)) {
+  if (options?.date && typeof body === 'object' && body !== null && !Array.isArray(body)) {
     (body as Record<string, unknown>).requestDate = new Date().toISOString();
   }
 
   const requestBody =
     options?.body instanceof FormData
       ? options.body
-      : body && typeof body === "object" && Object.keys(body).length > 0
+      : body && typeof body === 'object' && Object.keys(body).length > 0
         ? JSON.stringify(body)
         : undefined;
 
@@ -116,10 +116,10 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   const url = `${API_BASE_URL}${path}`;
 
   // Create cache key for deduplication
-  const cacheKey = `${options?.method || "GET"}:${url}:${JSON.stringify(payload.body || {})}`;
+  const cacheKey = `${options?.method || 'GET'}:${url}:${JSON.stringify(payload.body || {})}`;
 
   // Log payload for every request
-  debugLogger("API Request Payload:", { path, payload, body });
+  debugLogger('API Request Payload:', { path, payload, body });
 
   const fetchPromise = fetch(url, payload);
 
@@ -141,33 +141,33 @@ export const api = async (path: string, options?: ExtendedRequestInit) => {
   if (
     res.status === 401 &&
     options?.auth &&
-    typeof window !== "undefined" &&
-    window.location.pathname !== "/"
+    typeof window !== 'undefined' &&
+    window.location.pathname !== '/'
   ) {
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("userEmail");
-    window.location.replace("/");
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userEmail');
+    window.location.replace('/');
     // Return the response anyway so callers don't blow up, but navigation is in progress
     return res;
   }
 
   try {
     const cloned = res.clone();
-    const contentType = cloned.headers.get("content-type");
-    const responseData = contentType?.includes("application/json")
-      ? await cloned.json().catch(() => "⚠️ Failed to parse JSON")
-      : await cloned.text().catch(() => "⚠️ Failed to read text");
+    const contentType = cloned.headers.get('content-type');
+    const responseData = contentType?.includes('application/json')
+      ? await cloned.json().catch(() => '⚠️ Failed to parse JSON')
+      : await cloned.text().catch(() => '⚠️ Failed to read text');
 
     // Log response for every request
-    debugLogger("API Response:", {
+    debugLogger('API Response:', {
       path,
       status: res.status,
       statusText: res.statusText,
       data: responseData,
     });
   } catch (logError) {
-    console.warn("⚠️ Failed to log response data:", logError);
+    console.warn('⚠️ Failed to log response data:', logError);
   }
 
   return res;

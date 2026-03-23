@@ -1,20 +1,20 @@
-import "./globals.css";
-import type { Metadata } from "next";
-import Header from "@/components/Header";
-import AuthGuard from "@/components/AuthGuard";
-import { Inter, Roboto_Mono } from "next/font/google";
-import { NotificationProvider } from "@/contexts/NotificationContext";
+import './globals.css';
+import type { Metadata } from 'next';
+import Header from '@/components/Header';
+import AuthGuard from '@/components/AuthGuard';
+import { Inter, Roboto_Mono } from 'next/font/google';
+import { NotificationProvider } from '@/contexts/NotificationContext';
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
-  display: "swap",
+  subsets: ['latin'],
+  variable: '--font-roboto-mono',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: "Education System",
-  description: "Professional education platform",
+  title: 'Education System',
+  description: 'Professional education platform',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

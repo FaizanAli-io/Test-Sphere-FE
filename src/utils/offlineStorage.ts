@@ -1,8 +1,8 @@
-import { encryptData, decryptData } from "./encryption";
+import { encryptData, decryptData } from './encryption';
 
-const DB_NAME = "ProctoringLogsDB";
+const DB_NAME = 'ProctoringLogsDB';
 const DB_VERSION = 1;
-const STORE_NAME = "offline_logs";
+const STORE_NAME = 'offline_logs';
 
 export interface OfflineLog {
   id?: number;
@@ -21,7 +21,7 @@ function openDatabase(): Promise<IDBDatabase> {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
-      reject(new Error("Failed to open IndexedDB"));
+      reject(new Error('Failed to open IndexedDB'));
     };
 
     request.onsuccess = () => {
@@ -34,14 +34,14 @@ function openDatabase(): Promise<IDBDatabase> {
       // Create object store if it doesn't exist
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         const objectStore = db.createObjectStore(STORE_NAME, {
-          keyPath: "id",
+          keyPath: 'id',
           autoIncrement: true,
         });
 
         // Create indexes
-        objectStore.createIndex("submissionId", "submissionId", { unique: false });
-        objectStore.createIndex("timestamp", "timestamp", { unique: false });
-        objectStore.createIndex("logType", "logType", { unique: false });
+        objectStore.createIndex('submissionId', 'submissionId', { unique: false });
+        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
+        objectStore.createIndex('logType', 'logType', { unique: false });
       }
     };
   });
@@ -62,10 +62,10 @@ export async function storeOfflineLog(
     const db = await openDatabase();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME], "readwrite");
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
 
-      const log: Omit<OfflineLog, "id"> = {
+      const log: Omit<OfflineLog, 'id'> = {
         submissionId,
         logType,
         encryptedData,
@@ -80,7 +80,7 @@ export async function storeOfflineLog(
       };
 
       request.onerror = () => {
-        reject(new Error("Failed to store offline log"));
+        reject(new Error('Failed to store offline log'));
       };
 
       transaction.oncomplete = () => {
@@ -88,7 +88,7 @@ export async function storeOfflineLog(
       };
     });
   } catch (error) {
-    console.error("Failed to store offline log:", error);
+    console.error('Failed to store offline log:', error);
     throw error;
   }
 }
@@ -101,9 +101,9 @@ export async function getOfflineLogs(submissionId: number): Promise<OfflineLog[]
     const db = await openDatabase();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME], "readonly");
+      const transaction = db.transaction([STORE_NAME], 'readonly');
       const store = transaction.objectStore(STORE_NAME);
-      const index = store.index("submissionId");
+      const index = store.index('submissionId');
       const request = index.getAll(submissionId);
 
       request.onsuccess = () => {
@@ -111,7 +111,7 @@ export async function getOfflineLogs(submissionId: number): Promise<OfflineLog[]
       };
 
       request.onerror = () => {
-        reject(new Error("Failed to retrieve offline logs"));
+        reject(new Error('Failed to retrieve offline logs'));
       };
 
       transaction.oncomplete = () => {
@@ -119,7 +119,7 @@ export async function getOfflineLogs(submissionId: number): Promise<OfflineLog[]
       };
     });
   } catch (error) {
-    console.error("Failed to get offline logs:", error);
+    console.error('Failed to get offline logs:', error);
     return [];
   }
 }
@@ -135,7 +135,7 @@ export async function getDecryptedLog<T = unknown>(
     const db = await openDatabase();
 
     const log = await new Promise<OfflineLog | null>((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME], "readonly");
+      const transaction = db.transaction([STORE_NAME], 'readonly');
       const store = transaction.objectStore(STORE_NAME);
       const request = store.get(logId);
 
@@ -144,7 +144,7 @@ export async function getDecryptedLog<T = unknown>(
       };
 
       request.onerror = () => {
-        reject(new Error("Failed to retrieve log"));
+        reject(new Error('Failed to retrieve log'));
       };
 
       transaction.oncomplete = () => {
@@ -157,7 +157,7 @@ export async function getDecryptedLog<T = unknown>(
     // Decrypt the data
     return await decryptData<T>(log.encryptedData, submissionId);
   } catch (error) {
-    console.error("Failed to get decrypted log:", error);
+    console.error('Failed to get decrypted log:', error);
     return null;
   }
 }
@@ -170,7 +170,7 @@ export async function deleteOfflineLog(logId: number): Promise<void> {
     const db = await openDatabase();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME], "readwrite");
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       const request = store.delete(logId);
 
@@ -179,7 +179,7 @@ export async function deleteOfflineLog(logId: number): Promise<void> {
       };
 
       request.onerror = () => {
-        reject(new Error("Failed to delete offline log"));
+        reject(new Error('Failed to delete offline log'));
       };
 
       transaction.oncomplete = () => {
@@ -187,7 +187,7 @@ export async function deleteOfflineLog(logId: number): Promise<void> {
       };
     });
   } catch (error) {
-    console.error("Failed to delete offline log:", error);
+    console.error('Failed to delete offline log:', error);
     throw error;
   }
 }
@@ -201,7 +201,7 @@ export async function clearOfflineLogs(submissionId: number): Promise<void> {
     const db = await openDatabase();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME], "readwrite");
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
 
       let completed = 0;
@@ -220,7 +220,7 @@ export async function clearOfflineLogs(submissionId: number): Promise<void> {
 
           request.onerror = () => {
             hasError = true;
-            reject(new Error("Failed to clear offline logs"));
+            reject(new Error('Failed to clear offline logs'));
           };
         }
       });
@@ -234,7 +234,7 @@ export async function clearOfflineLogs(submissionId: number): Promise<void> {
       };
     });
   } catch (error) {
-    console.error("Failed to clear offline logs:", error);
+    console.error('Failed to clear offline logs:', error);
     throw error;
   }
 }
@@ -247,7 +247,7 @@ export async function incrementUploadAttempts(logId: number): Promise<void> {
     const db = await openDatabase();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([STORE_NAME], "readwrite");
+      const transaction = db.transaction([STORE_NAME], 'readwrite');
       const store = transaction.objectStore(STORE_NAME);
       const getRequest = store.get(logId);
 
@@ -262,7 +262,7 @@ export async function incrementUploadAttempts(logId: number): Promise<void> {
           };
 
           updateRequest.onerror = () => {
-            reject(new Error("Failed to update upload attempts"));
+            reject(new Error('Failed to update upload attempts'));
           };
         } else {
           resolve();
@@ -270,7 +270,7 @@ export async function incrementUploadAttempts(logId: number): Promise<void> {
       };
 
       getRequest.onerror = () => {
-        reject(new Error("Failed to get log for update"));
+        reject(new Error('Failed to get log for update'));
       };
 
       transaction.oncomplete = () => {
@@ -278,7 +278,7 @@ export async function incrementUploadAttempts(logId: number): Promise<void> {
       };
     });
   } catch (error) {
-    console.error("Failed to increment upload attempts:", error);
+    console.error('Failed to increment upload attempts:', error);
   }
 }
 
@@ -290,7 +290,7 @@ export async function getPendingLogsCount(submissionId: number): Promise<number>
     const logs = await getOfflineLogs(submissionId);
     return logs.length;
   } catch (error) {
-    console.error("Failed to get pending logs count:", error);
+    console.error('Failed to get pending logs count:', error);
     return 0;
   }
 }

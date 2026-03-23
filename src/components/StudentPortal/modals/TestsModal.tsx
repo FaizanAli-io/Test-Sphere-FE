@@ -1,7 +1,7 @@
-import React from "react";
-import { useRouter } from "next/navigation";
-import { Test } from "../types";
-import { Submission } from "../../Submissions/types";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { Test } from '../types';
+import { Submission } from '../../Submissions/types';
 
 interface TestsModalProps {
   isOpen: boolean;
@@ -36,7 +36,7 @@ export default function TestsModal({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold text-white">
-                {testsForClass ? `Class #${testsForClass} Tests` : "Available Tests"}
+                {testsForClass ? `Class #${testsForClass} Tests` : 'Available Tests'}
               </h2>
               <p className="text-orange-100 mt-1">Choose a test to take or view results</p>
             </div>
@@ -64,24 +64,24 @@ export default function TestsModal({
           ) : (
             (() => {
               const filteredTests = tests.filter((t) =>
-                t.status ? t.status.toUpperCase() !== "DRAFT" : true,
+                t.status ? t.status.toUpperCase() !== 'DRAFT' : true,
               );
               if (filteredTests.length === 0) {
                 return (
                   <div className="text-center text-gray-500 py-10">
                     {testsForClass
-                      ? "No available tests for this class right now."
-                      : "No available tests across your classes right now."}
+                      ? 'No available tests for this class right now.'
+                      : 'No available tests across your classes right now.'}
                   </div>
                 );
               }
 
               const getStatusColor = (status?: string) => {
                 const s = status?.toUpperCase();
-                if (s === "ACTIVE") return "bg-green-100 text-green-800";
-                if (s === "COMPLETED") return "bg-blue-100 text-blue-800";
-                if (s === "ARCHIVED") return "bg-yellow-100 text-yellow-800";
-                return "bg-gray-100 text-gray-800";
+                if (s === 'ACTIVE') return 'bg-green-100 text-green-800';
+                if (s === 'COMPLETED') return 'bg-blue-100 text-blue-800';
+                if (s === 'ARCHIVED') return 'bg-yellow-100 text-yellow-800';
+                return 'bg-gray-100 text-gray-800';
               };
 
               return (
@@ -138,7 +138,7 @@ export default function TestsModal({
                       )}
 
                       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-                        {typeof test.duration === "number" && (
+                        {typeof test.duration === 'number' && (
                           <div className="bg-white/70 rounded-lg p-3">
                             <span className="font-bold text-gray-700">Duration:</span>
                             <div className="text-gray-900">{test.duration} min</div>

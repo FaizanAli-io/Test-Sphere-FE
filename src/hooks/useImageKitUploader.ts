@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from 'react';
 
-import api from "./useApi";
-import { debugLogger } from "@/utils/logger";
+import api from './useApi';
+import { debugLogger } from '@/utils/logger';
 
 interface ImageKitConfig {
   publicKey: string;
@@ -33,19 +33,19 @@ export function useImageKitUploader() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await api("/upload/signature", {
-          method: "GET",
+        const res = await api('/upload/signature', {
+          method: 'GET',
           auth: true,
         });
-        if (!res.ok) throw new Error("Failed to load ImageKit config");
+        if (!res.ok) throw new Error('Failed to load ImageKit config');
         const data = await res.json();
         setConfig({
           publicKey: data.publicKey,
           urlEndpoint: data.urlEndpoint,
         });
       } catch (err: unknown) {
-        console.error("⚠️ Failed to load ImageKit config:", err);
-        setError(err instanceof Error ? err.message : "Unknown error occurred");
+        console.error('⚠️ Failed to load ImageKit config:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error occurred');
       } finally {
         setLoading(false);
       }
@@ -55,12 +55,12 @@ export function useImageKitUploader() {
 
   const authenticator = useCallback(async () => {
     // Always fetch a fresh signature+token for each upload to ensure uniqueness
-    debugLogger("📡 Fetching fresh ImageKit signature/token");
-    const res = await api("/upload/signature", {
-      method: "GET",
+    debugLogger('📡 Fetching fresh ImageKit signature/token');
+    const res = await api('/upload/signature', {
+      method: 'GET',
       auth: true,
     });
-    if (!res.ok) throw new Error("Failed to get signature");
+    if (!res.ok) throw new Error('Failed to get signature');
     const { signature, expire, token } = await res.json();
     return { signature, expire, token };
   }, []);
@@ -70,8 +70,8 @@ export function useImageKitUploader() {
   }, []);
 
   const handleUploadError = useCallback((err: unknown) => {
-    console.error("❌ Upload error:", err);
-    setError(err instanceof Error ? err.message : "Upload failed");
+    console.error('❌ Upload error:', err);
+    setError(err instanceof Error ? err.message : 'Upload failed');
   }, []);
 
   return {
