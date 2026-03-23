@@ -2,8 +2,8 @@ import { debugLogger } from "@/utils/logger";
 
 export const API_BASE_URL =
   process.env.NEXT_PUBLIC_DEV_MODE === "true"
-    ? "http://localhost:5000"
-    : "https://backend.projectvault.pk";
+    ? process.env.NEXT_PUBLIC_API_BASE_URL_DEV
+    : process.env.NEXT_PUBLIC_API_BASE_URL_PROD;
 
 // Log base URL and auth header once per runtime without touching window
 let apiBaseLogged = false;
@@ -19,6 +19,12 @@ const requestCache = new Map<string, Promise<Response>>();
 const CACHE_DURATION = 100; // 100ms to deduplicate rapid calls
 
 export const api = async (path: string, options?: ExtendedRequestInit) => {
+  if (!API_BASE_URL) {
+    throw new Error(
+      "Missing API base URL. Set NEXT_PUBLIC_API_BASE_URL_DEV and NEXT_PUBLIC_API_BASE_URL_PROD in your environment.",
+    );
+  }
+
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   // Log base URL and auth header once (on first call)
